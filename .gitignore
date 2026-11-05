@@ -1,0 +1,12 @@
+# whitelist approach: only theme/project files are tracked
+/*
+!/.gitignore
+!/apple-theme.css
+!/sync-css.sh
+!/compose.yaml
+!/data/
+/data/*
+!/data/default-user/
+/data/default-user/*
+!/data/default-user/themes/
+!/data/default-user/OpenAI Settings/

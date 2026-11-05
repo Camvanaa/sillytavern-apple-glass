@@ -1,0 +1,2268 @@
+/* =============================================================================
+   APPLE DESIGN SYSTEM  ·  for SillyTavern (iOS 18 / macOS Sonoma / visionOS)
+   Pure Apple Human Interface language:
+   - SF Pro typography system (strictly preserving Font Awesome icon fonts)
+   - Multi-layer Gaussian frosted glass (Glassmorphism) + 1px specular hairline
+   - Capsule buttons with hover luminescence & spring press (active: scale 0.96)
+   - Floating frosted pill composer & clean chrome without industrial clutter
+   - Seamless coordination with LittleWhiteBox (小白X), TavernHelper (酒馆助手),
+     and Ny-Gemini interactive option cards.
+   ============================================================================= */
+
+:root {
+    --ap-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+        "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI",
+        "Microsoft YaHei", "Noto Sans SC", "Segoe UI", sans-serif,
+        "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
+    --ap-mono: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, Monaco, Consolas,
+        "Noto Sans Mono", monospace;
+
+    /* Apple Dark System Accent Colors */
+    --ap-blue: #0a84ff;
+    --ap-blue-hover: #409cff;
+    --ap-blue-deep: #0066cc;
+    --ap-cyan: #64d2ff;
+    --ap-indigo: #5e5ce6;
+    --ap-green: #30d158;
+    --ap-orange: #ff9f0a;
+    --ap-red: #ff453a;
+
+    /* Translucent Fills & Hairlines */
+    --ap-fill-1: rgba(128, 128, 140, 0.28);
+    --ap-fill-2: rgba(120, 120, 132, 0.20);
+    --ap-fill-3: rgba(120, 120, 132, 0.14);
+    --ap-fill-4: rgba(120, 120, 132, 0.09);
+
+    --ap-hairline: rgba(255, 255, 255, 0.14);
+    --ap-hairline-strong: rgba(255, 255, 255, 0.24);
+    --ap-hairline-subtle: rgba(255, 255, 255, 0.08);
+
+    /* Labels */
+    --ap-label: rgba(255, 255, 255, 0.95);
+    --ap-label-2: rgba(235, 235, 245, 0.68);
+    --ap-label-3: rgba(235, 235, 245, 0.40);
+
+    /* Glass Materials */
+    --ap-glass-pill: rgba(26, 26, 30, 0.62);
+    --ap-glass-bubble: rgba(30, 30, 36, 0.60);
+    --ap-glass-sheet: rgba(24, 24, 28, 0.82);
+    --ap-glass-popover: rgba(34, 34, 40, 0.88);
+    --ap-blur-sm: saturate(170%) blur(16px);
+    --ap-blur-md: saturate(185%) blur(26px);
+    --ap-blur-lg: saturate(195%) blur(36px);
+
+    /* Radii */
+    --ap-r-xs: 8px;
+    --ap-r-sm: 12px;
+    --ap-r-md: 16px;
+    --ap-r-lg: 22px;
+    --ap-r-xl: 28px;
+    --ap-r-full: 999px;
+
+    /* Specular Highlights & Elevation */
+    --ap-inner-hi: inset 0 0.5px 0 rgba(255, 255, 255, 0.18);
+    --ap-inner-glow: inset 0 0.5px 0 rgba(255, 255, 255, 0.26), inset 0 0 12px rgba(255, 255, 255, 0.04);
+    --ap-sh-sm: 0 2px 8px rgba(0, 0, 0, 0.20), 0 1px 2px rgba(0, 0, 0, 0.16);
+    --ap-sh-md: 0 10px 30px rgba(0, 0, 0, 0.34), 0 2px 6px rgba(0, 0, 0, 0.22);
+    --ap-sh-lg: 0 20px 55px rgba(0, 0, 0, 0.50), 0 4px 14px rgba(0, 0, 0, 0.28);
+
+    /* Motion */
+    --ap-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --ap-spring: cubic-bezier(0.34, 1.45, 0.64, 1);
+    --ap-dur: 0.24s;
+}
+
+/* -----------------------------------------------------------------------------
+   1 · SF PRO TYPOGRAPHY & ICON FONT PROTECTION
+   -------------------------------------------------------------------------- */
+
+html body,
+html body input,
+html body textarea,
+html body select,
+html body button:not([class*="fa-"]),
+html body .menu_button:not([class*="fa-"]),
+html body .text_pole {
+    font-family: var(--ap-font) !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Strictly preserve Font Awesome on icon buttons & pseudo-elements */
+html body .fa,
+html body .fas,
+html body .far,
+html body .fa-solid,
+html body .fa-regular,
+html body .fa-classic,
+html body .menu_button.fa-solid,
+html body .menu_button.fa-regular,
+html body .menu_button.fas,
+html body .right_menu_button.fa-solid,
+html body .drawer-icon.fa-solid,
+html body .mes_button.fa-solid,
+html body .mes_button.fa-regular {
+    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", FontAwesome !important;
+}
+
+html body .fab,
+html body .fa-brands,
+html body .menu_button.fa-brands {
+    font-family: "Font Awesome 6 Brands", "Font Awesome 5 Brands" !important;
+}
+
+html body code,
+html body pre,
+html body .mes_text code,
+html body .monospace {
+    font-family: var(--ap-mono) !important;
+}
+
+/* Crisp Apple rendering — no muddy text-shadows */
+html body * {
+    text-shadow: none !important;
+}
+
+html body {
+    letter-spacing: -0.011em;
+    color: var(--ap-label);
+}
+
+html body #chat .mes .mes_text {
+    font-size: 15.5px !important;
+    line-height: 1.68 !important;
+    letter-spacing: -0.005em !important;
+    color: var(--ap-label) !important;
+}
+
+html body #chat .mes .mes_text p {
+    margin-top: 0 !important;
+    margin-bottom: 0.65em !important;
+}
+
+html body #chat .mes .mes_text p:last-child {
+    margin-bottom: 0 !important;
+}
+
+html body #chat .mes[is_user="false"] .mes_text q {
+    color: #7cc0ff !important;
+}
+
+html body h1,
+html body h2,
+html body h3,
+html body h4,
+html body h5 {
+    letter-spacing: -0.02em !important;
+    font-weight: 600 !important;
+    color: var(--ap-label);
+}
+
+/* -----------------------------------------------------------------------------
+   2 · ULTRA-SLIM OVERLAY SCROLLBARS & RESIZER CLEANUP
+   -------------------------------------------------------------------------- */
+
+html body ::-webkit-scrollbar {
+    width: 5px !important;
+    height: 5px !important;
+    background: transparent !important;
+}
+
+html body ::-webkit-scrollbar-track,
+html body ::-webkit-scrollbar-track:hover,
+html body ::-webkit-scrollbar-track:active {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+html body ::-webkit-scrollbar-thumb,
+html body ::-webkit-scrollbar-thumb:vertical,
+html body ::-webkit-scrollbar-thumb:horizontal {
+    background: rgba(255, 255, 255, 0.16) !important;
+    border: none !important;
+    border-radius: var(--ap-r-full) !important;
+    box-shadow: none !important;
+}
+
+html body ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.34) !important;
+}
+
+html body ::-webkit-scrollbar-thumb:active {
+    background: rgba(255, 255, 255, 0.48) !important;
+}
+
+html body ::-webkit-scrollbar-corner,
+html body ::-webkit-resizer {
+    background: transparent !important;
+    display: none !important;
+}
+
+/* -----------------------------------------------------------------------------
+   3 · FLOATING TOP BAR (Dynamic Island / macOS Frosted Pill)
+   -------------------------------------------------------------------------- */
+
+html body #top-bar {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Dynamic Island: the holder shrink-wraps its 9 icons and self-centers, drawing
+   the frosted capsule through ::before. Child drawers are position:fixed so they
+   always measure against the viewport — never against the pill — which keeps the
+   centered dropdowns perfectly aligned at any window width. */
+html body #top-settings-holder {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: fit-content !important;
+    max-width: calc(100vw - 12px) !important;
+    height: var(--topBarBlockSize) !important;
+    margin: 0 auto !important;
+    padding: 0 9px !important;
+    gap: 1px !important;
+    justify-content: center !important;
+    align-items: center !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    z-index: 3005;
+}
+
+html body #top-settings-holder::before {
+    content: "";
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    left: 0;
+    right: 0;
+    width: auto;
+    transform: none;
+    background: var(--ap-glass-pill);
+    backdrop-filter: var(--ap-blur-lg);
+    -webkit-backdrop-filter: var(--ap-blur-lg);
+    border: 1px solid var(--ap-hairline);
+    border-radius: var(--ap-r-full);
+    box-shadow: var(--ap-inner-hi), var(--ap-sh-md);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Reset .drawer wrapper inside top bar so all 9 icons cluster tightly inside
+   the centered 388px Dynamic Island frosted pill */
+html body:not(#_):not(#__) #top-settings-holder > .drawer,
+html body:not(#_):not(#__) .drawer {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0 2px !important;
+    margin: 0 !important;
+    flex: 0 0 auto !important;
+    width: auto !important;
+    z-index: 1;
+}
+
+/* Top bar icon capsules */
+html body #top-settings-holder .drawer-icon,
+html body .drawer-icon {
+    width: 34px !important;
+    height: 29px !important;
+    min-width: 34px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 16px !important;
+    line-height: 1 !important;
+    color: var(--ap-label-2) !important;
+    border-radius: var(--ap-r-full) !important;
+    border: 1px solid transparent !important;
+    background: transparent !important;
+    padding: 0 !important;
+    opacity: 0.85 !important;
+    transition: background-color var(--ap-dur) var(--ap-ease),
+        border-color var(--ap-dur) var(--ap-ease),
+        box-shadow var(--ap-dur) var(--ap-ease),
+        color var(--ap-dur) var(--ap-ease),
+        opacity var(--ap-dur) var(--ap-ease) !important;
+}
+
+html body #top-settings-holder .drawer-icon.closedIcon,
+html body .drawer-icon.closedIcon {
+    opacity: 0.55 !important;
+}
+
+html body #top-settings-holder .drawer-icon:hover,
+html body #top-settings-holder .drawer-icon.closedIcon:hover,
+html body .drawer-icon:hover {
+    color: #fff !important;
+    opacity: 1 !important;
+    background: rgba(255, 255, 255, 0.13) !important;
+    border-color: rgba(255, 255, 255, 0.16) !important;
+    box-shadow: var(--ap-inner-hi) !important;
+}
+
+html body #top-settings-holder .drawer-icon.openIcon,
+html body #top-settings-holder .drawer-icon.active,
+html body .drawer-icon.openIcon,
+html body .drawer-icon.active {
+    color: #fff !important;
+    background: linear-gradient(180deg, #2e95ff 0%, #0a84ff 100%) !important;
+    border-color: rgba(255, 255, 255, 0.25) !important;
+    box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.35),
+        0 4px 14px rgba(10, 132, 255, 0.45) !important;
+}
+
+html body #top-settings-holder .drawer-icon:active,
+html body .drawer-icon:active {
+    transform: scale(0.92) !important;
+}
+
+/* -----------------------------------------------------------------------------
+   4 · FLOATING GLASS SHEETS / SIDE PANELS / TOP DRAWERS
+   -------------------------------------------------------------------------- */
+
+html body:not(#_):not(#__) .drawer-content,
+html body:not(#_):not(#__) #left-nav-panel,
+html body:not(#_):not(#__) #right-nav-panel,
+html body:not(#_):not(#__) #character_popup,
+html body:not(#_):not(#__) #logprobsViewer,
+html body:not(#_):not(#__) #floatingPrompt,
+html body:not(#_):not(#__) #cfgConfig {
+    background: var(--ap-glass-sheet) !important;
+    backdrop-filter: var(--ap-blur-lg) !important;
+    -webkit-backdrop-filter: var(--ap-blur-lg) !important;
+    border: 1px solid var(--ap-hairline) !important;
+    border-radius: var(--ap-r-lg) !important;
+    box-shadow: var(--ap-inner-hi), var(--ap-sh-lg) !important;
+    /* Anchor every dropdown against the VIEWPORT, not the shrink-wrapped pill */
+    position: fixed !important;
+}
+
+/* Center-anchored dropdown drawers (User Settings, World Info, Formatting, API,
+   Extensions, Personas…) get Apple System-Settings width, comfortable padding
+   and a consistent gap below the Dynamic Island. */
+html body:not(#_):not(#__) .drawer-content:not(.fillLeft):not(.fillRight) {
+    top: calc(var(--topBarBlockSize) + 9px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: min(1000px, calc(100vw - 24px)) !important;
+    min-width: 0 !important;
+    max-height: calc(100dvh - var(--topBarBlockSize) - 22px) !important;
+    padding: 16px 20px !important;
+    margin: 0 auto !important;
+}
+
+/* Left / right rail panels: hug the viewport edges, never the pill */
+html body:not(#_):not(#__) #left-nav-panel,
+html body:not(#_):not(#__) #right-nav-panel,
+html body:not(#_):not(#__) .fillLeft,
+html body:not(#_):not(#__) .fillRight {
+    top: calc(var(--topBarBlockSize) + 8px) !important;
+    height: calc(100dvh - var(--topBarBlockSize) - 16px) !important;
+    max-height: calc(100dvh - var(--topBarBlockSize) - 16px) !important;
+    padding: 12px 12px 14px !important;
+    border-radius: var(--ap-r-lg) !important;
+}
+
+@media screen and (min-width: 1001px) {
+    html body:not(#_):not(#__) #right-nav-panel {
+        right: 8px !important;
+        left: auto !important;
+        width: max(300px, calc((100dvw - var(--sheldWidth)) / 2 - 14px)) !important;
+        margin: 0 !important;
+    }
+    html body:not(#_):not(#__) #left-nav-panel {
+        left: 8px !important;
+        right: auto !important;
+        width: max(300px, calc((100dvw - var(--sheldWidth)) / 2 - 14px)) !important;
+        margin: 0 !important;
+    }
+}
+
+/* Eliminate ugly dark gradient bars on section headers (UI 主题, 角色处理, 杂项, 自定义 CSS, etc.) */
+html body:not(#_):not(#__) .title_restorable,
+html body:not(#_):not(#__) #user-settings-block h4,
+html body:not(#_):not(#__) #left-nav-panel .title_restorable,
+html body:not(#_):not(#__) .drawer-content h4,
+html body:not(#_):not(#__) #rm_button_selected_ch {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border: none !important;
+    border-bottom: 1px solid var(--ap-hairline-subtle) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 6px 2px 8px !important;
+    margin: 10px 0 10px !important;
+    font-weight: 600 !important;
+    color: var(--ap-label) !important;
+}
+
+/* Section-header icon buttons (Expand editor "maximize", Help "?", palette, eye…)
+   must read as lightweight Apple GHOST buttons, not solid dark squares. */
+html body:not(#_):not(#__) .title_restorable .menu_button,
+html body:not(#_):not(#__) .title_restorable .right_menu_button,
+html body:not(#_):not(#__) .editor_maximize,
+html body:not(#_):not(#__) #description_div .right_menu_button,
+html body:not(#_):not(#__) #first_message_div .right_menu_button,
+html body:not(#_):not(#__) #creators_notes_div .menu_button,
+html body:not(#_):not(#__) .notes-link .note-link-span {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: var(--ap-label-2) !important;
+    opacity: 0.9 !important;
+    width: 26px !important;
+    height: 26px !important;
+    min-width: 26px !important;
+    min-height: 26px !important;
+    padding: 0 !important;
+    border-radius: var(--ap-r-full) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 14px !important;
+    transition: background-color var(--ap-dur) var(--ap-ease),
+        color var(--ap-dur) var(--ap-ease) !important;
+}
+
+html body:not(#_):not(#__) .title_restorable .menu_button:hover,
+html body:not(#_):not(#__) .title_restorable .right_menu_button:hover,
+html body:not(#_):not(#__) .editor_maximize:hover,
+html body:not(#_):not(#__) #creators_notes_div .menu_button:hover {
+    background: var(--ap-fill-2) !important;
+    color: #fff !important;
+    opacity: 1 !important;
+}
+
+/* The "?" documentation link keeps Apple's accent tint */
+html body:not(#_):not(#__) .notes-link .note-link-span {
+    color: var(--ap-blue-hover) !important;
+}
+
+html body:not(#_):not(#__) .notes-link:hover .note-link-span {
+    color: #fff !important;
+    background: var(--ap-fill-2) !important;
+}
+
+/* "Expanded editor" (maximize toggle) active state gets a subtle accent fill */
+html body:not(#_):not(#__) .editor_maximize.active {
+    background: rgba(10, 132, 255, 0.28) !important;
+    color: #fff !important;
+}
+
+/* Spacious 3-column layout inside User Settings */
+html body:not(#_):not(#__) #user-settings-block-content {
+    gap: 20px !important;
+}
+
+/* -----------------------------------------------------------------------------
+   5 · CAPSULE BUTTONS — Frosted Glass + Hover Glow + Spring Scale (0.96)
+       NOTE: backdrop-filter is deliberately NOT used on small buttons. Blurring
+       700+ tiny elements forces a full-page re-raster on every hover and makes
+       the UI flicker. Only large surfaces (panels, popovers, composer) blur.
+   -------------------------------------------------------------------------- */
+
+html body .menu_button,
+html body .menu_button_icon,
+html body .right_menu_button,
+html body .qr--button,
+html body #qr-bar .menu_button,
+html body .xiaobaix-task-button,
+html body .immersive-nav-btn,
+html body .TH-reference-button,
+html body .TH-Button--container {
+    color: var(--ap-label) !important;
+    background: var(--ap-fill-2) !important;
+    border: 1px solid var(--ap-hairline) !important;
+    border-radius: var(--ap-r-full) !important;
+    box-shadow: var(--ap-inner-hi) !important;
+    filter: none !important;
+    font-weight: 500 !important;
+    letter-spacing: -0.01em;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: background-color var(--ap-dur) var(--ap-ease),
+        border-color var(--ap-dur) var(--ap-ease),
+        box-shadow var(--ap-dur) var(--ap-ease),
+        color var(--ap-dur) var(--ap-ease),
+        transform var(--ap-dur) var(--ap-spring) !important;
+}
+
+/* Compact icon buttons in character / panel grids stay neat capsules */
+html body .buttons_block .menu_button,
+html body .right_menu_button,
+html body .menu_button.fa-solid:not(.menu_button_icon),
+html body .menu_button.fa-regular:not(.menu_button_icon) {
+    padding: 5px 8px !important;
+    min-width: 30px !important;
+    min-height: 30px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: var(--ap-r-full) !important;
+}
+
+html body .menu_button:hover:not(.disabled):not([disabled]),
+html body .menu_button_icon:hover:not(.disabled):not([disabled]),
+html body .right_menu_button:hover,
+html body .qr--button:hover,
+html body #qr-bar .menu_button:hover,
+html body .xiaobaix-task-button:hover,
+html body .immersive-nav-btn:hover:not(:disabled),
+html body .TH-reference-button:hover,
+html body .TH-Button--container:hover {
+    background: var(--ap-fill-1) !important;
+    border-color: var(--ap-hairline-strong) !important;
+    box-shadow: var(--ap-inner-glow), 0 3px 10px rgba(0, 0, 0, 0.22) !important;
+    color: #fff !important;
+}
+
+html body .menu_button:active:not(.disabled):not([disabled]),
+html body .menu_button_icon:active:not(.disabled):not([disabled]),
+html body .right_menu_button:active,
+html body .qr--button:active,
+html body #qr-bar .menu_button:active,
+html body .xiaobaix-task-button:active,
+html body .immersive-nav-btn:active:not(:disabled),
+html body .TH-reference-button:active,
+html body .TH-Button--container:active {
+    transform: scale(0.96) !important;
+    background: rgba(160, 160, 175, 0.30) !important;
+}
+
+/* Active / toggled state */
+html body .menu_button.toggleable.toggled,
+html body .menu_button.active,
+html body .menu_button:not(.disabled).active {
+    background: linear-gradient(180deg, #2e95ff 0%, #0a84ff 100%) !important;
+    border-color: rgba(255, 255, 255, 0.26) !important;
+    color: #fff !important;
+    box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.32),
+        0 4px 14px rgba(10, 132, 255, 0.42) !important;
+}
+
+html body .menu_button[disabled],
+html body .menu_button.disabled {
+    opacity: 0.38 !important;
+    pointer-events: none;
+}
+
+/* Primary / confirm modal buttons (beats .popup-controls .menu_button in Moonlit) */
+html body:not(#_):not(#__) .popup-controls .menu_button,
+html body:not(#_):not(#__) .menu_button.popup-button-ok,
+html body:not(#_):not(#__) #dialogue_popup_ok,
+html body:not(#_):not(#__) .menu_button.menu_button_default,
+html body:not(#_):not(#__) #dialogue_popup_cancel {
+    border-radius: var(--ap-r-full) !important;
+    padding: 7px 22px !important;
+    font-weight: 600 !important;
+    border: 1px solid var(--ap-hairline) !important;
+    background: var(--ap-fill-2) !important;
+    box-shadow: var(--ap-inner-hi), var(--ap-sh-sm) !important;
+}
+
+html body:not(#_):not(#__) .menu_button.popup-button-ok,
+html body:not(#_):not(#__) #dialogue_popup_ok {
+    background: linear-gradient(180deg, #2e95ff 0%, #0a84ff 100%) !important;
+    border-color: rgba(255, 255, 255, 0.25) !important;
+    color: #fff !important;
+    box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.32),
+        0 4px 14px rgba(10, 132, 255, 0.40) !important;
+}
+
+html body:not(#_):not(#__) .menu_button.popup-button-ok:hover,
+html body:not(#_):not(#__) #dialogue_popup_ok:hover {
+    background: linear-gradient(180deg, #4da6ff 0%, #1c8fff 100%) !important;
+}
+
+/* Destructive / danger buttons */
+html body .menu_button.redWarningBG,
+html body #delete_button {
+    background: rgba(255, 69, 58, 0.22) !important;
+    border-color: rgba(255, 69, 58, 0.42) !important;
+    color: #ff6961 !important;
+}
+
+html body .menu_button.redWarningBG:hover,
+html body #delete_button:hover {
+    background: rgba(255, 69, 58, 0.36) !important;
+    color: #fff !important;
+}
+
+/* -----------------------------------------------------------------------------
+   6 · FROSTED INPUT FIELDS & TEXTAREAS
+       (Excludes Select2 inline search input so World Info never double-borders!)
+   -------------------------------------------------------------------------- */
+
+html body:not(#_):not(#__) .text_pole:not(.neo-range-input),
+html body:not(#_):not(#__) input[type="text"]:not([id^="xiaobaix_"]):not(.select2-search__field),
+html body:not(#_):not(#__) input[type="search"]:not(.select2-search__field),
+html body:not(#_):not(#__) input[type="number"]:not([id^="xiaobaix_"]):not(.neo-range-input),
+html body:not(#_):not(#__) input[type="password"],
+html body:not(#_):not(#__) textarea:not(#send_textarea):not([id^="xiaobaix_"]):not(.select2-search__field),
+html body:not(#_):not(#__) select.text_pole,
+html body:not(#_):not(#__) select:not([id^="xiaobaix_"]) {
+    background: rgba(118, 118, 128, 0.18) !important;
+    color: var(--ap-label) !important;
+    border: 1px solid var(--ap-hairline) !important;
+    border-radius: var(--ap-r-sm) !important;
+    box-shadow: var(--ap-inner-hi) !important;
+    padding: 6px 11px !important;
+    transition: border-color var(--ap-dur) var(--ap-ease),
+        box-shadow var(--ap-dur) var(--ap-ease),
+        background-color var(--ap-dur) var(--ap-ease) !important;
+}
+
+/* Compact, refined numeric readout pill under sliders (.neo-range-input) */
+html body:not(#_):not(#__) input.neo-range-input,
+html body:not(#_):not(#__) input[type="number"].neo-range-input {
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: var(--ap-label-2) !important;
+    border: 1px solid var(--ap-hairline-subtle) !important;
+    border-radius: var(--ap-r-xs) !important;
+    box-shadow: none !important;
+    height: 24px !important;
+    min-height: 24px !important;
+    padding: 1px 8px !important;
+    margin-top: 4px !important;
+    font-size: 12px !important;
+    font-variant-numeric: tabular-nums !important;
+    text-align: center !important;
+}
+
+html body:not(#_):not(#__) .text_pole::placeholder,
+html body:not(#_):not(#__) textarea::placeholder,
+html body:not(#_):not(#__) input::placeholder {
+    color: var(--ap-label-3) !important;
+}
+
+html body:not(#_):not(#__) .text_pole:focus,
+html body:not(#_):not(#__) .text_pole:focus-visible,
+html body:not(#_):not(#__) textarea:not(#send_textarea):not(.select2-search__field):focus,
+html body:not(#_):not(#__) input:not(.select2-search__field):focus {
+    outline: none !important;
+    border-color: rgba(10, 132, 255, 0.75) !important;
+    background: rgba(118, 118, 128, 0.24) !important;
+    box-shadow: var(--ap-inner-hi), 0 0 0 3px rgba(10, 132, 255, 0.28) !important;
+}
+
+/* -----------------------------------------------------------------------------
+   7 · FLOATING FROSTED COMPOSER BAR (#send_form & Quick Replies)
+   -------------------------------------------------------------------------- */
+
+html body #form_sheld {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding-bottom: 6px !important;
+}
+
+/* Outer #send_form is a transparent stack holding floating QR pills + input pill */
+html body #form_sheld #send_form,
+html body #send_form {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+    padding: 0 4px !important;
+    margin-top: 6px !important;
+    margin-bottom: 4px !important;
+}
+
+html body #form_sheld #send_form:hover,
+html body #form_sheld #send_form:focus-within,
+html body #send_form:hover,
+html body #send_form:focus-within {
+    border: none !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+}
+
+/* Hide empty QR bars so they take zero vertical space */
+html body #qr--bar:empty,
+html body #qr-bar:empty {
+    display: none !important;
+}
+
+/* Floating Quick Reply & Ny-Gemini capsule bar above composer */
+html body #qr-bar,
+html body #qr--bar {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 4px !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 6px !important;
+}
+
+html body #qr-bar .qr--buttons,
+html body #qr--bar .qr--buttons {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    justify-content: flex-start !important;
+}
+
+html body #qr-bar .menu_button,
+html body #qr--bar .qr--button,
+html body .xiaobaix-task-button {
+    background: rgba(34, 34, 40, 0.66) !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    border-radius: var(--ap-r-full) !important;
+    padding: 5px 14px !important;
+    font-size: 12.5px !important;
+    font-weight: 500 !important;
+    color: var(--ap-label) !important;
+    box-shadow: var(--ap-inner-hi), 0 3px 10px rgba(0, 0, 0, 0.24) !important;
+    margin: 0 !important;
+    transition: background-color var(--ap-dur) var(--ap-ease),
+        border-color var(--ap-dur) var(--ap-ease),
+        box-shadow var(--ap-dur) var(--ap-ease),
+        transform var(--ap-dur) var(--ap-spring) !important;
+}
+
+html body #qr-bar .menu_button:hover,
+html body #qr--bar .qr--button:hover,
+html body .xiaobaix-task-button:hover {
+    background: rgba(56, 56, 66, 0.80) !important;
+    border-color: rgba(255, 255, 255, 0.28) !important;
+    box-shadow: var(--ap-inner-glow), 0 5px 14px rgba(0, 0, 0, 0.30) !important;
+}
+
+html body #qr-bar .menu_button:active,
+html body #qr--bar .qr--button:active,
+html body .xiaobaix-task-button:active {
+    transform: scale(0.96) !important;
+}
+
+/* The actual floating frosted composer bar (#nonQRFormItems) */
+html body #send_form #nonQRFormItems,
+html body #nonQRFormItems {
+    background: var(--ap-glass-pill) !important;
+    backdrop-filter: var(--ap-blur-lg) !important;
+    -webkit-backdrop-filter: var(--ap-blur-lg) !important;
+    border: 1px solid var(--ap-hairline) !important;
+    border-radius: var(--ap-r-full) !important;
+    box-shadow: var(--ap-inner-hi), var(--ap-sh-md) !important;
+    padding: 5px 7px 5px 10px !important;
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    transition: border-color var(--ap-dur) var(--ap-ease),
+        box-shadow var(--ap-dur) var(--ap-ease),
+        background-color var(--ap-dur) var(--ap-ease) !important;
+}
+
+html body #send_form:focus-within #nonQRFormItems {
+    border-color: var(--ap-hairline-strong) !important;
+    box-shadow: var(--ap-inner-glow), var(--ap-sh-md) !important;
+}
+
+html body #send_textarea {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: var(--ap-label) !important;
+    resize: none !important;
+    padding: 6px 6px !important;
+    font-size: 14.5px !important;
+    line-height: 1.4 !important;
+}
+
+html body:not(#_):not(#__) #send_textarea::placeholder {
+    text-align: left !important;
+    color: var(--ap-label-3) !important;
+}
+
+html body #send_textarea:focus {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Left & right action buttons inside composer pill */
+html body #leftSendForm,
+html body #rightSendForm {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+
+html body #leftSendForm > div,
+html body #rightSendForm > div:not(#send_but) {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    border-radius: var(--ap-r-full) !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: var(--ap-label-2) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    font-size: 14px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    opacity: 1 !important;
+    transition: transform var(--ap-dur) var(--ap-spring),
+        background-color var(--ap-dur) var(--ap-ease),
+        border-color var(--ap-dur) var(--ap-ease),
+        color var(--ap-dur) var(--ap-ease),
+        box-shadow var(--ap-dur) var(--ap-ease) !important;
+}
+
+html body #leftSendForm > div:hover,
+html body #rightSendForm > div:not(#send_but):hover {
+    color: #fff !important;
+    background: rgba(255, 255, 255, 0.14) !important;
+    border-color: rgba(255, 255, 255, 0.22) !important;
+    box-shadow: var(--ap-inner-hi), 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+    filter: none !important;
+}
+
+html body #leftSendForm > div:active,
+html body #rightSendForm > div:not(#send_but):active {
+    transform: scale(0.94) !important;
+}
+
+/* iOS iMessage Blue Send Button */
+html body #send_form #send_but,
+html body #send_but {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #fff !important;
+    background: linear-gradient(180deg, #2e95ff 0%, #0a84ff 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    border-radius: var(--ap-r-full) !important;
+    box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.35),
+        0 4px 12px rgba(10, 132, 255, 0.45) !important;
+    font-size: 14px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    transition: transform var(--ap-dur) var(--ap-spring),
+        background var(--ap-dur) var(--ap-ease),
+        box-shadow var(--ap-dur) var(--ap-ease) !important;
+}
+
+html body #send_form #send_but:hover,
+html body #send_but:hover {
+    background: linear-gradient(180deg, #4da6ff 0%, #1c8fff 100%) !important;
+    box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.45),
+        0 6px 16px rgba(10, 132, 255, 0.58) !important;
+}
+
+html body #send_form #send_but:active,
+html body #send_but:active {
+    transform: scale(0.92) !important;
+}
+
+/* -----------------------------------------------------------------------------
+   8 · CHAT AREA & iOS MESSAGE BUBBLES
+       (Neutralizes all Moonlit Echoes chat modes: whisperstyle, echostyle,
+        hushstyle, ripplestyle, tidestyle, documentstyle, bubblechat)
+   -------------------------------------------------------------------------- */
+
+/* Eliminate Moonlit Echoes' dark vertical column overlay behind #sheld */
+html body:not(#_):not(#__) #sheld {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+html body:not(#_):not(#__) #sheld::before {
+    display: none !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    content: none !important;
+}
+
+html body:not(#_):not(#__) #chat {
+    background: transparent !important;
+    background-color: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 10px 8px 14px !important;
+    mask-image: linear-gradient(to bottom, transparent 0%, #000 1.5%, #000 98.5%, transparent 100%) !important;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 1.5%, #000 98.5%, transparent 100%) !important;
+}
+
+/* Remove native top border above composer / bottom of chat */
+html body:not(#_):not(#__) #form_sheld,
+html body:not(#_):not(#__) #send_form {
+    border: none !important;
+    border-top: none !important;
+    outline: none !important;
+}
+
+/* Force outer .mes to ALWAYS be a clean transparent flex row — never a second box! */
+html body:not(#_):not(#__) #chat .mes,
+html body:not(#_):not(#__) #chat .mes[is_user="false"],
+html body:not(#_):not(#__) #chat .mes[is_user="true"] {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    padding: 10px 4px !important;
+    margin: 0 !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+/* Remove Moonlit Echoes whisperstyle/echostyle giant half-avatar watermarks & side bars */
+html body:not(#_):not(#__) #chat .mes::before,
+html body:not(#_):not(#__) #chat .mes::after,
+html body:not(#_):not(#__) #chat .mes .mes_text::before,
+html body:not(#_):not(#__) #chat .mes .mes_text::after,
+html body:not(#_):not(#__) #chat .mes .ch_name::after {
+    display: none !important;
+    content: none !important;
+    background: none !important;
+    border: none !important;
+}
+
+/* Reset .mesAvatarWrapper in whisperstyle/echostyle so avatar sits neatly beside bubble */
+html body:not(#_):not(#__) #chat .mes .mesAvatarWrapper {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 0 !important;
+    margin: 0 10px 0 0 !important;
+    min-height: 0 !important;
+    position: relative !important;
+    top: auto !important;
+}
+
+html body:not(#_):not(#__) #chat .mes[is_user="true"] .mesAvatarWrapper {
+    flex-direction: column !important;
+    margin: 0 0 0 10px !important;
+}
+
+html body:not(#_):not(#__) #chat .mes .mesIDDisplay,
+html body:not(#_):not(#__) #chat .mes .mes_timer,
+html body:not(#_):not(#__) #chat .mes .tokenCounterDisplay {
+    transform: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    text-align: center !important;
+}
+
+/* High-specificity frosted bubble chrome (single clean glass layer on .mes_block) */
+html body:not(#_):not(#__) #chat .mes .mes_block,
+html body:not(#_):not(#__) #chat .mes[is_user="false"] .mes_block {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    transform: none !important;
+    margin: 0 !important;
+    background-color: var(--ap-glass-bubble) !important;
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.00) 100%) !important;
+    backdrop-filter: var(--ap-blur-md) !important;
+    -webkit-backdrop-filter: var(--ap-blur-md) !important;
+    border: 1px solid var(--ap-hairline) !important;
+    border-radius: var(--ap-r-lg) !important;
+    box-shadow: var(--ap-inner-hi), var(--ap-sh-md) !important;
+    padding: 14px 18px 16px !important;
+}
+
+/* Inner .mes_text must NEVER have its own background/blur/padding box */
+html body:not(#_):not(#__) #chat .mes .mes_text,
+html body:not(#_):not(#__) #chat .mes[is_user="false"] .mes_text,
+html body:not(#_):not(#__) #chat .mes[is_user="true"] .mes_text {
+    background: transparent !important;
+    background-color: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 4px 0 2px !important;
+    margin: 0 !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    float: none !important;
+    clear: none !important;
+    overflow: visible !important;
+}
+
+/* User bubble — iMessage system blue */
+html body:not(#_):not(#__) #chat .mes[is_user="true"] {
+    flex-direction: row-reverse !important;
+    justify-content: flex-start !important;
+}
+
+/* User bubble — restrained graphite frosted glass (no loud blue).
+   Mirrors the assistant bubble's material so both sides read as one design
+   language; the right alignment + slightly deeper tint keeps the distinction. */
+html body:not(#_):not(#__) #chat .mes[is_user="true"] .mes_block {
+    flex: 0 1 auto !important;
+    background-color: rgba(58, 58, 66, 0.62) !important;
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.01) 100%) !important;
+    backdrop-filter: var(--ap-blur-md) !important;
+    -webkit-backdrop-filter: var(--ap-blur-md) !important;
+    border: 1px solid var(--ap-hairline) !important;
+    box-shadow: var(--ap-inner-hi), var(--ap-sh-md) !important;
+    width: fit-content !important;
+    max-width: 82% !important;
+    margin-left: auto !important;
+}
+
+html body:not(#_):not(#__) #chat .mes[is_user="true"] .mes_text {
+    color: var(--ap-label) !important;
+}
+
+html body:not(#_):not(#__) #chat .mes[is_user="true"] .ch_name .name_text {
+    color: var(--ap-label-2) !important;
+}
+
+html body:not(#_):not(#__) #chat .mes[is_user="true"] .ch_name {
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    float: none !important;
+    clear: none !important;
+    width: 100% !important;
+    margin: 0 0 6px 0 !important;
+    gap: 12px !important;
+}
+
+html body:not(#_):not(#__) #chat .mes[is_user="true"] .mes_text em,
+html body:not(#_):not(#__) #chat .mes[is_user="true"] .mes_text i {
+    color: var(--ap-label-2) !important;
+}
+
+/* Header row inside bubble */
+html body:not(#_):not(#__) #chat .mes .ch_name {
+    font-weight: 600 !important;
+    letter-spacing: -0.012em !important;
+    margin: 0 0 6px 0 !important;
+    padding-bottom: 6px !important;
+    border-bottom: 1px solid var(--ap-hairline-subtle) !important;
+    float: none !important;
+    width: 100% !important;
+}
+
+/* Welcome Screen (.welcomePanel) clean single-layer glass cards */
+html body:not(#_):not(#__) #chat .welcomePanel,
+html body:not(#_):not(#__) .welcomePanel {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 8px 4px !important;
+}
+
+html body:not(#_):not(#__) .welcomePanel .recentChatList,
+html body:not(#_):not(#__) .welcomePanel .welcome_prompt {
+    background: var(--ap-glass-bubble) !important;
+    backdrop-filter: var(--ap-blur-md) !important;
+    -webkit-backdrop-filter: var(--ap-blur-md) !important;
+    border: 1px solid var(--ap-hairline) !important;
+    border-radius: var(--ap-r-lg) !important;
+    box-shadow: var(--ap-inner-hi), var(--ap-sh-md) !important;
+    padding: 14px 16px !important;
+}
+
+html body:not(#_):not(#__) .welcomePanel .recentChat {
+    border-radius: var(--ap-r-md) !important;
+    border: 1px solid transparent !important;
+    padding: 8px 12px !important;
+    transition: background-color var(--ap-dur) var(--ap-ease),
+        border-color var(--ap-dur) var(--ap-ease) !important;
+}
+
+html body:not(#_):not(#__) .welcomePanel .recentChat:hover {
+    background: var(--ap-fill-3) !important;
+    border-color: var(--ap-hairline-subtle) !important;
+}
+
+html body:not(#_):not(#__) .welcomePanel .recentChat {
+    align-items: center !important;
+    gap: 12px !important;
+}
+
+html body:not(#_):not(#__) .welcomePanel .recentChat .avatar {
+    width: 44px !important;
+    height: 56px !important;
+    min-width: 44px !important;
+    min-height: 56px !important;
+    border-radius: 12px !important;
+}
+
+html body:not(#_):not(#__) .welcomePanel .recentChat .avatar img {
+    min-width: 0 !important;
+    min-height: 0 !important;
+}
+
+html body #chat .mes .ch_name .name_text {
+    color: var(--ap-label) !important;
+    font-size: 14.5px !important;
+}
+
+html body #chat .mes .timestamp,
+html body #chat .mes .mes_timer,
+html body #chat .mes .tokenCounterDisplay,
+html body #chat .mes .mesIDDisplay {
+    color: var(--ap-label-3) !important;
+    font-size: 11.5px !important;
+    background: transparent !important;
+    letter-spacing: 0 !important;
+}
+
+/* Avatars — iOS squircle (keep chat avatars 44x44 even when big-avatars is active for character panel) */
+html body:not(#_):not(#__) #chat .mes .avatar,
+html body:not(#_):not(#__) #chat .mes .mesAvatarWrapper .avatar {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    max-width: 44px !important;
+    max-height: 44px !important;
+    border-radius: 13px !important;
+    border: 1px solid var(--ap-hairline-strong) !important;
+    box-shadow: var(--ap-inner-hi), 0 4px 12px rgba(0, 0, 0, 0.30) !important;
+    overflow: hidden !important;
+    transition: transform var(--ap-dur) var(--ap-spring) !important;
+}
+
+html body:not(#_):not(#__) .avatar,
+html body:not(#_):not(#__) #avatar_load_preview {
+    /* Base theme uses `flex: 1 1 0%`, which (with the img fill rule below)
+       squashes avatars to ~2px in Recent Chats / editor. Keep intrinsic size. */
+    flex: 0 0 auto !important;
+    border-radius: 14px !important;
+    border: 1px solid var(--ap-hairline-strong) !important;
+    box-shadow: var(--ap-inner-hi), 0 4px 12px rgba(0, 0, 0, 0.30) !important;
+    overflow: hidden !important;
+    transition: transform var(--ap-dur) var(--ap-spring) !important;
+}
+
+html body:not(#_):not(#__) #chat .mes .avatar:active {
+    transform: scale(0.96);
+}
+
+html body:not(#_):not(#__) .avatar img,
+html body:not(#_):not(#__) #chat .mes .avatar img {
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 100% !important;
+    min-height: 100% !important;
+    object-fit: cover !important;
+    border-radius: inherit !important;
+    border: none !important;
+}
+
+/* Message header action buttons (.mes_button & LittleWhiteBox X button) */
+html body #chat .mes .mes_buttons {
+    opacity: 0.92 !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+
+html body #chat .mes .mes_buttons .mes_button,
+html body #chat .mes .mes_buttons .extraMesButtons > div {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    min-height: 28px !important;
+    padding: 0 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: var(--ap-r-full) !important;
+    border: 1px solid transparent !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    filter: none !important;
+    color: var(--ap-label-2) !important;
+    opacity: 0.78 !important;
+    font-size: 13px !important;
+    transition: transform var(--ap-dur) var(--ap-spring),
+        background-color var(--ap-dur) var(--ap-ease),
+        border-color var(--ap-dur) var(--ap-ease),
+        color var(--ap-dur) var(--ap-ease),
+        opacity var(--ap-dur) var(--ap-ease) !important;
+}
+
+html body #chat .mes .mes_buttons .mes_button:hover,
+html body #chat .mes .mes_buttons .extraMesButtons > div:hover {
+    background: var(--ap-fill-2) !important;
+    border-color: var(--ap-hairline) !important;
+    color: #fff !important;
+    opacity: 1 !important;
+}
+
+html body #chat .mes .mes_buttons .mes_button:active,
+html body #chat .mes .mes_buttons .extraMesButtons > div:active {
+    transform: scale(0.92) !important;
+}
+
+/* Swipe arrows & counter */
+html body #chat .mes .swipe_left,
+html body #chat .mes .swipe_right {
+    color: var(--ap-label-2) !important;
+    transition: color var(--ap-dur) var(--ap-ease),
+        transform var(--ap-dur) var(--ap-spring) !important;
+}
+
+html body #chat .mes .swipe_left:hover,
+html body #chat .mes .swipe_right:hover {
+    color: var(--ap-blue-hover) !important;
+}
+
+html body #chat .mes .swipe_left:active,
+html body #chat .mes .swipe_right:active {
+    transform: scale(0.9);
+}
+
+html body #chat .mes .swipes-counter {
+    color: var(--ap-label-3) !important;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Reasoning / thinking blocks */
+html body #chat .mes .mes_reasoning_details,
+html body #chat .mes .mes_reasoning {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid var(--ap-hairline-subtle) !important;
+    border-radius: var(--ap-r-md) !important;
+}
+
+html body #chat .mes .mes_reasoning_header {
+    color: var(--ap-label-2) !important;
+    border-radius: var(--ap-r-sm) !important;
+}
+
+/* Quotes & Code inside messages */
+html body #chat .mes .mes_text blockquote {
+    border-left: 3px solid var(--ap-blue) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-radius: 0 var(--ap-r-sm) var(--ap-r-sm) 0 !important;
+    padding: 8px 14px !important;
+    margin: 8px 0 !important;
+}
+
+html body #chat .mes .mes_text code {
+    background: var(--ap-fill-2) !important;
+    border: 1px solid var(--ap-hairline-subtle) !important;
+    border-radius: var(--ap-r-xs) !important;
+    padding: 1px 6px !important;
+}
+
+html body #chat .mes .mes_text pre {
+    background: rgba(0, 0, 0, 0.36) !important;
+    border: 1px solid var(--ap-hairline) !important;
+    border-radius: var(--ap-r-md) !important;
+    padding: 12px 14px !important;
+}
+
+/* -----------------------------------------------------------------------------
+   9 · POPUPS, MODALS & CONTEXT MENUS (iOS Sheets & Popovers — Single Clean Border)
+   -------------------------------------------------------------------------- */
+
+html body:not(#_):not(#__) .popup,
+html body:not(#_):not(#__) .dialogue_popup,
+html body:not(#_):not(#__) #dialogue_popup,
+html body:not(#_):not(#__) .popper-modal {
+    background: var(--ap-glass-popover) !important;
+    backdrop-filter: var(--ap-blur-lg) !important;
+    -webkit-backdrop-filter: var(--ap-blur-lg) !important;
+    border: 1px solid var(--ap-hairline-strong) !important;
+    border-radius: var(--ap-r-xl) !important;
+    box-shadow: var(--ap-inner-hi), var(--ap-sh-lg) !important;
+    padding: 20px 24px !important;
+}
+
+/* Inner popup containers MUST be transparent & borderless to prevent double borders! */
+html body:not(#_):not(#__) .popup .popup-body,
+html body:not(#_):not(#__) .popup .popup-content,
+html body:not(#_):not(#__) #dialogue_popup_holder,
+html body:not(#_):not(#__) #dialogue_popup_text {
+    background: transparent !important;
+    background-color: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+html body .popup::backdrop,
+html body .popup[open]::backdrop,
+html body #shadow_popup {
+    background: rgba(0, 0, 0, 0.48) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+}
+
+html body #options,
+html body #extensionsMenu,
+html body .list-group,
+html body ul.list-group {
+    background: var(--ap-glass-popover) !important;
+    backdrop-filter: var(--ap-blur-lg) !important;
+    -webkit-backdrop-filter: var(--ap-blur-lg) !important;
+    border: 1px solid var(--ap-hairline-strong) !important;
+    border-radius: var(--ap-r-md) !important;
+    box-shadow: var(--ap-inner-hi), var(--ap-sh-md) !important;
+    padding: 6px !important;
+    overflow: hidden;
+}
+
+html body .list-group-item,
+html body #options .option,
+html body .options-content > div,
+html body #extensionsMenu > div {
+    border-radius: var(--ap-r-sm) !important;
+    border: none !important;
+    padding: 7px 12px !important;
+    transition: background-color var(--ap-dur) var(--ap-ease),
+        color var(--ap-dur) var(--ap-ease) !important;
+}
+
+html body .list-group-item:hover,
+html body #options .option:hover,
+html body .options-content > div:hover,
+html body #extensionsMenu > div:hover {
+    background: var(--ap-fill-2) !important;
+    color: #fff !important;
+}
+
+/* -----------------------------------------------------------------------------
+   10 · INLINE DRAWERS / GROUPED LIST ROWS
+   -------------------------------------------------------------------------- */
+
+html body .inline-drawer {
+    background: transparent !important;
+    border-radius: var(--ap-r-md) !important;
+    margin: 4px 0 !important;
+}
+
+html body .inline-drawer-header,
+html body .inline-drawer-toggle,
+html body #extensions_settings .inline-drawer-toggle.inline-drawer-header,
+html body #extensions_settings2 .inline-drawer-toggle.inline-drawer-header,
+html body .standoutHeader,
+html body .userSettingsInnerExpandable {
+    background: rgba(120, 120, 132, 0.12) !important;
+    border: 1px solid var(--ap-hairline-subtle) !important;
+    border-radius: var(--ap-r-md) !important;
+    padding: 9px 13px !important;
+    box-shadow: var(--ap-inner-hi) !important;
+    transition: background-color var(--ap-dur) var(--ap-ease),
+        border-color var(--ap-dur) var(--ap-ease) !important;
+}
+
+html body .inline-drawer-header:hover,
+html body .inline-drawer-toggle:hover,
+html body #extensions_settings .inline-drawer-toggle.inline-drawer-header:hover,
+html body #extensions_settings2 .inline-drawer-toggle.inline-drawer-header:hover,
+html body .userSettingsInnerExpandable:hover {
+    background: rgba(120, 120, 132, 0.20) !important;
+    border-color: var(--ap-hairline) !important;
+    filter: none !important;
+}
+
+html body .inline-drawer-content {
+    background: transparent !important;
+    border: none !important;
+    padding: 10px 4px 4px !important;
+}
+
+/* -----------------------------------------------------------------------------
+   11 · CONTROLS — Sliders, Checkboxes, Select2 (Single Border & Clean Alignment)
+   -------------------------------------------------------------------------- */
+
+html body:not(#_):not(#__) input[type="range"] {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    height: 6px !important;
+    border-radius: var(--ap-r-full) !important;
+    background: var(--ap-fill-1) !important;
+    border: none !important;
+    box-shadow: var(--ap-inner-hi), inset 0 0 0 1px var(--ap-hairline-subtle) !important;
+    cursor: pointer;
+    margin: 6px 0 !important;
+}
+
+html body:not(#_):not(#__) input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    width: 18px !important;
+    height: 18px !important;
+    border-radius: var(--ap-r-full) !important;
+    background: #fff !important;
+    border: none !important;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.45) !important;
+    transition: transform var(--ap-dur) var(--ap-spring) !important;
+}
+
+html body:not(#_):not(#__) input[type="range"]::-webkit-slider-thumb:active {
+    transform: scale(1.12);
+}
+
+/* Clean rounded-square iOS checkboxes with breathing space from label text */
+html body:not(#_):not(#__) input[type="checkbox"] {
+    width: 16px !important;
+    height: 16px !important;
+    min-width: 16px !important;
+    min-height: 16px !important;
+    border-radius: 5px !important;
+    border: 1px solid var(--ap-hairline-strong) !important;
+    background: var(--ap-fill-2) !important;
+    margin: 0 7px 0 0 !important;
+    flex-shrink: 0 !important;
+    cursor: pointer;
+    transition: background-color var(--ap-dur) var(--ap-ease),
+        border-color var(--ap-dur) var(--ap-ease) !important;
+}
+
+html body:not(#_):not(#__) input[type="checkbox"]:checked {
+    background-color: var(--ap-blue) !important;
+    border-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+html body:not(#_):not(#__) label.checkbox_label,
+html body:not(#_):not(#__) .checkbox_label {
+    align-items: center !important;
+    gap: 2px !important;
+    padding: 3px 2px !important;
+    line-height: 1.4 !important;
+}
+
+/* Select2 dropdowns — single outer border, zero inner search border */
+html body:not(#_):not(#__) .select2-container .select2-selection,
+html body:not(#_):not(#__) .select2-container--default .select2-selection--single,
+html body:not(#_):not(#__) .select2-container--default .select2-selection--multiple {
+    background: rgba(118, 118, 128, 0.18) !important;
+    border: 1px solid var(--ap-hairline) !important;
+    border-radius: var(--ap-r-sm) !important;
+    box-shadow: var(--ap-inner-hi) !important;
+    color: var(--ap-label) !important;
+    min-height: 36px !important;
+    padding: 2px 6px !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+html body:not(#_):not(#__) .select2-container--default .select2-selection--multiple .select2-selection__rendered {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+}
+
+/* Critical fix for World Info Select2 inner search field (textarea.select2-search__field):
+   NO border, NO background, left-aligned placeholder */
+html body:not(#_):not(#__) .select2-container--default .select2-selection--multiple .select2-search--inline {
+    flex: 1 1 auto !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+html body:not(#_):not(#__) .select2-container--default .select2-selection--multiple .select2-search--inline .select2-search__field,
+html body:not(#_):not(#__) textarea.select2-search__field {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    padding: 2px 6px !important;
+    margin: 0 !important;
+    height: 26px !important;
+    min-height: 26px !important;
+    line-height: 22px !important;
+    font-size: 13.5px !important;
+    text-align: left !important;
+    color: var(--ap-label) !important;
+    resize: none !important;
+    overflow: hidden !important;
+}
+
+html body:not(#_):not(#__) .select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background: var(--ap-fill-1) !important;
+    border: 1px solid var(--ap-hairline) !important;
+    border-radius: var(--ap-r-full) !important;
+    color: var(--ap-label) !important;
+    padding: 2px 10px !important;
+    margin: 2px !important;
+    font-size: 12.5px !important;
+}
+
+html body:not(#_):not(#__) .select2-dropdown {
+    background: var(--ap-glass-popover) !important;
+    backdrop-filter: var(--ap-blur-md) !important;
+    -webkit-backdrop-filter: var(--ap-blur-md) !important;
+    border: 1px solid var(--ap-hairline-strong) !important;
+    border-radius: var(--ap-r-md) !important;
+    box-shadow: var(--ap-sh-md) !important;
+    overflow: hidden;
+}
+
+/* -----------------------------------------------------------------------------
+   12 · CHARACTER PANEL, TAGS & DIVIDERS
+   -------------------------------------------------------------------------- */
+
+/* --- 12a · Character editor (right rail) avatar ---
+   The base theme gives `.avatar { flex: 1 1 0% }`; our global `img { width:100% }`
+   rule then feeds back into that basis and collapses the preview to ~2px wide.
+   Pin the editor avatar to a fixed iOS card size and let the image fill it. */
+html body:not(#_):not(#__) .avatar_div .avatar,
+html body:not(#_):not(#__) #avatar_div_div {
+    flex: 0 0 auto !important;
+    width: 76px !important;
+    height: 96px !important;
+    min-width: 76px !important;
+    min-height: 96px !important;
+    max-width: 76px !important;
+    margin: 0 !important;
+    border-radius: 17px !important;
+    border: 1px solid var(--ap-hairline-strong) !important;
+    box-shadow: var(--ap-inner-hi), var(--ap-sh-sm) !important;
+    overflow: hidden !important;
+}
+
+html body:not(#_):not(#__) #avatar_div_div #avatar_load_preview {
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-width: none !important;
+    max-height: none !important;
+    object-fit: cover !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+
+/* Avatar row: avatar on the left, controls stacked neatly to the right */
+html body:not(#_):not(#__) #avatar_div {
+    align-items: flex-start !important;
+    gap: 12px !important;
+}
+
+html body:not(#_):not(#__) #avatar_controls {
+    padding: 0 !important;
+    gap: 8px !important;
+    justify-content: center !important;
+}
+
+/* Character action buttons: tidy 3-per-row iOS grid instead of a ragged wrap */
+html body:not(#_):not(#__) .form_create_bottom_buttons_block {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+    width: 100% !important;
+    justify-items: stretch !important;
+}
+
+html body:not(#_):not(#__) .form_create_bottom_buttons_block > .menu_button[style*="display: none"],
+html body:not(#_):not(#__) .form_create_bottom_buttons_block > .menu_button.displayNone {
+    display: none !important;
+}
+
+html body:not(#_):not(#__) .form_create_bottom_buttons_block > .menu_button {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 14px !important;
+    border-radius: var(--ap-r-sm) !important;
+    background: var(--ap-fill-3) !important;
+    border: 1px solid var(--ap-hairline-subtle) !important;
+    box-shadow: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+}
+
+html body:not(#_):not(#__) .form_create_bottom_buttons_block > .menu_button:hover {
+    background: var(--ap-fill-2) !important;
+    border-color: var(--ap-hairline) !important;
+    color: #fff !important;
+}
+
+/* The trailing "More…" select spans full width under the button grid */
+html body:not(#_):not(#__) #avatar_controls > label.flex1,
+html body:not(#_):not(#__) #char-management-dropdown {
+    width: 100% !important;
+    flex: 1 1 auto !important;
+}
+
+/* Character name field + token readout */
+html body:not(#_):not(#__) #name_div {
+    margin-bottom: 12px !important;
+}
+
+html body:not(#_):not(#__) .extension_token_counter {
+    font-size: 11.5px !important;
+    color: var(--ap-label-3) !important;
+    margin: 4px 2px !important;
+    letter-spacing: 0 !important;
+}
+
+/* Editor labels ("Description", "First message", "Creator's Notes") */
+html body:not(#_):not(#__) #description_div,
+html body:not(#_):not(#__) #first_message_div,
+html body:not(#_):not(#__) #creators_notes_div,
+html body:not(#_):not(#__) #tags_div {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+
+/* Tag input row (search box + view-all button) shares one clean baseline */
+html body:not(#_):not(#__) .tag_controls {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+
+html body:not(#_):not(#__) #tagInput {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+}
+
+html body:not(#_):not(#__) #tagList.tags {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 5px !important;
+    margin-top: 8px !important;
+}
+
+html body .character_select,
+html body .group_select,
+html body #user_avatar_block .avatar-container {
+    border-radius: var(--ap-r-md) !important;
+    border: 1px solid transparent !important;
+    padding: 7px 9px !important;
+    transition: background-color var(--ap-dur) var(--ap-ease),
+        border-color var(--ap-dur) var(--ap-ease) !important;
+}
+
+html body .character_select:hover,
+html body .group_select:hover,
+html body #user_avatar_block .avatar-container:hover {
+    background: var(--ap-fill-3) !important;
+    border-color: var(--ap-hairline) !important;
+    filter: none !important;
+}
+
+html body .tag,
+html body .tag_view_item {
+    border-radius: var(--ap-r-full) !important;
+    border: 1px solid var(--ap-hairline) !important;
+    background: var(--ap-fill-3) !important;
+    padding: 3px 11px !important;
+    font-size: 12px !important;
+    transition: background-color var(--ap-dur) var(--ap-ease),
+        border-color var(--ap-dur) var(--ap-ease) !important;
+}
+
+html body .tag:hover {
+    background: var(--ap-fill-1) !important;
+}
+
+html body .tag:active {
+    transform: scale(0.96) !important;
+}
+
+html body .tag.selected {
+    background: var(--ap-blue) !important;
+    color: #fff !important;
+    border-color: transparent !important;
+}
+
+/* Ultra-subtle hairline dividers */
+html body hr,
+html body .m-t-1 > hr {
+    border: none !important;
+    height: 1px !important;
+    min-height: 1px !important;
+    background: var(--ap-hairline-subtle) !important;
+    opacity: 0.7 !important;
+    margin: 10px 0 !important;
+}
+
+html body:not(#_):not(#__) #toast-container > div {
+    border-radius: var(--ap-r-full) !important;
+    background-color: var(--ap-glass-popover) !important;
+    background-image: none !important;
+    background-repeat: no-repeat !important;
+    backdrop-filter: var(--ap-blur-lg) !important;
+    -webkit-backdrop-filter: var(--ap-blur-lg) !important;
+    border: 1px solid var(--ap-hairline-strong) !important;
+    box-shadow: var(--ap-inner-hi), var(--ap-sh-md) !important;
+    padding: 12px 22px !important;
+    color: var(--ap-label) !important;
+    opacity: 1 !important;
+}
+
+/* -----------------------------------------------------------------------------
+   13 · THIRD-PARTY COORDINATION:
+        LittleWhiteBox (小白X) + TavernHelper (酒馆助手) + Ny-Gemini Interactive Box
+   -------------------------------------------------------------------------- */
+
+/* When both LittleWhiteBox (.xiaobaix-iframe-wrapper) and TavernHelper (.TH-render)
+   render the same HTML code block, LittleWhiteBox inserts .xiaobaix-iframe-wrapper
+   either BEFORE .TH-render or INSIDE .TH-render (before iframe#TH-message--*).
+   Hide ONLY the duplicate .xiaobaix-iframe-wrapper whenever TavernHelper's iframe
+   is present, so TavernHelper's full API (getChatMessages / setChatMessages / triggerSlash)
+   and Ny-Gemini's interactive cards both work with zero duplication! */
+html body:not(#_):not(#__) #chat .mes_text .TH-render {
+    display: block !important;
+}
+
+html body:not(#_):not(#__) .xiaobaix-iframe-wrapper:has(~ .TH-render),
+html body:not(#_):not(#__) .TH-render > .xiaobaix-iframe-wrapper:has(~ iframe) {
+    display: none !important;
+}
+
+/* Clean container for LittleWhiteBox / Ny-Gemini interactive option iframes */
+html body:not(#_):not(#__) .xiaobaix-iframe-wrapper,
+html body:not(#_):not(#__) .TH-render {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 4px 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+}
+
+html body:not(#_):not(#__) iframe.xiaobaix-iframe,
+html body:not(#_):not(#__) .TH-render > iframe {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: var(--ap-r-md) !important;
+    display: block !important;
+    width: 100% !important;
+    overflow: hidden !important;
+}
+
+/* LittleWhiteBox X collapse button & story summary button inside message header */
+html body .xiaobaix-collapse-btn {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: var(--ap-r-full) !important;
+    background: var(--ap-fill-2) !important;
+    border: 1px solid var(--ap-hairline) !important;
+    box-shadow: var(--ap-inner-hi) !important;
+    transition: transform var(--ap-dur) var(--ap-spring),
+        background-color var(--ap-dur) var(--ap-ease),
+        border-color var(--ap-dur) var(--ap-ease) !important;
+}
+
+html body .xiaobaix-collapse-btn:hover {
+    background: var(--ap-fill-1) !important;
+    border-color: var(--ap-hairline-strong) !important;
+}
+
+html body .xiaobaix-collapse-btn:active {
+    transform: scale(0.94) !important;
+}
+
+html body .xiaobaix-sub-container .mes_btn {
+    border-radius: var(--ap-r-full) !important;
+    background: var(--ap-glass-popover) !important;
+    backdrop-filter: var(--ap-blur-sm) !important;
+    -webkit-backdrop-filter: var(--ap-blur-sm) !important;
+    border: 1px solid var(--ap-hairline-strong) !important;
+    box-shadow: var(--ap-sh-sm) !important;
+}
+
+/* Ny-Gemini / LittleWhiteBox Task Modal (#xb_task_panel) coordination */
+html body #xb_task_panel .card {
+    border-radius: var(--ap-r-xl) !important;
+    border: 1px solid var(--ap-hairline-strong) !important;
+    box-shadow: var(--ap-inner-hi), var(--ap-sh-lg) !important;
+}
+
+html body #xb_task_panel .btn {
+    border-radius: var(--ap-r-full) !important;
+    transition: transform var(--ap-dur) var(--ap-spring),
+        background-color var(--ap-dur) var(--ap-ease),
+        border-color var(--ap-dur) var(--ap-ease) !important;
+}
+
+html body #xb_task_panel .btn:active {
+    transform: scale(0.96) !important;
+}
+
+/* LittleWhiteBox task items in extension drawer */
+html body .task-item {
+    background: var(--ap-fill-4) !important;
+    border: 1px solid var(--ap-hairline-subtle) !important;
+    border-radius: var(--ap-r-sm) !important;
+    padding: 4px 8px !important;
+    margin: 4px 0 !important;
+}
+
+/* -----------------------------------------------------------------------------
+   15 · AUDIT ROUND 2 — layout collisions, hidden-state respect, compact rails
+   -------------------------------------------------------------------------- */
+
+/* 15a · Chat column never slides under a pinned rail (1001–1366px used to hide
+   the Send button behind the 300px Character panel). The column keeps its
+   configured width when there is room, and is clamped between the rails. */
+@media screen and (min-width: 1001px) {
+    html body:has(#right-nav-panel.pinnedOpen.openDrawer) {
+        --ap-rail-r: calc(max(300px, (100vw - var(--sheldWidth)) / 2 - 14px) + 8px);
+    }
+    html body:has(#left-nav-panel.pinnedOpen.openDrawer) {
+        --ap-rail-l: calc(max(300px, (100vw - var(--sheldWidth)) / 2 - 14px) + 8px);
+    }
+    html body:not(#_):not(#__) #sheld {
+        --ap-sw: min(var(--sheldWidth), calc(100vw - var(--ap-rail-l, 0px) - var(--ap-rail-r, 0px) - 12px));
+        width: var(--ap-sw) !important;
+        right: auto !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        left: clamp(calc(var(--ap-rail-l, 0px) + 6px),
+                    calc((100vw - var(--ap-sw)) / 2),
+                    calc(100vw - var(--ap-rail-r, 0px) - var(--ap-sw) - 6px)) !important;
+    }
+}
+
+/* 15b · Top-bar sheets open ABOVE pinned rails (rails had z-index 3000 and
+   covered the right third of Extensions / Persona / User Settings). */
+/* Each top-bar .drawer is a flex item with z-index:1, i.e. its own stacking
+   context — so the sheet's own z-index can't escape it. Lift the WRAPPER of
+   the open sheet instead (rightNavHolder comes later in DOM and won otherwise). */
+html body:not(#_):not(#__) #top-settings-holder > .drawer:has(> .drawer-content.openDrawer:not(.fillLeft):not(.fillRight)) {
+    z-index: 5 !important;
+}
+
+/* 15c · No nested blur inside sheets (info blocks, jQuery-UI tabs) */
+html body:not(#_):not(#__) .drawer-content .info-block,
+html body:not(#_):not(#__) .drawer-content .ui-widget-content,
+html body:not(#_):not(#__) #options .options-content {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* 15d · #options menu: one surface only (inner .options-content drew a 2nd border) */
+html body:not(#_):not(#__) #options .options-content {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+}
+
+/* 15e · Right-rail header: compact lock / list ghost buttons */
+html body:not(#_):not(#__) #rm_button_panel_pin_div,
+html body:not(#_):not(#__) #lm_button_panel_pin_div,
+html body:not(#_):not(#__) #WI_button_panel_pin_div,
+html body:not(#_):not(#__) #rm_button_characters {
+    font-size: 15px !important;
+    padding: 0 !important;
+    opacity: 1 !important;
+}
+
+html body:not(#_):not(#__) #rm_button_panel_pin_div label {
+    display: inline-flex !important;
+}
+
+html body:not(#_):not(#__) #CharListButtonAndHotSwaps .right_menu_button,
+html body:not(#_):not(#__) #rm_button_panel_pin_div .right_menu_button,
+html body:not(#_):not(#__) #lm_button_panel_pin_div .right_menu_button,
+html body:not(#_):not(#__) #WI_button_panel_pin_div .right_menu_button {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    padding: 0 !important;
+    font-size: 14px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    color: var(--ap-label-2) !important;
+}
+
+/* Pin toggles: show exactly ONE lock glyph (our inline-flex rule used to
+   unhide both the open and closed padlock) */
+html body:not(#_):not(#__) :is(#rm_button_panel_pin_div, #lm_button_panel_pin_div, #WI_button_panel_pin_div) input:checked + label .unchecked,
+html body:not(#_):not(#__) :is(#rm_button_panel_pin_div, #lm_button_panel_pin_div, #WI_button_panel_pin_div) input:not(:checked) + label .checked {
+    display: none !important;
+}
+
+html body:not(#_):not(#__) #CharListButtonAndHotSwaps .right_menu_button:hover,
+html body:not(#_):not(#__) #rm_button_panel_pin_div .right_menu_button:hover {
+    background: var(--ap-fill-2) !important;
+    color: #fff !important;
+}
+
+html body:not(#_):not(#__) #CharListButtonAndHotSwaps {
+    align-items: center !important;
+    gap: 8px !important;
+    padding-bottom: 8px !important;
+    border-bottom: 1px solid var(--ap-hairline-subtle) !important;
+    margin-bottom: 8px !important;
+}
+
+html body:not(#_):not(#__) #CharListButtonAndHotSwaps > .flexFlowColumn {
+    flex-direction: row !important;
+    gap: 2px !important;
+}
+
+html body:not(#_):not(#__) .hotswap {
+    margin: 0 !important;
+    min-height: 0 !important;
+}
+
+html body:not(#_):not(#__) .hotswap > small {
+    font-size: 11.5px !important;
+    color: var(--ap-label-3) !important;
+    line-height: 1.35 !important;
+}
+
+/* Selected character title: one line, full contrast, no stray partial hairline */
+html body:not(#_):not(#__) #rm_button_selected_ch {
+    border-bottom: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+}
+
+html body:not(#_):not(#__) #rm_button_selected_ch h2 {
+    font-size: 17px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+    color: var(--ap-label) !important;
+    opacity: 1 !important;
+    margin: 0 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+html body:not(#_):not(#__) #rm_button_selected_ch {
+    opacity: 1 !important;
+}
+
+/* Token readout + stats + eye on ONE row beside the title */
+html body:not(#_):not(#__) #result_info {
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex: 0 0 auto !important;
+}
+
+html body:not(#_):not(#__) #result_info_text {
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    font-size: 11.5px !important;
+    line-height: 1.25 !important;
+    color: var(--ap-label-2) !important;
+    white-space: nowrap !important;
+}
+
+html body:not(#_):not(#__) #result_info .right_menu_button {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    min-height: 28px !important;
+    padding: 0 !important;
+    font-size: 12.5px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+html body:not(#_):not(#__) #result_info [style*="display: none"],
+html body:not(#_):not(#__) #result_info[style*="display: none"] {
+    display: none !important;
+}
+
+html body:not(#_):not(#__) #right-nav-panel-tabs {
+    align-items: center !important;
+    gap: 8px !important;
+    padding-bottom: 8px !important;
+}
+
+/* 15f · Character list toolbar: uniform 30px filter chips + one-row pagination */
+html body:not(#_):not(#__) .rm_tag_filter .tag.actionable:is(.filterByFavorites, .filterByGroups, .filterByFolder, .manageTags, .showTagList, .clearAllFilters) {
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 12px !important;
+}
+
+html body:not(#_):not(#__) .rm_tag_filter {
+    gap: 6px !important;
+    align-items: center !important;
+}
+
+html body:not(#_):not(#__) #rm_print_characters_pagination {
+    flex-wrap: nowrap !important;
+    justify-content: space-between !important;
+    gap: 4px !important;
+    padding: 4px 2px !important;
+}
+
+html body:not(#_):not(#__) #rm_print_characters_pagination .paginationjs,
+html body:not(#_):not(#__) #persona-management-block .paginationjs {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    min-width: 0 !important;
+}
+
+html body:not(#_):not(#__) .paginationjs-nav {
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+    color: var(--ap-label-2) !important;
+    font-variant-numeric: tabular-nums !important;
+    white-space: nowrap !important;
+}
+
+html body:not(#_):not(#__) .paginationjs-pages ul {
+    gap: 2px !important;
+    margin: 0 2px !important;
+}
+
+html body:not(#_):not(#__) .paginationjs-pages ul li a {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 24px !important;
+    height: 24px !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: var(--ap-r-full) !important;
+    color: var(--ap-label-2) !important;
+    opacity: 1 !important;
+    transition: background-color var(--ap-dur) var(--ap-ease) !important;
+}
+
+html body:not(#_):not(#__) .paginationjs-pages ul li:not(.disabled) a:hover {
+    background: var(--ap-fill-2) !important;
+    color: #fff !important;
+}
+
+html body:not(#_):not(#__) .paginationjs-pages ul li.disabled a {
+    opacity: 0.35 !important;
+}
+
+html body:not(#_):not(#__) .paginationjs-pages ul li.active a {
+    background: rgba(10, 132, 255, 0.28) !important;
+    color: #fff !important;
+}
+
+html body:not(#_):not(#__) .paginationjs-size-changer select {
+    padding: 3px 8px !important;
+    height: 26px !important;
+    font-size: 12px !important;
+    width: auto !important;
+}
+
+html body:not(#_):not(#__) #rm_print_characters_pagination > .menu_button,
+html body:not(#_):not(#__) #rm_button_bar > .menu_button,
+html body:not(#_):not(#__) #rm_button_bar > #rm_button_search {
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    min-height: 30px !important;
+    padding: 0 !important;
+    flex: 0 0 auto !important;
+    display: inline-flex !important;
+    font-size: 13px !important;
+}
+
+html body:not(#_):not(#__) #rm_print_characters_pagination > .menu_button[style*="display: none"] {
+    display: none !important;
+}
+
+/* 15g · Character editor: avatar top-aligned with the button grid */
+html body:not(#_):not(#__) .avatar_div .avatar,
+html body:not(#_):not(#__) #avatar_div_div {
+    align-self: flex-start !important;
+}
+
+/* Header text-buttons ("Ext. Media", "Alt. Greetings") are small capsules,
+   not 26px ghost squares that crush their label into two clipped lines. */
+html body:not(#_):not(#__) .title_restorable .menu_button.menu_button_icon:has(> span),
+html body:not(#_):not(#__) .title_restorable .menu_button.open_alternate_greetings,
+html body:not(#_):not(#__) .title_restorable .menu_button.open_media_overrides {
+    width: auto !important;
+    min-width: 0 !important;
+    height: 26px !important;
+    min-height: 26px !important;
+    padding: 0 10px !important;
+    gap: 5px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    white-space: nowrap !important;
+    flex: 0 0 auto !important;
+    background: var(--ap-fill-3) !important;
+    border: 1px solid var(--ap-hairline-subtle) !important;
+    color: var(--ap-label-2) !important;
+}
+
+html body:not(#_):not(#__) .title_restorable .menu_button.menu_button_icon:has(> span) > span {
+    white-space: nowrap !important;
+    line-height: 1 !important;
+}
+
+html body:not(#_):not(#__) .title_restorable .menu_button.menu_button_icon:has(> span):hover {
+    background: var(--ap-fill-2) !important;
+    color: #fff !important;
+}
+
+/* Header icon groups never wrap into a second row (Chat Completion Presets) */
+html body:not(#_):not(#__) .title_restorable > .flex-container.gap3px,
+html body:not(#_):not(#__) .title_restorable > div:last-child:has(> .menu_button) {
+    flex-wrap: nowrap !important;
+    flex-shrink: 0 !important;
+}
+
+html body:not(#_):not(#__) .title_restorable > strong,
+html body:not(#_):not(#__) .title_restorable > span {
+    min-width: 0 !important;
+}
+
+/* A title row living INSIDE a collapsible header (Creator's Notes) must not
+   draw its own hairline + margins — that created a box-in-a-box. */
+html body:not(#_):not(#__) .inline-drawer-header .title_restorable,
+html body:not(#_):not(#__) .standoutHeader .title_restorable {
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+}
+
+html body:not(#_):not(#__) #spoiler_free_desc > .inline-drawer-header {
+    padding: 8px 10px 8px 14px !important;
+}
+
+/* 15h · Slider numeric readouts fit 7-digit values (Context Size "2000000") */
+html body:not(#_):not(#__) .range-block-counter input[type="number"]::-webkit-inner-spin-button,
+html body:not(#_):not(#__) .range-block-counter input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+
+html body:not(#_):not(#__) .range-block-counter input[type="number"] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+
+html body:not(#_):not(#__) .range-block-counter input,
+html body:not(#_):not(#__) .range-block-counter input[type="number"] {
+    padding: 4px 6px !important;
+    font-size: 13px !important;
+    text-align: center !important;
+    font-variant-numeric: tabular-nums !important;
+    min-width: 0 !important;
+}
+
+/* 15i · QR / Ny-Gemini capsules: identical optical baseline for Latin & CJK */
+html body:not(#_):not(#__) #qr--bar .qr--button,
+html body:not(#_):not(#__) #qr-bar .menu_button,
+html body:not(#_):not(#__) .xiaobaix-task-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 30px !important;
+    line-height: 1 !important;
+}
+
+html body:not(#_):not(#__) #qr--bar .qr--button > *,
+html body:not(#_):not(#__) .xiaobaix-task-button > span {
+    line-height: 1.15 !important;
+    display: inline-block !important;
+}
+
+/* 15k · World Info entry: ghost plaintext/fancy switch, numeric fields fit "100" */
+html body:not(#_):not(#__) .switch_input_type_icon {
+    width: 22px !important;
+    height: 22px !important;
+    padding: 0 !important;
+    border-radius: var(--ap-r-full) !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    line-height: 22px !important;
+    font-size: 12px !important;
+    opacity: 0.7 !important;
+}
+
+html body:not(#_):not(#__) .switch_input_type_icon:hover {
+    background: var(--ap-fill-2) !important;
+    opacity: 1 !important;
+}
+
+html body:not(#_):not(#__) .world_entry input.text_pole.wideMax100px {
+    padding: 6px 6px !important;
+    text-align: center !important;
+    font-variant-numeric: tabular-nums !important;
+}
+
+/* 15j · Residual third-party hover transforms (no hover motion, press only) */
+html body:not(#_):not(#__) .immersive-nav-btn:hover:not(:disabled),
+html body:not(#_):not(#__) #littlewhitebox-update-extension:not(:disabled):hover,
+html body:not(#_):not(#__) .model-card:hover {
+    transform: none !important;
+}
+
+/* -----------------------------------------------------------------------------
+   14 · ACCESSIBILITY
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+    html body * {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
+}
