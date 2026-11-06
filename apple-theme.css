@@ -1806,9 +1806,9 @@ html body .xiaobaix-collapse-btn:active {
 
 html body .xiaobaix-sub-container .mes_btn {
     border-radius: var(--ap-r-full) !important;
-    background: var(--ap-glass-popover) !important;
-    backdrop-filter: var(--ap-blur-sm) !important;
-    -webkit-backdrop-filter: var(--ap-blur-sm) !important;
+    background: rgba(44,44,50,0.94) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
     border: 1px solid var(--ap-hairline-strong) !important;
     box-shadow: var(--ap-sh-sm) !important;
 }
@@ -2265,6 +2265,38 @@ html body:not(#_):not(#__) #chat .mes .mes_text pre code {
     line-height: 1.55 !important;
     font-size: 12.5px !important;
     white-space: pre-wrap !important;
+}
+
+/* 15m · Small controls never blur (background tile menus / mobile toggles) */
+html body:not(#_):not(#__) .bg_example .jg-menu,
+html body:not(#_):not(#__) .bg_example .mobile-only-menu-toggle {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background-color: rgba(28,28,32,0.82) !important;
+}
+
+/* 15n · Phones: background thumbnails were 55×31 with a 30px menu toggle
+   covering them; use 3 columns, 16:9 tiles and a small corner toggle. */
+@media screen and (max-width: 1000px) {
+    html body:not(#_):not(#__) #bg_menu_content,
+    html body:not(#_):not(#__) #bg_custom_content {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+    }
+    html body:not(#_):not(#__) #bg_menu_content .bg_example,
+    html body:not(#_):not(#__) #bg_custom_content .bg_example {
+        aspect-ratio: 16 / 10;
+        height: auto !important;
+        min-height: 0 !important;
+    }
+    html body:not(#_):not(#__) .bg_example .mobile-only-menu-toggle {
+        width: 24px !important;
+        height: 24px !important;
+        top: 4px !important;
+        right: 4px !important;
+        border-radius: 999px !important;
+        font-size: 12px !important;
+    }
 }
 
 /* -----------------------------------------------------------------------------
