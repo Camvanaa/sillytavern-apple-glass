@@ -1,7 +1,9 @@
 // Apple Glass Chat Styles
-// Adds extra entries to User Settings → Chat Style and toggles a body class.
-// All visuals are in the "Apple Glass Dark" UI theme CSS (section 16), so the
-// styles only take effect while that theme is active.
+// 1. Adds extra entries to User Settings → Chat Style and toggles a body class.
+//    All visuals are in the "Apple Glass Dark" UI theme CSS (section 16), so the
+//    styles only take effect while that theme is active.
+// 2. Fits option-card iframes (Ny-Gemini 4-option card) to their content.
+// 3. Adds a "jump to latest" pill when the chat is scrolled up (styled in §17g).
 
 const STYLES = [
     { value: 3, cls: 'ap-chat-echo', label: '回声 Echo' },
@@ -11,6 +13,17 @@ const STYLES = [
 ];
 const ALL_CLASSES = STYLES.map(s => s.cls);
 const NATIVE_CLASSES = ['bubblechat', 'documentstyle'];
+const THEME_NAME = 'Apple Glass Dark';
+const STYLE_KEY = 'apGlass.chatStyle';
+
+function themeActive() {
+    // The theme's CSS defines --ap-blue on :root; nothing else does.
+    return getComputedStyle(document.documentElement).getPropertyValue('--ap-blue').trim() !== '';
+}
+
+function currentThemeName() {
+    return powerUser()?.theme ?? document.getElementById('themes')?.value ?? '';
+}
 
 function powerUser() {
     return SillyTavern.getContext().powerUserSettings;
@@ -74,27 +87,142 @@ function updateAvatars() {
     });
 }
 
+// ---------------------------------------------------------------------------
+// Option-card iframes: the card template uses `body{min-height:100vh}`, which
+// TavernHelper maps to the full window height, so every card sat in a ~900px
+// frame with ~440px of empty space. Only frames whose document has the card's
+// signature (.glass-card + .options-list) are touched; other iframes (e.g. the
+// character home page) keep their own layout.
+// ---------------------------------------------------------------------------
+const FIT_STYLE_ID = 'ap-fit-card';
+const FIT_CSS = 'html,body{min-height:0!important;height:auto!important}body{display:block!important;padding:2px 0!important}';
+
+function fitCardFrame(frame) {
+    let doc;
+    try {
+        doc = frame.contentDocument;
+    } catch {
+        return;
+    }
+    if (!doc || !doc.body || doc.getElementById(FIT_STYLE_ID)) return;
+    if (!doc.querySelector('.glass-card .options-list')) return;
+    const style = doc.createElement('style');
+    style.id = FIT_STYLE_ID;
+    style.textContent = FIT_CSS;
+    (doc.head || doc.documentElement).appendChild(style);
+    // TavernHelper's ResizeObserver re-measures body.scrollHeight; nudge it too.
+    requestAnimationFrame(() => {
+        const h = doc.body.scrollHeight;
+        if (h > 0) frame.style.height = `${h}px`;
+    });
+}
+
+function fitCardFrames() {
+    document.querySelectorAll('#chat .TH-render iframe').forEach(frame => {
+        fitCardFrame(frame);
+        if (!frame.dataset.apFit) {
+            frame.dataset.apFit = '1';
+            frame.addEventListener('load', () => fitCardFrame(frame));
+        }
+    });
+}
+
+// ---------------------------------------------------------------------------
+// Jump-to-latest pill
+// ---------------------------------------------------------------------------
+let jumpBtn = null;
+
+function ensureJumpButton() {
+    if (!themeActive()) {
+        jumpBtn?.remove();
+        jumpBtn = null;
+        return null;
+    }
+    if (jumpBtn && document.body.contains(jumpBtn)) return jumpBtn;
+    const host = document.getElementById('form_sheld');
+    if (!host) return null;
+    jumpBtn = document.createElement('button');
+    jumpBtn.id = 'ap-jump-latest';
+    jumpBtn.type = 'button';
+    jumpBtn.title = '回到最新消息';
+    jumpBtn.innerHTML = '<i class="fa-solid fa-arrow-down"></i><span>最新消息</span>';
+    jumpBtn.addEventListener('click', () => {
+        const chat = document.getElementById('chat');
+        if (!chat) return;
+        chat.scrollTo({ top: chat.scrollHeight, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    });
+    host.prepend(jumpBtn);
+    return jumpBtn;
+}
+
+let jumpRaf = 0;
+function updateJumpButton() {
+    jumpRaf = 0;
+    const chat = document.getElementById('chat');
+    const btn = ensureJumpButton();
+    if (!chat || !btn) return;
+    const distance = chat.scrollHeight - chat.scrollTop - chat.clientHeight;
+    btn.classList.toggle('is-visible', distance > Math.max(600, chat.clientHeight * 0.9));
+}
+
+function scheduleJumpButton() {
+    if (!jumpRaf) jumpRaf = requestAnimationFrame(updateJumpButton);
+}
+
+// ---------------------------------------------------------------------------
+
 let timer;
-function scheduleAvatars() {
+function scheduleChatWork() {
     clearTimeout(timer);
-    timer = setTimeout(updateAvatars, 80);
+    timer = setTimeout(() => {
+        updateAvatars();
+        fitCardFrames();
+        scheduleJumpButton();
+    }, 80);
 }
 
 jQuery(() => {
     ensureOptions();
     applyStyle();
+    ensureJumpButton();
 
     // Runs after SillyTavern's own handler (registered earlier), which already
     // stored the Number value into power_user.chat_display and saved settings.
     $(document).on('change', '#chat_display', () => setTimeout(applyStyle, 0));
 
+    // Remember the style picked while Apple Glass Dark is active: the theme file
+    // carries chat_display=0, so switching away and back would reset it.
+    $(document).on('change', '#chat_display', () => setTimeout(() => {
+        if (currentThemeName() === THEME_NAME) {
+            localStorage.setItem(STYLE_KEY, String(powerUser()?.chat_display ?? 0));
+        }
+    }, 0));
+
     // Theme switches call applyChatDisplay(); re-sync our class afterwards.
-    $(document).on('change', '#themes', () => setTimeout(() => { ensureOptions(); applyStyle(); }, 50));
+    $(document).on('change', '#themes', () => setTimeout(() => {
+        ensureOptions();
+        const saved = localStorage.getItem(STYLE_KEY);
+        if (currentThemeName() === THEME_NAME && saved !== null && Number(saved) !== Number(powerUser()?.chat_display)) {
+            // Goes through SillyTavern's own handler, which stores + saves the value.
+            $('#chat_display').val(saved).trigger('change');
+        }
+        applyStyle();
+        ensureJumpButton();
+        scheduleJumpButton();
+    }, 50));
 
     const chat = document.getElementById('chat');
-    if (chat) new MutationObserver(scheduleAvatars).observe(chat, { childList: true, subtree: true });
+    if (chat) {
+        new MutationObserver(scheduleChatWork).observe(chat, { childList: true, subtree: true });
+        chat.addEventListener('scroll', scheduleJumpButton, { passive: true });
+    }
+    // Iframes report `load` without mutating the chat DOM — catch them too.
+    document.addEventListener('load', e => {
+        if (e.target instanceof HTMLIFrameElement && e.target.closest('#chat')) fitCardFrame(e.target);
+    }, true);
 
     const { eventSource, eventTypes } = SillyTavern.getContext();
     eventSource?.on?.(eventTypes.SETTINGS_LOADED, () => { ensureOptions(); applyStyle(); });
-    eventSource?.on?.(eventTypes.CHAT_CHANGED, scheduleAvatars);
+    eventSource?.on?.(eventTypes.CHAT_CHANGED, scheduleChatWork);
+    scheduleChatWork();
 });

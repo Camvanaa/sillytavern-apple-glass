@@ -2582,6 +2582,344 @@ html body.ap-chat-hush:not(#_):not(#__) #chat .mes[is_user="true"] .mes_block::a
 }
 
 /* -----------------------------------------------------------------------------
+   17 · UX POLISH — reading comfort, quieter chrome, stable viewport
+   -------------------------------------------------------------------------- */
+
+/* 17a · Stable viewport. LittleWhiteBox's closed quick-launcher (position:fixed,
+   parked below the fold) extended the root scroll area by ~195px because
+   <html> carries translateZ(0) and becomes the fixed containing block. Any
+   scrollIntoView() then pushed the whole UI up and hid the top bar. Layout
+   containment on <html> (already the fixed containing block, so nothing moves)
+   keeps the root exactly one viewport tall. */
+html:has(body:not(#_):not(#__)) {
+    contain: layout;
+}
+
+/* 17b · Reading typography: regular weight on long prose (500 is too heavy for
+   novels), balanced CJK wrapping, iOS-like selection + caret. */
+html body:not(#_):not(#__) #chat .mes .mes_text,
+html body:not(#_):not(#__) #chat .mes .mes_reasoning {
+    font-weight: 400 !important;
+    text-wrap: pretty;
+    -webkit-font-smoothing: antialiased;
+}
+
+html body:not(#_):not(#__) #chat .mes .mes_text strong,
+html body:not(#_):not(#__) #chat .mes .mes_text b {
+    font-weight: 600 !important;
+}
+
+html body:not(#_):not(#__) ::selection {
+    background: rgba(10, 132, 255, 0.38);
+    color: #fff;
+}
+
+html body:not(#_):not(#__) textarea,
+html body:not(#_):not(#__) input {
+    caret-color: var(--ap-blue);
+}
+
+/* 17c · Message meta: model glyph + id/timer/tokens are secondary — quiet them */
+html body:not(#_):not(#__) #chat .mes .timestamp-icon {
+    width: 12px !important;
+    height: 12px !important;
+    opacity: 0.38 !important;
+    fill: currentColor !important;
+    color: var(--ap-label-2) !important;
+    align-self: center !important;
+    transition: opacity var(--ap-dur) var(--ap-ease) !important;
+}
+
+html body:not(#_):not(#__) #chat .mes:hover .timestamp-icon {
+    opacity: 0.7 !important;
+}
+
+html body:not(#_):not(#__) #chat .mes .mesIDDisplay,
+html body:not(#_):not(#__) #chat .mes .mes_timer,
+html body:not(#_):not(#__) #chat .mes .tokenCounterDisplay {
+    font-size: 10.5px !important;
+    line-height: 1.35 !important;
+    font-variant-numeric: tabular-nums;
+    opacity: 0.55 !important;
+    transition: opacity var(--ap-dur) var(--ap-ease) !important;
+}
+
+html body:not(#_):not(#__) #chat .mes:hover .mesIDDisplay,
+html body:not(#_):not(#__) #chat .mes:hover .mes_timer,
+html body:not(#_):not(#__) #chat .mes:hover .tokenCounterDisplay {
+    opacity: 0.9 !important;
+}
+
+/* 17d · Message header: a long name stays on ONE line (ellipsis) instead of
+   wrapping into 2–3 lines on phones; the timestamp wraps below only when needed */
+html body:not(#_):not(#__) #chat .mes .ch_name > .flex-container,
+html body:not(#_):not(#__) #chat .mes .ch_name > .flex-container > .flex-container {
+    min-width: 0 !important;
+}
+
+html body:not(#_):not(#__) #chat .mes .ch_name .name_text {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    flex: 0 1 auto !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.015em !important;
+}
+
+html body:not(#_):not(#__) #chat .mes .ch_name .timestamp {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+}
+
+/* 17e · LittleWhiteBox "X" menu button: same ghost style as the other header
+   actions (no filled disc, no glowing stacked italic X). */
+html body:not(#_):not(#__) #chat .mes .xiaobaix-collapse-btn {
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    opacity: 0.78;
+}
+
+html body:not(#_):not(#__) #chat .mes .xiaobaix-collapse-btn:hover,
+html body:not(#_):not(#__) #chat .mes .xiaobaix-collapse-btn.open {
+    background: var(--ap-fill-2) !important;
+    border-color: var(--ap-hairline) !important;
+    opacity: 1;
+}
+
+html body:not(#_):not(#__) #chat .mes .xiaobaix-xstack span {
+    font: 700 13px/1 var(--ap-font) !important;
+    letter-spacing: 0 !important;
+    text-shadow: none !important;
+    color: var(--ap-label-2) !important;
+    transform: none !important;
+}
+
+html body:not(#_):not(#__) #chat .mes .xiaobaix-xstack span:not(:last-child) {
+    display: none !important;
+}
+
+html body:not(#_):not(#__) #chat .mes .xiaobaix-collapse-btn:hover .xiaobaix-xstack span {
+    color: #fff !important;
+}
+
+/* 17f · Rendered cards (TavernHelper iframes): no stray gap around them */
+html body:not(#_):not(#__) #chat .mes .mes_text .TH-render {
+    margin: 2px 0 !important;
+}
+
+html body:not(#_):not(#__) #chat .mes .mes_text .TH-render iframe {
+    display: block;
+    border-radius: var(--ap-r-md);
+}
+
+/* 17g · Jump-to-latest pill (the Apple Glass extension only creates it while
+   this theme is active) */
+html body:not(#_):not(#__) #form_sheld {
+    position: relative;
+}
+
+html body:not(#_):not(#__) #ap-jump-latest {
+    display: inline-flex;
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 10px);
+    z-index: 30;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 14px 0 12px;
+    border-radius: var(--ap-r-full);
+    border: 1px solid var(--ap-hairline-strong);
+    background: rgba(44, 44, 50, 0.92);
+    color: var(--ap-label);
+    font: 500 12.5px/1 var(--ap-font);
+    letter-spacing: -0.01em;
+    box-shadow: var(--ap-inner-hi), var(--ap-sh-md);
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(6px);
+    transition: opacity 180ms var(--ap-ease), transform 220ms var(--ap-spring);
+}
+
+html body:not(#_):not(#__) #ap-jump-latest.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+}
+
+html body:not(#_):not(#__) #ap-jump-latest:active {
+    transform: translateX(-50%) scale(0.96);
+}
+
+html body:not(#_):not(#__) #ap-jump-latest i {
+    font-size: 11px;
+    opacity: 0.8;
+}
+
+html body.immersive-mode:not(#_):not(#__) #ap-jump-latest {
+    display: none !important;
+}
+
+/* 17i · Swipe controls: SillyTavern pins the chevron + "1/1" counter to the
+   message's bottom-right corner, where they stuck out of the bubble and sat on
+   top of option cards. Give the visible-swipe bubble a reserved footer row and
+   park the controls inside it. */
+html body:not(#_):not(#__) #chat .mes.last_mes .mes_block,
+html body.swipeAllMessages:not(#_):not(#__) #chat .mes .mes_block {
+    padding-bottom: 38px !important;
+}
+
+html body:not(#_):not(#__) #chat .mes .swipeRightBlock {
+    right: 16px !important;
+    bottom: 18px !important;
+    height: 26px !important;
+    flex-direction: row-reverse !important;
+    align-items: center !important;
+    gap: 0 !important;
+}
+
+html body:not(#_):not(#__) #chat .mes .swipeRightBlock .swipe_right,
+html body:not(#_):not(#__) #chat .mes .swipe_left {
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 15px !important;
+    border-radius: var(--ap-r-full) !important;
+}
+
+html body:not(#_):not(#__) #chat .mes .swipe_left {
+    bottom: 18px !important;
+    left: calc(var(--ap-swipe-left, 66px)) !important;
+}
+
+html body:not(#_):not(#__) #chat .mes .swipeRightBlock .swipes-counter {
+    min-width: 0 !important;
+    padding: 0 4px !important;
+    font-size: 11px !important;
+}
+
+html body:not(#_):not(#__) #chat .mes .swipe_right:hover,
+html body:not(#_):not(#__) #chat .mes .swipe_left:hover {
+    background: var(--ap-fill-1) !important;
+}
+
+/* 17j · Message actions appear on hover (desktop): a long chat no longer shows
+   a row of icons on every message. The latest message, keyboard focus and an
+   open LittleWhiteBox menu keep them visible; touch screens are unchanged.
+   Opacity only, so nothing moves. */
+@media (hover: hover) and (pointer: fine) {
+    html body:not(#_):not(#__) #chat .mes:not(.last_mes) .mes_buttons {
+        opacity: 0 !important;
+        transition: opacity var(--ap-dur) var(--ap-ease) !important;
+    }
+    html body:not(#_):not(#__) #chat .mes:not(.last_mes):hover .mes_buttons,
+    html body:not(#_):not(#__) #chat .mes:not(.last_mes):focus-within .mes_buttons,
+    html body:not(#_):not(#__) #chat .mes .mes_buttons.xiaobaix-expanded {
+        opacity: 1 !important;
+    }
+}
+
+/* 17k · LittleWhiteBox menu open: its sub-buttons slide over "…" and "✎";
+   hide those two while it is open instead of leaving half-covered glyphs. */
+html body:not(#_):not(#__) #chat .mes .mes_buttons.xiaobaix-expanded > :not(.xiaobaix-collapse-btn) {
+    visibility: hidden !important;
+}
+
+/* 17l · New replies fade up gently (follows SillyTavern's reduced-motion
+   setting through --animation-duration, and the OS setting below) */
+@keyframes ap-mes-in {
+    from { opacity: 0; translate: 0 6px; }
+    to { opacity: 1; translate: 0 0; }
+}
+
+html body:not(#_):not(#__) #chat .mes.last_mes .mes_block {
+    animation: ap-mes-in calc(var(--animation-duration, 125ms) * 2) cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html body:not(#_):not(#__) #chat .mes.last_mes .mes_block {
+        animation: none !important;
+    }
+}
+
+/* 17m · Slash-command autocomplete: Apple popover instead of a square box */
+html body:not(#_):not(#__) {
+    --ac-style-color-border: rgba(255, 255, 255, 0.14);
+    --ac-style-color-background: rgba(30, 30, 36, 0.94);
+    --ac-style-color-text: rgba(235, 235, 245, 0.86);
+    --ac-style-color-selectedBackground: rgba(10, 132, 255, 0.30);
+    --ac-style-color-selectedText: #fff;
+    --ac-style-color-hoveredBackground: rgba(255, 255, 255, 0.06);
+    --ac-style-color-hoveredText: #fff;
+    --ac-style-color-matchedText: #64d2ff;
+}
+
+html body:not(#_):not(#__) .autoComplete-wrap .autoComplete,
+html body:not(#_):not(#__) .autoComplete-detailsWrap .autoComplete-details {
+    background: rgba(30, 30, 36, 0.94) !important;
+    backdrop-filter: var(--ap-blur-md) !important;
+    -webkit-backdrop-filter: var(--ap-blur-md) !important;
+    border: 1px solid var(--ap-hairline-strong) !important;
+    border-radius: var(--ap-r-md) !important;
+    box-shadow: var(--ap-inner-hi), var(--ap-sh-lg) !important;
+    padding: 4px !important;
+    overflow: auto !important;
+}
+
+html body:not(#_):not(#__) .autoComplete-wrap .autoComplete > .item > * {
+    padding-top: 3px !important;
+    padding-bottom: 3px !important;
+}
+
+html body:not(#_):not(#__) .autoComplete-wrap .autoComplete > .item > :first-child {
+    border-radius: 8px 0 0 8px;
+}
+
+html body:not(#_):not(#__) .autoComplete-wrap .autoComplete > .item > :last-child {
+    border-radius: 0 8px 8px 0;
+}
+
+/* 17h · Phones: give prose the width — smaller avatar column & gutters */
+@media screen and (max-width: 1000px) {
+    html body:not(#_):not(#__) #chat {
+        padding-left: 6px !important;
+        padding-right: 6px !important;
+    }
+    html body:not(#_):not(#__) #chat .mes {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    html body:not(#_):not(#__) #chat .mes .avatar,
+    html body:not(#_):not(#__) #chat .mes .mesAvatarWrapper .avatar {
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
+        min-height: 34px !important;
+        max-width: 34px !important;
+        max-height: 34px !important;
+        border-radius: 10px !important;
+    }
+    html body:not(#_):not(#__) #chat .mes .mesAvatarWrapper {
+        margin-right: 8px !important;
+    }
+    html body:not(#_):not(#__) #chat .mes[is_user="true"] .mesAvatarWrapper {
+        margin-right: 0 !important;
+        margin-left: 8px !important;
+    }
+    html body:not(#_):not(#__) #chat .mes .mes_block,
+    html body:not(#_):not(#__) #chat .mes[is_user="false"] .mes_block {
+        padding: 12px 14px 14px !important;
+    }
+    html body:not(#_):not(#__) #chat .mes .mes_text {
+        font-size: 15px !important;
+        line-height: 1.7 !important;
+    }
+}
+
+/* -----------------------------------------------------------------------------
    14 · ACCESSIBILITY
    -------------------------------------------------------------------------- */
 
