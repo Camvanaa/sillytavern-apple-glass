@@ -1,0 +1,11 @@
+{
+    "display_name": "Apple Glass Chat Styles",
+    "description": "Adds Echo / Whisper / Ripple / Hush chat styles to User Settings → Chat Style. Visuals live in the Apple Glass Dark UI theme.",
+    "loading_order": 20,
+    "requires": [],
+    "optional": [],
+    "js": "index.js",
+    "author": "server-agent",
+    "version": "1.0.0",
+    "auto_update": false
+}

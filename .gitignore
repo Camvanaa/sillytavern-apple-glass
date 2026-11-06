@@ -10,3 +10,6 @@
 /data/default-user/*
 !/data/default-user/themes/
 !/data/default-user/OpenAI Settings/
+!/extensions/
+/extensions/*
+!/extensions/SillyTavern-AppleGlassStyles/

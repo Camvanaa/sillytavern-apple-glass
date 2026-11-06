@@ -2256,6 +2256,299 @@ html body:not(#_):not(#__) .model-card:hover {
     transform: none !important;
 }
 
+/* 15l · Code blocks: the inline-code chip must not repeat inside <pre> */
+html body:not(#_):not(#__) #chat .mes .mes_text pre code {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    line-height: 1.55 !important;
+    font-size: 12.5px !important;
+    white-space: pre-wrap !important;
+}
+
+/* -----------------------------------------------------------------------------
+   16 · CHAT STYLES — 回声 Echo · 低语 Whisper · 涟漪 Ripple · 轻声 Hush
+        Selected in User Settings → Chat Style (option values 3–6, added by the
+        "Apple Glass Chat Styles" extension, which sets body.ap-chat-* and the
+        per-message --ap-mes-avatar portrait URL). Re-interpreted in Apple glass:
+        one glass surface per message, hairline borders, no nested blur.
+   -------------------------------------------------------------------------- */
+
+/* Shared: portrait-backdrop styles need the bubble to be a positioning box and
+   its children to sit above the portrait layer. */
+html body:is(.ap-chat-echo, .ap-chat-whisper):not(#_):not(#__) #chat .mes .mes_block {
+    position: relative !important;
+    overflow: hidden !important;
+    isolation: isolate;
+}
+
+html body:is(.ap-chat-echo, .ap-chat-whisper):not(#_):not(#__) #chat .mes .mes_block > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* ---- 16a · 低语 Whisper: avatar dissolves into the top-right of the card ---- */
+html body.ap-chat-whisper:not(#_):not(#__) #chat .mes .mesAvatarWrapper .avatar {
+    display: none !important;
+}
+
+html body.ap-chat-whisper:not(#_):not(#__) #chat .mes .mesAvatarWrapper {
+    margin: 0 !important;
+    position: absolute !important;
+    left: 14px;
+    bottom: 8px;
+    flex-direction: row !important;
+    gap: 8px !important;
+    z-index: 2;
+    pointer-events: none;
+}
+
+html body.ap-chat-whisper:not(#_):not(#__) #chat .mes {
+    position: relative !important;
+}
+
+html body.ap-chat-whisper:not(#_):not(#__) #chat .mes .mes_block,
+html body.ap-chat-whisper:not(#_):not(#__) #chat .mes[is_user="true"] .mes_block {
+    flex: 1 1 auto !important;
+    width: auto !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 16px 20px 26px !important;
+    min-height: 118px;
+}
+
+html body.ap-chat-whisper:not(#_):not(#__) #chat .mes .mes_block::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: min(46%, 340px);
+    height: 132px;
+    background: var(--ap-mes-avatar) center 22% / cover no-repeat;
+    -webkit-mask-image: linear-gradient(to left, #000 35%, transparent 100%), linear-gradient(to bottom, #000 45%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(to left, #000 35%, transparent 100%), linear-gradient(to bottom, #000 45%, transparent 100%);
+    mask-composite: intersect;
+    opacity: 0.55;
+    z-index: 0;
+    pointer-events: none;
+}
+
+html body.ap-chat-whisper:not(#_):not(#__) #chat .mes[is_user="true"] .mes_block::before {
+    right: auto;
+    left: 0;
+    -webkit-mask-image: linear-gradient(to right, #000 35%, transparent 100%), linear-gradient(to bottom, #000 45%, transparent 100%);
+    mask-image: linear-gradient(to right, #000 35%, transparent 100%), linear-gradient(to bottom, #000 45%, transparent 100%);
+}
+
+/* Accent tick on the outer edge (character = label colour, user = system blue) */
+html body.ap-chat-whisper:not(#_):not(#__) #chat .mes .mes_block::after {
+    content: "";
+    position: absolute;
+    top: 64px;
+    right: 0;
+    width: 3px;
+    height: 26px;
+    border-radius: 3px 0 0 3px;
+    background: var(--ap-label-2);
+    z-index: 2;
+}
+
+html body.ap-chat-whisper:not(#_):not(#__) #chat .mes[is_user="true"] .mes_block::after {
+    right: auto;
+    left: 0;
+    border-radius: 0 3px 3px 0;
+    background: var(--ap-blue);
+}
+
+html body.ap-chat-whisper:not(#_):not(#__) #chat .mes .ch_name {
+    padding-top: 30px !important;
+}
+
+/* ---- 16b · 回声 Echo: large portrait column fading into the bubble ---- */
+html body.ap-chat-echo:not(#_):not(#__) #chat .mes .mesAvatarWrapper .avatar {
+    display: none !important;
+}
+
+html body.ap-chat-echo:not(#_):not(#__) #chat .mes .mesAvatarWrapper {
+    position: absolute !important;
+    margin: 0 !important;
+    top: 18px;
+    right: 22px;
+    flex-direction: row !important;
+    gap: 8px !important;
+    z-index: 2;
+    pointer-events: none;
+}
+
+html body.ap-chat-echo:not(#_):not(#__) #chat .mes[is_user="true"] .mesAvatarWrapper {
+    right: auto;
+    left: 22px;
+}
+
+html body.ap-chat-echo:not(#_):not(#__) #chat .mes {
+    position: relative !important;
+}
+
+html body.ap-chat-echo:not(#_):not(#__) #chat .mes .mes_block,
+html body.ap-chat-echo:not(#_):not(#__) #chat .mes[is_user="true"] .mes_block {
+    flex: 1 1 auto !important;
+    width: auto !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    min-height: 168px;
+    padding: 16px calc(min(20%, 170px) + 14px) 18px 20px !important;
+}
+
+html body.ap-chat-echo:not(#_):not(#__) #chat .mes[is_user="true"] .mes_block {
+    padding: 16px 20px 18px calc(min(20%, 170px) + 14px) !important;
+}
+
+html body.ap-chat-echo:not(#_):not(#__) #chat .mes .mes_block::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: min(20%, 170px);
+    background: var(--ap-mes-avatar) center top / cover no-repeat;
+    -webkit-mask-image: linear-gradient(to left, #000 45%, transparent 100%);
+    mask-image: linear-gradient(to left, #000 45%, transparent 100%);
+    opacity: 0.72;
+    z-index: 0;
+    pointer-events: none;
+}
+
+html body.ap-chat-echo:not(#_):not(#__) #chat .mes[is_user="true"] .mes_block::before {
+    right: auto;
+    left: 0;
+    -webkit-mask-image: linear-gradient(to right, #000 45%, transparent 100%);
+    mask-image: linear-gradient(to right, #000 45%, transparent 100%);
+}
+
+html body.ap-chat-echo:not(#_):not(#__) #chat .mes .ch_name .mes_buttons {
+    margin-right: 0 !important;
+}
+
+/* ---- 16c · 涟漪 Ripple: tall portrait card on the left, sticky while reading ---- */
+html body.ap-chat-ripple:not(#_):not(#__) #chat .mes,
+html body.ap-chat-ripple:not(#_):not(#__) #chat .mes[is_user="true"] {
+    flex-direction: row !important;
+    align-items: stretch !important;
+}
+
+html body.ap-chat-ripple:not(#_):not(#__) #chat .mes .mesAvatarWrapper,
+html body.ap-chat-ripple:not(#_):not(#__) #chat .mes[is_user="true"] .mesAvatarWrapper {
+    position: sticky !important;
+    top: 8px;
+    align-self: flex-start;
+    margin: 0 12px 0 0 !important;
+}
+
+html body.ap-chat-ripple:not(#_):not(#__) #chat .mes .avatar,
+html body.ap-chat-ripple:not(#_):not(#__) #chat .mes .mesAvatarWrapper .avatar {
+    width: 96px !important;
+    height: 144px !important;
+    min-width: 96px !important;
+    min-height: 144px !important;
+    max-width: 96px !important;
+    max-height: 144px !important;
+    border-radius: 20px !important;
+}
+
+html body.ap-chat-ripple:not(#_):not(#__) #chat .mes[is_user="true"] .mes_block {
+    flex: 1 1 auto !important;
+    width: auto !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+}
+
+html body.ap-chat-ripple:not(#_):not(#__) #chat .mes .mes_block {
+    min-height: 144px;
+}
+
+/* ---- 16d · 轻声 Hush: avatar-free reading cards, quiet edge accents ---- */
+html body.ap-chat-hush:not(#_):not(#__) #chat .mes .mesAvatarWrapper .avatar {
+    display: none !important;
+}
+
+html body.ap-chat-hush:not(#_):not(#__) #chat .mes .mesAvatarWrapper {
+    position: absolute !important;
+    left: 16px;
+    bottom: 6px;
+    margin: 0 !important;
+    flex-direction: row !important;
+    gap: 8px !important;
+    z-index: 2;
+    pointer-events: none;
+}
+
+html body.ap-chat-hush:not(#_):not(#__) #chat .mes {
+    position: relative !important;
+}
+
+html body.ap-chat-hush:not(#_):not(#__) #chat .mes .mes_block,
+html body.ap-chat-hush:not(#_):not(#__) #chat .mes[is_user="true"] .mes_block {
+    flex: 1 1 auto !important;
+    width: auto !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 16px 22px 24px !important;
+    position: relative !important;
+}
+
+html body.ap-chat-hush:not(#_):not(#__) #chat .mes .mes_block::after {
+    content: "";
+    position: absolute;
+    top: 18px;
+    bottom: 18px;
+    left: 0;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: var(--ap-label-3);
+    pointer-events: none;
+}
+
+html body.ap-chat-hush:not(#_):not(#__) #chat .mes[is_user="true"] .mes_block::after {
+    left: auto;
+    right: 0;
+    border-radius: 3px 0 0 3px;
+    background: var(--ap-blue);
+}
+
+/* ---- 16e · Phones: shrink portraits so text keeps the width ---- */
+@media screen and (max-width: 1000px) {
+    html body.ap-chat-echo:not(#_):not(#__) #chat .mes .mes_block {
+        padding-right: calc(min(30%, 120px) + 10px) !important;
+        min-height: 150px;
+    }
+    html body.ap-chat-echo:not(#_):not(#__) #chat .mes[is_user="true"] .mes_block {
+        padding-right: 16px !important;
+        padding-left: calc(min(30%, 120px) + 10px) !important;
+    }
+    html body.ap-chat-echo:not(#_):not(#__) #chat .mes .mes_block::before {
+        width: min(30%, 120px);
+    }
+    html body.ap-chat-whisper:not(#_):not(#__) #chat .mes .mes_block::before {
+        width: 60%;
+        height: 110px;
+    }
+    html body.ap-chat-ripple:not(#_):not(#__) #chat .mes .avatar,
+    html body.ap-chat-ripple:not(#_):not(#__) #chat .mes .mesAvatarWrapper .avatar {
+        width: 64px !important;
+        height: 96px !important;
+        min-width: 64px !important;
+        min-height: 96px !important;
+        max-width: 64px !important;
+        max-height: 96px !important;
+        border-radius: 16px !important;
+    }
+    html body.ap-chat-ripple:not(#_):not(#__) #chat .mes .mes_block {
+        min-height: 96px;
+    }
+}
+
 /* -----------------------------------------------------------------------------
    14 · ACCESSIBILITY
    -------------------------------------------------------------------------- */
