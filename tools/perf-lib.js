@@ -464,7 +464,7 @@ const H = {
     },
 
     async shot(name, opts = {}) {
-        const path = `/opt/server-agent/workspace/st-testdata/perf-shots/${name}.png`;
+        const path = `/opt/server-agent/workspace/st-testdata/${opts.dir || CFG.shotDir || 'perf-shots'}/${name}.png`;
         await page.screenshot({ path, animations: opts.live ? 'allow' : 'disabled', caret: 'hide', fullPage: false });
         return path;
     },

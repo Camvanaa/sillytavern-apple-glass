@@ -3,6 +3,7 @@
 !/.gitignore
 !/apple-theme.css
 !/sync-css.sh
+!/splash.css
 !/compose.yaml
 !/data/
 /data/*

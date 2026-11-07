@@ -3009,6 +3009,158 @@ html body:not(#_):not(#__) #ap-jump-latest:active {
 }
 
 /* -----------------------------------------------------------------------------
+   19 · FIX ROUND 19 — growing composer, text buttons, phone overflow, splash
+   -------------------------------------------------------------------------- */
+
+/* 19a · Composer grows like iMessage. A 999px radius on a 460px-tall box drew a
+   giant ellipse whose curve cut through the text. A radius of half the ONE-line
+   height is still a perfect capsule at one line and becomes a rounded rectangle
+   beyond it. SillyTavern's own auto-height (field-sizing in Chromium, an inline
+   px height elsewhere) keeps working; only its 50vh ceiling is lowered so the
+   chat keeps most of the screen, and the textarea scrolls inside past that. */
+html body:not(#_):not(#__) #send_form #nonQRFormItems {
+    /* one-line pill = textarea min-height (block + 2px) + 10px padding + 2px border */
+    border-radius: calc((var(--bottomFormBlockSize) + 14px) / 2) !important;
+    align-items: flex-end !important;
+}
+
+/* Button groups sit on the bottom line. Each group is one text line tall
+   (textarea min-height) and centres its buttons, so a one-line composer looks
+   exactly as before — also with LittleWhiteBox's 34.5px button in the group. */
+html body:not(#_):not(#__) #send_form #leftSendForm,
+html body:not(#_):not(#__) #send_form #rightSendForm {
+    align-self: flex-end !important;
+    align-items: center !important;
+    min-height: calc(var(--bottomFormBlockSize) + 2px) !important;
+}
+
+html body:not(#_):not(#__) #send_form #send_textarea {
+    max-height: 40vh !important;
+    max-height: 40dvh !important;
+}
+
+@media screen and (max-width: 1000px) {
+    html body:not(#_):not(#__) #send_form #send_textarea {
+        max-height: 35vh !important;
+        max-height: 35dvh !important;
+    }
+}
+
+/* 19b · Text buttons keep their label on one line. Flex rows used to squeeze
+   "重置" into a circle and the Extras "连接" into a tall pill, one glyph per
+   line. :not(:empty) = the button has text or child nodes; pure glyph buttons
+   (fa-* on the element, nothing inside) are :empty and stay round. */
+html body:not(#_):not(#__) .menu_button:not(:empty):not(.mes_text *),
+html body:not(#_):not(#__) .menu_button_icon:not(:empty):not(.mes_text *),
+html body:not(#_):not(#__) .api_button {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    max-width: 100%;
+}
+
+html body:not(#_):not(#__) .extensions_url_block {
+    flex: 0 0 auto !important;
+}
+
+/* Image Generation's "restore default" glyph buttons get a visible label from
+   data-i18n in Chinese ("恢复默认"); the 26px ghost circle (§4) stood it up as a
+   4-line column spilling out of the button. Same small capsule as 15g. */
+html body:not(#_):not(#__) .title_restorable .menu_button[class*="fa-"]:not(:empty) {
+    width: auto !important;
+    min-width: 0 !important;
+    height: 26px !important;
+    padding: 0 10px !important;
+    gap: 5px !important;
+    font-family: var(--ap-font) !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    white-space: nowrap !important;
+    flex: 0 0 auto !important;
+    background: var(--ap-fill-3) !important;
+    border: 1px solid var(--ap-hairline-subtle) !important;
+    color: var(--ap-label-2) !important;
+}
+
+html body:not(#_):not(#__) .title_restorable .menu_button[class*="fa-"]:not(:empty)::before {
+    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", FontAwesome !important;
+    font-weight: 900 !important;
+    font-size: 11px !important;
+}
+
+/* 19c · Phones: nothing inside a drawer is wider than the drawer. */
+@media screen and (max-width: 1000px) {
+    /* World Info toolbars wrap on widths we choose instead of each engine's
+       intrinsic <select>/<input type=search> width (Chromium crushed the book
+       picker to 24px; Safari kept it wide and pushed the row past the edge). */
+    html body:not(#_):not(#__) #world_popup > .flex-container {
+        flex-wrap: wrap !important;
+        row-gap: 6px !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+    }
+
+    html body:not(#_):not(#__) #world_popup > .flex-container > * {
+        min-width: 0;
+        max-width: 100% !important;
+    }
+
+    /* the book picker fills the rest of row 1 ("创建 或 [picker]"), so its five
+       icon buttons move to the next line together instead of splitting 1 + 4 */
+    html body:not(#_):not(#__) #world_editor_select,
+    html body:not(#_):not(#__) #world_editor_select ~ .select2-container {
+        flex: 1 1 calc(100% - 100px) !important;
+        width: auto !important;
+        min-width: 0 !important;
+    }
+
+    html body:not(#_):not(#__) #world_info_search,
+    html body:not(#_):not(#__) #world_info_sort_order {
+        flex: 1 1 120px !important;
+        width: auto !important;
+        min-width: 0 !important;
+    }
+
+    /* WI entry header: the title / position block may shrink, so the move /
+       duplicate / delete buttons stay inside the card (delete was 36px out). */
+    html body:not(#_):not(#__) #world_popup .world_entry_thin_controls,
+    html body:not(#_):not(#__) #world_popup .world_entry_thin_controls > .flex-container,
+    html body:not(#_):not(#__) #world_popup .world_entry_thin_controls .world_entry_form_control {
+        min-width: 0 !important;
+    }
+
+    html body:not(#_):not(#__) #world_popup .world_entry_thin_controls {
+        flex: 1 1 auto !important;
+    }
+
+    html body:not(#_):not(#__) #world_popup .world_entry_thin_controls select,
+    html body:not(#_):not(#__) #world_popup .world_entry_thin_controls input {
+        max-width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    /* Option notes are width: max-content in ST (Vertex AI's was 434px in a
+       324px column); cap them to the column, leaving room for their margins
+       (ST: 5px left + 15px right). */
+    html body:not(#_):not(#__) .toggle-description {
+        max-width: calc(100% - 20px) !important;
+    }
+
+    /* Quick Reply set header: title + actions wrap instead of poking out */
+    html body:not(#_):not(#__) #qr--settings .qr--head {
+        flex-wrap: wrap !important;
+    }
+
+    /* Safety net: a drawer never scrolls or drags sideways */
+    html body:not(#_):not(#__) .drawer-content,
+    html body:not(#_):not(#__) #world_popup_entries_list {
+        overflow-x: hidden !important;
+    }
+}
+
+/* 19d · Start-up splash: lives in splash.css, published as data/_css/user.css.
+   The splash is on screen before this theme is loaded (see sync-css.sh). */
+
+/* -----------------------------------------------------------------------------
    14 · ACCESSIBILITY
    SillyTavern adds body.reduced-motion for its own switch AND for the OS setting.
    The theme's durations are variables, so zeroing them covers every rule that

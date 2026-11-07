@@ -10,7 +10,10 @@ if (!CFG.deployed) {
 CFG.run = (CFG.suite || 'x') + ':' + (CFG.phase || '') + ':' + V + (CFG.tag ? ':' + CFG.tag : '');
 const lib = await get('perf-lib.js');
 const body = await get(CFG.suite + '.js');
-const ctx = await page0.context().browser().newContext({ viewport: { width: CFG.w || 1440, height: CFG.h || 900 }, deviceScaleFactor: CFG.dpr || 1, isMobile: !!CFG.mobile, hasTouch: !!CFG.mobile, reducedMotion: CFG.reducedMotion || 'no-preference' });
+// Mobile runs use an iPhone Safari UA: SillyTavern picks its mobile code paths (no
+// select2, plaintext WI keys, …) from the user agent, not from the viewport.
+const IPHONE_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1';
+const ctx = await page0.context().browser().newContext({ viewport: { width: CFG.w || 1440, height: CFG.h || 900 }, deviceScaleFactor: CFG.dpr || 1, isMobile: !!CFG.mobile, hasTouch: !!CFG.mobile, reducedMotion: CFG.reducedMotion || 'no-preference', locale: CFG.locale || 'zh-CN', ...(CFG.mobile && CFG.ua !== false ? { userAgent: CFG.ua || IPHONE_UA } : {}) });
 const page = await ctx.newPage();
 const t0 = Date.now();
 try {

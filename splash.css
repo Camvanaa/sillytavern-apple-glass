@@ -1,0 +1,92 @@
+/* =============================================================================
+   Apple Glass — start-up splash (published as data/_css/user.css by sync-css.sh)
+
+   Why user.css and not the theme: SillyTavern shows its splash (#preloader plus
+   the "app-init" loader popup with img.splash-logo) before getSettings() injects
+   the theme's custom CSS. css/user.css is <link>ed in <head>, so these rules are
+   already active on the very first frame.
+
+   Scope: #preloader exists only until the init loader closes (ST removes it), and
+   #loader.splash-screen only during start-up. Run-time loaders (generation etc.)
+   are #loader without .splash-screen and are left untouched.
+   No animation is added here.
+   ========================================================================== */
+
+/* Full-screen backdrop: the Wikimedia "Sublime purple night sky" photo (CC0),
+   sharp instead of ST's tint + blur(30px); a dark veil keeps the text readable.
+   Its last layer warms the logo into the cache before the popup asks for it. */
+html body:not(#_):not(#__):not(#___) #preloader {
+    background-color: #140b22 !important;
+    background-image:
+        linear-gradient(180deg, rgba(8, 6, 18, 0.30) 0%, rgba(8, 6, 18, 0.18) 45%, rgba(8, 6, 18, 0.55) 100%),
+        url("/scripts/extensions/third-party/SillyTavern-AppleGlassStyles/assets/splash-bg.webp"),
+        url("/scripts/extensions/third-party/SillyTavern-AppleGlassStyles/assets/splash-logo.webp") !important;
+    background-size: cover, cover, 0 0 !important;
+    background-position: center, center 65%, 0 0 !important;
+    background-repeat: no-repeat !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* The splash popup (ST: transparent Popup in the top layer) must not lay a
+   tint, a blur or — once the theme has loaded — a glass card over the photo.
+   .ap-splash: set by the Apple Glass extension on this one dialog, so it stays
+   transparent while it closes (ST removes #loader before closing the popup). */
+html body:not(#_):not(#__):not(#___) dialog.popup:has(#loader.splash-screen),
+html body:not(#_):not(#__):not(#___) dialog.popup.ap-splash {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+html body:not(#_):not(#__):not(#___) dialog.popup:has(#loader.splash-screen)::backdrop,
+html body:not(#_):not(#__):not(#___) dialog.popup.ap-splash::backdrop {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+html body:not(#_):not(#__):not(#___) #loader.splash-screen {
+    gap: clamp(1.25rem, 4vh, 2.75rem) !important;
+    background: transparent !important;
+    color: #fff !important;
+}
+
+/* The anime logo replaces /img/logo.png in place (content: url on the <img>).
+   aspect-ratio reserves its box before the file is decoded. */
+html body:not(#_):not(#__):not(#___) #loader.splash-screen .splash-logo {
+    content: url("/scripts/extensions/third-party/SillyTavern-AppleGlassStyles/assets/splash-logo.webp");
+    width: min(320px, 72vw) !important;
+    height: auto !important;
+    aspect-ratio: 640 / 486;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 28px rgba(0, 0, 0, 0.45)) !important;
+}
+
+/* Spinner and "Initializing…" stay legible over the stars */
+html body:not(#_):not(#__):not(#___) #loader.splash-screen #load-spinner,
+html body:not(#_):not(#__):not(#___) #loader.splash-screen .splash-message {
+    color: rgba(255, 255, 255, 0.94) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55), 0 2px 14px rgba(0, 0, 0, 0.55) !important;
+}
+
+html body:not(#_):not(#__):not(#___) #loader.splash-screen .splash-message {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Noto Sans SC", "Segoe UI", sans-serif !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.01em !important;
+    opacity: 1 !important;
+}
+
+/* Reduced motion (OS setting, or ST's switch once settings are in): the gear
+   holds still. */
+@media (prefers-reduced-motion: reduce) {
+    html body:not(#_):not(#__):not(#___) #loader.splash-screen #load-spinner {
+        animation: none !important;
+    }
+}
+
+html body.reduced-motion:not(#_):not(#__):not(#___) #loader.splash-screen #load-spinner {
+    animation: none !important;
+}

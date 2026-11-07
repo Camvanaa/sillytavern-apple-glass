@@ -4,6 +4,7 @@
 //    styles only take effect while that theme is active.
 // 2. Fits option-card iframes (Ny-Gemini 4-option card) to their content.
 // 3. Adds a "jump to latest" pill when the chat is scrolled up (styled in §17g).
+// 4. Tags the start-up splash popup so splash.css keeps it transparent while it closes.
 
 const STYLES = [
     { value: 3, cls: 'ap-chat-echo', label: '回声 Echo' },
@@ -188,6 +189,20 @@ function markNewMessage(records) {
     mes.classList.add(NEW_MES_CLASS);
     setTimeout(() => mes.classList.remove(NEW_MES_CLASS), 800);
 }
+
+// ---------------------------------------------------------------------------
+// Start-up splash (splash.css → data/_css/user.css). SillyTavern removes
+// #loader.splash-screen first and only then closes its popup, so for the length
+// of the closing animation splash.css's :has(#loader.splash-screen) no longer
+// matches and the theme's glass popup flashed as an empty card. Tag that one
+// dialog so it stays transparent until it is gone; run-time loaders are new
+// dialogs and never get the class.
+// ---------------------------------------------------------------------------
+function markSplashPopup() {
+    document.querySelector('#loader.splash-screen')?.closest('dialog')?.classList.add('ap-splash');
+}
+
+markSplashPopup();
 
 // ---------------------------------------------------------------------------
 
