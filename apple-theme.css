@@ -70,6 +70,8 @@
     --ap-ease: cubic-bezier(0.22, 1, 0.36, 1);
     --ap-spring: cubic-bezier(0.34, 1.45, 0.64, 1);
     --ap-dur: 0.24s;
+    --ap-dur-press: 0.09s;
+    --ap-dur-panel: 0.32s;
 }
 
 /* -----------------------------------------------------------------------------
@@ -983,7 +985,7 @@ html body:not(#_):not(#__) #chat .mes .mes_block,
 html body:not(#_):not(#__) #chat .mes[is_user="false"] .mes_block {
     flex: 1 1 auto !important;
     min-width: 0 !important;
-    transform: none !important;
+    transform: none; /* not !important: it would cancel the swipe `slide` keyframes */
     margin: 0 !important;
     background-color: var(--ap-glass-bubble) !important;
     background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.00) 100%) !important;
@@ -1737,7 +1739,7 @@ html body:not(#_):not(#__) #toast-container > div {
     box-shadow: var(--ap-inner-hi), var(--ap-sh-md) !important;
     padding: 12px 22px !important;
     color: var(--ap-label) !important;
-    opacity: 1 !important;
+    opacity: 1; /* not !important: toastr fades through inline opacity */
 }
 
 /* -----------------------------------------------------------------------------
@@ -2742,7 +2744,7 @@ html body:not(#_):not(#__) #ap-jump-latest {
     opacity: 0;
     pointer-events: none;
     transform: translateX(-50%) translateY(6px);
-    transition: opacity 180ms var(--ap-ease), transform 220ms var(--ap-spring);
+    transition: opacity var(--ap-dur) var(--ap-ease), transform var(--ap-dur) var(--ap-ease);
 }
 
 html body:not(#_):not(#__) #ap-jump-latest.is-visible {
@@ -2828,21 +2830,17 @@ html body:not(#_):not(#__) #chat .mes .mes_buttons.xiaobaix-expanded > :not(.xia
     visibility: hidden !important;
 }
 
-/* 17l · New replies fade up gently (follows SillyTavern's reduced-motion
-   setting through --animation-duration, and the OS setting below) */
+/* 17l · New replies fade up gently. .ap-mes-new is set by the Apple Glass
+   extension on a single appended message only, so opening a chat, deleting the
+   last message or a swipe never replays it. Duration follows SillyTavern's
+   reduced-motion setting through --animation-duration. */
 @keyframes ap-mes-in {
     from { opacity: 0; translate: 0 6px; }
     to { opacity: 1; translate: 0 0; }
 }
 
-html body:not(#_):not(#__) #chat .mes.last_mes .mes_block {
-    animation: ap-mes-in calc(var(--animation-duration, 125ms) * 2) cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    html body:not(#_):not(#__) #chat .mes.last_mes .mes_block {
-        animation: none !important;
-    }
+html body:not(#_):not(#__) #chat .mes.ap-mes-new .mes_block {
+    animation: ap-mes-in calc(var(--animation-duration, 125ms) * 2) var(--ap-ease) backwards;
 }
 
 /* 17m · Slash-command autocomplete: Apple popover instead of a square box */
@@ -2920,12 +2918,133 @@ html body:not(#_):not(#__) .autoComplete-wrap .autoComplete > .item > :last-chil
 }
 
 /* -----------------------------------------------------------------------------
-   14 · ACCESSIBILITY
+   18 · MOTION & PERFORMANCE AUDIT
    -------------------------------------------------------------------------- */
 
+/* 18a · Bubbles drop backdrop-filter in Chromium. #chat carries a mask-image, and
+   a mask makes it a Backdrop Root: the blur inside can only sample #chat's own
+   (empty) backdrop, so it paints nothing yet still costs a filter pass per bubble.
+   Removing it is pixel-identical there. `contain: layout` keeps what the filter
+   implied for descendants (stacking context, containing block). Scoped to
+   Chromium because Safari / Firefox could not be verified: they keep the blur. */
+@supports (-webkit-app-region: drag) and (not (font: -apple-system-body)) {
+    html body:not(#_):not(#__) #chat .mes .mes_block,
+    html body:not(#_):not(#__) #chat .mes[is_user="false"] .mes_block,
+    html body:not(#_):not(#__) #chat .mes[is_user="true"] .mes_block,
+    html body:not(#_):not(#__) #chat .welcomePanel .recentChatList,
+    html body:not(#_):not(#__) #chat .welcomePanel .welcome_prompt {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        contain: layout;
+    }
+}
+
+/* 18b · Top-bar sheets and side rails: opacity fade instead of SillyTavern's height
+   transition (a relayout of the sheet per frame; the rails, whose height is pinned,
+   had no open animation and hung for 250ms before vanishing on close). Opacity
+   only on purpose: adding a transform offset measured 3x the layouts per open here.
+   Scoped to the real top-bar drawers; floating / moved panels are untouched. */
+html body:not(#_):not(#__) #top-settings-holder > .drawer > .drawer-content {
+    transition: opacity var(--ap-dur-panel) var(--ap-ease),
+        display var(--ap-dur-panel) allow-discrete !important;
+}
+
+html body:not(#_):not(#__) #top-settings-holder > .drawer > .drawer-content.closedDrawer {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Sheets keep their height while fading out (base CSS collapses it to 0) */
+html body:not(#_):not(#__) #top-settings-holder > .drawer > .drawer-content.closedDrawer:not(.fillLeft):not(.fillRight) {
+    height: auto;
+}
+
+@starting-style {
+    html body:not(#_):not(#__) #top-settings-holder > .drawer > .drawer-content.openDrawer {
+        opacity: 0;
+    }
+}
+
+/* 18c · Popups: Apple sheet scale + fade instead of ST's scaleY(0) unfold */
+@keyframes ap-pop-in {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes ap-pop-out {
+    from { opacity: 1; transform: none; }
+    to { opacity: 0; transform: scale(0.97); }
+}
+
+html body:not(#_):not(#__) .popup[opening] {
+    animation: ap-pop-in var(--popup-animation-speed) var(--ap-ease);
+}
+
+html body:not(#_):not(#__) .popup[closing] {
+    animation: ap-pop-out var(--popup-animation-speed) var(--ap-ease);
+}
+
+/* 18d · Press feedback: quick and flat going down; the spring (declared on the
+   rest state) only plays on release. */
+html body:not(#_):not(#__) .menu_button:active,
+html body:not(#_):not(#__) .menu_button_icon:active,
+html body:not(#_):not(#__) .right_menu_button:active,
+html body:not(#_):not(#__) .qr--button:active,
+html body:not(#_):not(#__) .xiaobaix-task-button:active,
+html body:not(#_):not(#__) .immersive-nav-btn:active,
+html body:not(#_):not(#__) .TH-reference-button:active,
+html body:not(#_):not(#__) .TH-Button--container:active,
+html body:not(#_):not(#__) .drawer-icon:active,
+html body:not(#_):not(#__) .tag:active,
+html body:not(#_):not(#__) .mes_button:active,
+html body:not(#_):not(#__) .swipe_left:active,
+html body:not(#_):not(#__) .swipe_right:active,
+html body:not(#_):not(#__) .xiaobaix-collapse-btn:active,
+html body:not(#_):not(#__) #send_but:active,
+html body:not(#_):not(#__) #leftSendForm > div:active,
+html body:not(#_):not(#__) #rightSendForm > div:active,
+html body:not(#_):not(#__) #ap-jump-latest:active {
+    transition-duration: var(--ap-dur-press) !important;
+    transition-timing-function: var(--ap-ease) !important;
+}
+
+/* -----------------------------------------------------------------------------
+   14 · ACCESSIBILITY
+   SillyTavern adds body.reduced-motion for its own switch AND for the OS setting.
+   The theme's durations are variables, so zeroing them covers every rule that
+   declares its transition with !important; the catch-all covers third-party CSS.
+   0.01ms rather than 0 so transitionend / animationend still fire.
+   -------------------------------------------------------------------------- */
+
+html body.reduced-motion:not(#_):not(#__) {
+    --ap-dur: 0.01ms;
+    --ap-dur-press: 0.01ms;
+    --ap-dur-panel: 0.01ms;
+}
+
+html body.reduced-motion:not(#_):not(#__) *,
+html body.reduced-motion:not(#_):not(#__) *::before,
+html body.reduced-motion:not(#_):not(#__) *::after {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
-    html body * {
+    html body:not(#_):not(#__) {
+        --ap-dur: 0.01ms;
+        --ap-dur-press: 0.01ms;
+        --ap-dur-panel: 0.01ms;
+    }
+    html body:not(#_):not(#__) *,
+    html body:not(#_):not(#__) *::before,
+    html body:not(#_):not(#__) *::after {
         transition-duration: 0.01ms !important;
+        transition-delay: 0s !important;
         animation-duration: 0.01ms !important;
+        animation-delay: 0s !important;
+        animation-iteration-count: 1 !important;
     }
 }

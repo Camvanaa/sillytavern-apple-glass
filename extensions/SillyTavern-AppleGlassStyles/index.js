@@ -149,7 +149,8 @@ function ensureJumpButton() {
     jumpBtn.addEventListener('click', () => {
         const chat = document.getElementById('chat');
         if (!chat) return;
-        chat.scrollTo({ top: chat.scrollHeight, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+        // body.reduced-motion covers both SillyTavern's switch and the OS setting.
+        chat.scrollTo({ top: chat.scrollHeight, behavior: document.body.classList.contains('reduced-motion') ? 'auto' : 'smooth' });
     });
     host.prepend(jumpBtn);
     return jumpBtn;
@@ -167,6 +168,25 @@ function updateJumpButton() {
 
 function scheduleJumpButton() {
     if (!jumpRaf) jumpRaf = requestAnimationFrame(updateJumpButton);
+}
+
+// ---------------------------------------------------------------------------
+// New-message fade (§17l): only a single message appended at the end of a chat
+// that is already on screen. Whole-chat renders, "show more" prepends and last_mes
+// moving to an older message (delete) never match. Runs as a microtask, i.e. before
+// the first paint of the new node, so it cannot flash.
+// ---------------------------------------------------------------------------
+const NEW_MES_CLASS = 'ap-mes-new';
+let chatSettledAt = 0;
+
+function markNewMessage(records) {
+    if (performance.now() < chatSettledAt) return;
+    const added = records.flatMap(r => [...r.addedNodes]).filter(n => n.nodeType === 1 && n.classList.contains('mes'));
+    if (added.length !== 1) return;
+    const mes = added[0];
+    if (mes !== mes.parentElement?.lastElementChild || !mes.previousElementSibling) return;
+    mes.classList.add(NEW_MES_CLASS);
+    setTimeout(() => mes.classList.remove(NEW_MES_CLASS), 800);
 }
 
 // ---------------------------------------------------------------------------
@@ -214,6 +234,7 @@ jQuery(() => {
     const chat = document.getElementById('chat');
     if (chat) {
         new MutationObserver(scheduleChatWork).observe(chat, { childList: true, subtree: true });
+        new MutationObserver(markNewMessage).observe(chat, { childList: true });
         chat.addEventListener('scroll', scheduleJumpButton, { passive: true });
     }
     // Iframes report `load` without mutating the chat DOM — catch them too.
@@ -223,6 +244,9 @@ jQuery(() => {
 
     const { eventSource, eventTypes } = SillyTavern.getContext();
     eventSource?.on?.(eventTypes.SETTINGS_LOADED, () => { ensureOptions(); applyStyle(); });
-    eventSource?.on?.(eventTypes.CHAT_CHANGED, scheduleChatWork);
+    eventSource?.on?.(eventTypes.CHAT_CHANGED, () => {
+        chatSettledAt = performance.now() + 1500;
+        scheduleChatWork();
+    });
     scheduleChatWork();
 });
