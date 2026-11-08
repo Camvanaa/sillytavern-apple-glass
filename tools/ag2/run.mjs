@@ -185,10 +185,12 @@ async function main() {
             const url = cfg.base + (opt.query || '');
             const t0 = Date.now();
             await page.goto(url, { waitUntil: 'commit', timeout: 120000 });
-            await page.waitForFunction(() => !document.getElementById('preloader') && !!window.SillyTavern?.getContext
+            // With a URL query string ST can leave #preloader in the DOM (seen with ?classic / ?foo=1
+            // on AG Dark too), so the preloader condition only applies without a query.
+            await page.waitForFunction(q => (q || !document.getElementById('preloader')) && !!window.SillyTavern?.getContext
                 && SillyTavern.getContext().characters?.length > 0
                 && document.querySelectorAll('#rm_print_characters_block .character_select, #rm_print_characters_block .group_select').length > 0,
-            null, { timeout: 120000, polling: 100 });
+            (opt.query || '').startsWith('?'), { timeout: 120000, polling: 100 });
             if (opt.ag2) await page.waitForFunction(() => document.body.classList.contains('ag2'), null, { timeout: 30000, polling: 100 });
             const readyMs = Date.now() - t0;
             await sleep(opt.settle ?? 2500);

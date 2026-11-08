@@ -19,7 +19,7 @@ const NATIVE_CLASSES = ['bubblechat', 'documentstyle'];
 const THEME_NAMES = ['Apple Glass Dark', 'Apple Glass 2'];
 const AG2_THEME = 'Apple Glass 2';
 // Keep in sync with BUILD in shell/index.js (tools/ag2/bump-build.sh updates both).
-const SHELL_BUILD = '202611081843';
+const SHELL_BUILD = '202611081902';
 const STYLE_KEY = 'apGlass.chatStyle';
 
 function themeActive() {
@@ -216,6 +216,13 @@ markSplashPopup();
 // other themes never download the shell modules.
 let shellMod = null;
 let shellLoadFailed = false;
+// Remember APP_READY for a shell enabled later (theme switched mid-session). The preloader
+// is not a reliable signal: with a URL query string ST may leave it in the DOM.
+let appReady = false;
+try {
+    const { eventSource, eventTypes } = SillyTavern.getContext();
+    eventSource?.on?.(eventTypes.APP_READY, () => { appReady = true; });
+} catch { /* context not ready: the shell falls back to the preloader check */ }
 function shellWanted() {
     return currentThemeName() === AG2_THEME && !/classic/i.test(location.search + location.hash);
 }
@@ -223,7 +230,7 @@ async function syncShell() {
     try {
         if (shellWanted()) {
             shellMod ??= await import(`./shell/index.js?v=${SHELL_BUILD}`);
-            if (shellWanted()) shellMod.enable();
+            if (shellWanted()) shellMod.enable({ appReady });
         } else {
             shellMod?.disable();
         }

@@ -7,13 +7,13 @@
 // class and listener it added and reloads the current chat.
 // Any exception during enable → automatic teardown + one toastr.
 
-export const BUILD = '202611081843';
+export const BUILD = '202611081902';
 
-import { local, importStPinsOnce } from './store.js?v=202611081843';
-import { ctx, h, toggleDrawer } from './util.js?v=202611081843';
-import { closeMenu } from './menu.js?v=202611081843';
-import * as sidebar from './sidebar.js?v=202611081843';
-import * as chrome from './chrome.js?v=202611081843';
+import { local, importStPinsOnce } from './store.js?v=202611081902';
+import { ctx, h, toggleDrawer } from './util.js?v=202611081902';
+import { closeMenu } from './menu.js?v=202611081902';
+import * as sidebar from './sidebar.js?v=202611081902';
+import * as chrome from './chrome.js?v=202611081902';
 
 const BODY_CLASSES = ['ag2', 'ag2-welcome', 'ag2-side-collapsed', 'ag2-ready'];
 let on = false;
@@ -66,13 +66,15 @@ const api = {
     },
 };
 
+let readyHint = false;
 function appIsReady() {
-    // APP_READY fires once, right after the preloader is removed.
-    return !document.getElementById('preloader');
+    // ../index.js tracks APP_READY; the preloader check covers a missing hint.
+    return readyHint || !document.getElementById('preloader');
 }
 
-export function enable() {
+export function enable({ appReady = false } = {}) {
     if (on) return;
+    readyHint = !!appReady;
     on = true;
     try {
         document.body.classList.add('ag2');
@@ -118,7 +120,12 @@ export function enable() {
     }
 }
 
+let readyRun = 0;
 async function onReady() {
+    readyHint = true;
+    // APP_READY may arrive twice (live event + late-enable check): fill once per enable.
+    if (document.body.classList.contains('ag2-ready') && Date.now() - readyRun < 2000) return;
+    readyRun = Date.now();
     document.body.classList.add('ag2-ready');
     await importStPinsOnce();
     sidebar.updateFooter();

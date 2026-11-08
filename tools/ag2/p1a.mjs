@@ -188,9 +188,12 @@ async function themes(T) {
 
 async function classic(T) {
     const out = {};
+    // Same pinned-open accountStorage as the func part: under ?classic ST's own auto-open is
+    // visible (negative control for the shell's startup alignment).
+    const pinnedOpen = s => Object.assign(s.accountStorage ||= {}, { NavLockOn: 'true', NavOpened: 'true', LNavLockOn: 'true', LNavOpened: 'true', WINavLockOn: 'true', WINavOpened: 'true' });
     for (const q of ['?classic', '#classic']) {
-        const { page } = await enter(T, { classic: true, query: q });
-        out[q] = await page.evaluate(() => ({ body: [...document.body.classList].filter(c => c.startsWith('ag2')), nodes: document.querySelectorAll('[id^="ag2-"]').length, theme: SillyTavern.getContext().powerUserSettings.theme, topbar: getComputedStyle(document.querySelector('#top-settings-holder .drawer-toggle')).visibility }));
+        const { page } = await enter(T, { classic: true, query: q }, { mutate: pinnedOpen });
+        out[q] = await page.evaluate(() => ({ body: [...document.body.classList].filter(c => c.startsWith('ag2')), nodes: document.querySelectorAll('[id^="ag2-"]').length, theme: SillyTavern.getContext().powerUserSettings.theme, topbar: getComputedStyle(document.querySelector('#top-settings-holder .drawer-toggle')).visibility, openDrawers: [...document.querySelectorAll('.drawer-content.openDrawer')].map(e => e.id) }));
         if (q === '?classic') await T.shot(page, 'classic-1440');
         out[q].errors = T.errors(page).filter(e => !/FilesPluginApi|LittleWhiteBox_CommonSettings|Failed to load resource/.test(e));
     }
