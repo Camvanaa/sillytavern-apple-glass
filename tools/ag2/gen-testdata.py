@@ -111,7 +111,7 @@ def make_cards(default_chat):
     # re-reads cards from disk after openCharacterChat(), so this is what it reports.
     created = (NOW - timedelta(days=30)).strftime('%Y-%m-%d @%Hh %Mm %Ss %fms')[:-5] + 'ms'
     for stem, name, letter, rgb, desc, first in CHARS:
-        c = card(name, desc, '友善、可靠', '奇幻 / 日常', first, ['ag2-test'], created)
+        c = card(name, desc, '友善、可靠', '奇幻 / 日常', first, ['neutral-test'], created)
         c['chat'] = default_chat.get(stem, '')
         write_card(stem + '.png', letter_png(letter, rgb), c)
 
@@ -295,10 +295,12 @@ def main():
     s.setdefault('power_user', {}).setdefault('personas', {})['user-default.png'] = USER
     s['power_user']['default_persona'] = None
     tags = s.setdefault('tags', [])
-    if not any(t.get('id') == 'ag2-test' for t in tags):
-        tags.append({'id': 'ag2-test', 'name': 'AG2 测试', 'color': '', 'color2': '', 'create_date': int(NOW.timestamp() * 1000)})
+    # tag id must not start with "ag2": shell residue checks look for id/class ag2*
+    tags[:] = [t for t in tags if t.get('id') != 'ag2-test']
+    if not any(t.get('id') == 'neutral-test' for t in tags):
+        tags.append({'id': 'neutral-test', 'name': 'AG2 测试', 'color': '', 'color2': '', 'create_date': int(NOW.timestamp() * 1000)})
     for stem, *_ in CHARS:
-        s.setdefault('tag_map', {})[stem + '.png'] = ['ag2-test']
+        s.setdefault('tag_map', {})[stem + '.png'] = ['neutral-test']
     json.dump(s, open(sp, 'w'), ensure_ascii=False, indent=4)
 
     for k, p, n in made:

@@ -226,11 +226,14 @@ async function cold(T) {
 }
 
 async function compat(T) {
-    const { page } = await enter(T);
+    // The user keeps Quick Replies off; switch them on in memory only (settings/get is
+    // rewritten in the browser, nothing is saved) so #qr--bar placement can be checked.
+    const { page } = await enter(T, {}, { extSettings: { quickReplyV2: { isEnabled: true } } });
     return page.evaluate(() => {
         const c = SillyTavern.getContext();
         const es = c.extensionSettings;
-        const qr = document.querySelector('#qr--bar'), sf = document.querySelector('#send_form');
+        // #qr--bar lives inside #send_form; "above the composer" = above the input row #nonQRFormItems
+        const qr = document.querySelector('#qr--bar'), sf = document.querySelector('#nonQRFormItems') || document.querySelector('#send_form');
         const qrR = qr?.getBoundingClientRect(), sfR = sf?.getBoundingClientRect();
         const th = [...document.querySelectorAll('.TH-render')];
         return {
@@ -239,7 +242,8 @@ async function compat(T) {
             tavernHelper: { renderEnabled: es.tavern_helper?.render?.enabled, thRender: th.length, iframes: th.filter(e => e.querySelector('iframe')).length, iframeH: th.map(e => Math.round(e.querySelector('iframe')?.getBoundingClientRect().height || 0)) },
             moonlit: { disabled: (es.disabledExtensions || []).some(x => /Moonlit/.test(x)), scriptLoaded: [...document.scripts].some(s => /Moonlit/.test(s.src)), cssLoaded: [...document.styleSheets].some(s => /Moonlit/.test(s.href || '')) },
             qrBar: qr ? { visible: getComputedStyle(qr).display !== 'none' && qrR.height > 0, aboveComposer: qrR.bottom <= sfR.top + 1 || qr.closest('#send_form') !== null, inSendForm: !!qr.closest('#send_form'), qrBottom: Math.round(qrR.bottom), sendTop: Math.round(sfR.top) } : 'absent (quickReplyV2.isEnabled=' + es.quickReplyV2?.isEnabled + ')',
-            ag2: { bodyClass: document.body.classList.contains('ag2'), ag2Nodes: document.querySelectorAll('[class*="ag2"], [id^="ag2"]').length },
+            // shell nodes are id="ag2-…" or class "ag2-…" / "ag2"; avatars named ag2_*.png do not count
+            ag2: { bodyClass: document.body.classList.contains('ag2'), ag2Nodes: [...document.querySelectorAll('body, body *')].filter(e => /^ag2/.test(e.id) || [...e.classList].some(c => c === 'ag2' || c.startsWith('ag2-'))).map(e => e.tagName.toLowerCase() + '#' + e.id + '.' + [...e.classList].join('.')).slice(0, 8) },
             chatDisplay: c.powerUserSettings.chat_display,
         };
     });

@@ -107,12 +107,15 @@ async function main() {
             await page.route('**/api/backends/**', r => r.abort());
             await page.route('**/api/openai/**', r => r.abort());
             if (opt.mock !== false) await T.mockGen(page, opt.gen);
-            if (opt.powerUser) {
+            // In-memory settings overrides (the response is rewritten; nothing is written to disk):
+            // powerUser → power_user, extSettings → extension_settings (shallow-merged per key).
+            if (opt.powerUser || opt.extSettings) {
                 await page.route('**/api/settings/get', async route => {
                     const res = await route.fetch();
                     const j = await res.json();
                     const s = JSON.parse(j.settings);
-                    Object.assign(s.power_user, opt.powerUser);
+                    Object.assign(s.power_user, opt.powerUser || {});
+                    for (const [k, v] of Object.entries(opt.extSettings || {})) s.extension_settings[k] = { ...(s.extension_settings[k] || {}), ...v };
                     j.settings = JSON.stringify(s);
                     await route.fulfill({ response: res, body: JSON.stringify(j) });
                 });
