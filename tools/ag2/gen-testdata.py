@@ -105,10 +105,15 @@ CHARS = [
 ]
 
 
-def make_cards():
+def make_cards(default_chat):
+    # card.chat = the chat ST opens when the character is selected (no .jsonl suffix).
+    # Pointing it at a real file matters for tests: with write endpoints stubbed, ST
+    # re-reads cards from disk after openCharacterChat(), so this is what it reports.
     created = (NOW - timedelta(days=30)).strftime('%Y-%m-%d @%Hh %Mm %Ss %fms')[:-5] + 'ms'
     for stem, name, letter, rgb, desc, first in CHARS:
-        write_card(stem + '.png', letter_png(letter, rgb), card(name, desc, '友善、可靠', '奇幻 / 日常', first, ['ag2-test'], created))
+        c = card(name, desc, '友善、可靠', '奇幻 / 日常', first, ['ag2-test'], created)
+        c['chat'] = default_chat.get(stem, '')
+        write_card(stem + '.png', letter_png(letter, rgb), c)
 
 
 # ---------------------------------------------------------------- chats
@@ -236,7 +241,6 @@ def short_chat(stem, name, first, pairs, when, label):
 
 
 def main():
-    make_cards()
     made = []
     made.append(('long', *long_chat()))
     a = CHARS[0]
@@ -249,6 +253,10 @@ def main():
     made.append(('kael-2', *short_chat('ag2_Kael', k[1], k[5], [('无线电修好了吗？', '"还差一个电容。"')], NOW - timedelta(days=40), '旧无线电')))
     made.append(('seraphina', *short_chat('default_Seraphina', 'Seraphina', '*The forest is quiet. Seraphina smiles softly.* "You are safe here, traveler."', [('Where am I?', '"In the Eldoria forest. Rest a while."'), ('Thank you.', '"You are welcome."')], TODAY - timedelta(days=1) + timedelta(hours=10), 'forest')))
     made.append(('assistant', *short_chat('default_Assistant', 'Assistant', 'Hello! How can I help you today?', [('列出三种常见的排序算法。', '1. 快速排序\n2. 归并排序\n3. 堆排序'), ('哪个最稳定？', '归并排序是稳定排序。')], NOW - timedelta(days=3), 'sorting')))
+
+    stem_of = lambda p: os.path.basename(p)[:-len('.jsonl')]
+    by = dict((k, p) for k, p, n in made)
+    make_cards({'ag2_Aldric': stem_of(by['long']), 'ag2_Mira': stem_of(by['mira-1']), 'ag2_Kael': stem_of(by['kael-1'])})
 
     # ---- group: Aldric + Mira + Kael
     gid = 'ag2group01'
