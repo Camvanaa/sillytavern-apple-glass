@@ -1,0 +1,261 @@
+/* =============================================================================
+   APPLE GLASS 2  ·  SillyTavern shell theme (DESIGN.md v1.1)
+   Published as the UI theme "Apple Glass 2" by sync-css.sh.
+
+   Scoping rule: EVERY rule in this file hangs under `html body.ag2`. The class is
+   added by the AppleGlassStyles extension (shell/index.js) only while this theme
+   is active and the URL has no `classic`, so under any other theme — and under
+   `?classic` — nothing here applies. When a rule must beat SillyTavern's own
+   styles, use `html body.ag2:not(#_):not(#__)` + !important (same trick as
+   apple-theme.css).
+
+   Sections follow the design numbering:
+     0 · Tokens (§6 visual spec, §7 motion)        ← P0
+     1 · Typography (ported from apple-theme.css §1) ← P0
+     2 · Layout / 3 · Sidebar / 4 · Capsules / 5 · Reading / ...  (P1a+)
+     14 · Accessibility (reduced motion)            ← P0 (token level only)
+   ============================================================================= */
+
+/* == 0 · Tokens == */
+
+html body.ag2 {
+    /* Fonts: SF Pro / PingFang SC on Apple, Noto Sans CJK on Linux (§6) */
+    --ag2-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+        "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI",
+        "Microsoft YaHei", "Noto Sans CJK SC", "Noto Sans SC", "Segoe UI", sans-serif,
+        "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
+    --ag2-mono: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, Monaco, Consolas,
+        "Noto Sans Mono CJK SC", "Noto Sans Mono", monospace;
+
+    /* Labels l1–l4 */
+    --ag2-l1: rgba(255, 255, 255, 0.94);
+    --ag2-l2: rgba(235, 235, 245, 0.64);
+    --ag2-l3: rgba(235, 235, 245, 0.42);
+    --ag2-l4: rgba(235, 235, 245, 0.26);
+
+    /* Fills f1–f5 */
+    --ag2-f1: rgba(120, 120, 128, 0.40);
+    --ag2-f2: rgba(120, 120, 128, 0.28);
+    --ag2-f3: rgba(120, 120, 128, 0.20);
+    --ag2-f4: rgba(120, 120, 128, 0.12);
+    --ag2-f5: rgba(255, 255, 255, 0.045);
+
+    /* Separators (always drawn 0.5px) */
+    --ag2-sep: rgba(255, 255, 255, 0.075);
+    --ag2-sep-strong: rgba(255, 255, 255, 0.13);
+
+    /* System colours (dark) */
+    --ag2-blue: #0a84ff;
+    --ag2-green: #30d158;
+    --ag2-orange: #ff9f0a;
+    --ag2-red: #ff453a;
+    --ag2-purple: #bf5af2;
+    --ag2-pink: #ff375f;
+    --ag2-teal: #40c8e0;
+    --ag2-indigo: #5e5ce6;
+    --ag2-graphite: #8e8e93;
+    --ag2-quote: #8cc4ff;
+
+    /* Accent: components reference ONLY these three. The appearance page swaps
+       --ag2-accent (body[data-ag2-accent=…], P2a); hover/soft derive from it so a
+       colour change touches one variable. */
+    --ag2-accent: var(--ag2-blue);
+    --ag2-accent-hover: color-mix(in srgb, var(--ag2-accent) 82%, white);
+    --ag2-accent-soft: color-mix(in srgb, var(--ag2-accent) 20%, transparent);
+
+    /* Materials (§6). Blur values are paired with their surface; small controls
+       never blur (§7 budget). */
+    --ag2-mat-side: rgba(30, 30, 36, 0.50);      /* sidebar, inspector */
+    --ag2-mat-float: rgba(40, 40, 47, 0.56);     /* floating capsules, composer */
+    --ag2-mat-window: rgba(28, 28, 33, 0.80);    /* settings window */
+    --ag2-mat-menu: rgba(44, 44, 51, 0.82);      /* menus, popovers */
+    --ag2-blur-side: saturate(200%) blur(50px);
+    --ag2-blur-float: saturate(190%) blur(30px);
+    --ag2-blur-window: saturate(190%) blur(50px);
+    --ag2-blur-menu: saturate(190%) blur(50px);
+    /* fast_ui_mode / body.no-blur: opaque equivalents of the materials above */
+    --ag2-solid-side: rgb(30, 30, 36);
+    --ag2-solid-float: rgb(40, 40, 47);
+    --ag2-solid-window: rgb(28, 28, 33);
+    --ag2-solid-menu: rgb(44, 44, 51);
+
+    /* Rim + shadows: every glass surface = rim + one shadow tier */
+    --ag2-rim: inset 0 0 0 0.5px rgba(255, 255, 255, 0.13), inset 0 1px 0 rgba(255, 255, 255, 0.09);
+    --ag2-sh1: 0 1px 2px rgba(0, 0, 0, 0.28);
+    --ag2-sh2: 0 8px 28px rgba(0, 0, 0, 0.30), 0 1px 3px rgba(0, 0, 0, 0.24);
+    --ag2-sh3: 0 30px 80px rgba(0, 0, 0, 0.55), 0 8px 22px rgba(0, 0, 0, 0.32);
+
+    /* Radii (concentric: panel 22 = card 16 + 6 inset) */
+    --ag2-r-window: 26px;
+    --ag2-r-panel: 22px;
+    --ag2-r-card: 16px;
+    --ag2-r-row: 12px;
+    --ag2-r-ctl: 9px;
+    --ag2-r-full: 999px;
+
+    /* Spacing: 4pt grid; panels sit 10px from the window edge */
+    --ag2-inset: 10px;
+    --ag2-pad: 20px;
+    --ag2-pad-wide: 28px;
+    --ag2-side-w: 292px;
+    --ag2-insp-w: 360px;
+
+    /* Type scale (§6): size / weight */
+    --ag2-fs-large: 32px;      /* phone large title, 760 */
+    --ag2-fs-title: 21px;      /* 720 */
+    --ag2-fs-headline: 15px;   /* 650 */
+    --ag2-fs-body: 14px;
+    --ag2-fs-sub: 13.5px;
+    --ag2-fs-foot: 12.5px;
+    --ag2-fs-section: 11.5px;  /* 620 */
+    --ag2-read-size: 16px;     /* reading body, user-adjustable 14–20 (P2a) */
+    --ag2-read-lh: 1.86;
+    --ag2-read-ls: 0.012em;
+    --ag2-read-width: 720px;
+
+    /* Motion (§7): press 90ms · hover/fade 200ms · panel 280ms, iOS sheet curve.
+       Zeroed under reduced motion (§14 below). */
+    --ag2-dur-press: 90ms;
+    --ag2-dur: 200ms;
+    --ag2-dur-panel: 280ms;
+    --ag2-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --ag2-ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);
+
+    /* Layers: the shell stays below #top-settings-holder (z 3005, a stacking
+       context holding ST's drawers and the right rail) and below ST's legacy
+       popups (#character_popup 4001, #shadow_popup 9999) — §9.2 #2 / #10. */
+    --ag2-z-shell: 30;
+    --ag2-z-capsule: 40;
+    --ag2-z-window-backdrop: 3001;
+    --ag2-z-window: 3002;
+    --ag2-z-menu: 3004;
+}
+
+/* No-blur mode: ST's fast_ui_mode adds body.no-blur. Swap materials for opaque
+   colours so surfaces built from the tokens stay legible without blur. */
+html body.ag2.no-blur {
+    --ag2-mat-side: var(--ag2-solid-side);
+    --ag2-mat-float: var(--ag2-solid-float);
+    --ag2-mat-window: var(--ag2-solid-window);
+    --ag2-mat-menu: var(--ag2-solid-menu);
+    --ag2-blur-side: none;
+    --ag2-blur-float: none;
+    --ag2-blur-window: none;
+    --ag2-blur-menu: none;
+}
+
+/* == 1 · Typography == */
+/* Ported from apple-theme.css §1 (font stack, Font Awesome protection, crisp text),
+   re-scoped to body.ag2 and moved onto the AG2 tokens. Reading-area sizes (§5.3)
+   come in P1b together with the reading layout. */
+
+html body.ag2,
+html body.ag2 input,
+html body.ag2 textarea,
+html body.ag2 select,
+html body.ag2 button:not([class*="fa-"]),
+html body.ag2 .menu_button:not([class*="fa-"]),
+html body.ag2 .text_pole {
+    font-family: var(--ag2-font) !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* The font-family rule above would hit icon elements too: keep Font Awesome on
+   every element that renders an FA glyph. */
+html body.ag2 .fa,
+html body.ag2 .fas,
+html body.ag2 .far,
+html body.ag2 .fa-solid,
+html body.ag2 .fa-regular,
+html body.ag2 .fa-classic,
+html body.ag2 .menu_button.fa-solid,
+html body.ag2 .menu_button.fa-regular,
+html body.ag2 .menu_button.fas,
+html body.ag2 .right_menu_button.fa-solid,
+html body.ag2 .drawer-icon.fa-solid,
+html body.ag2 .mes_button.fa-solid,
+html body.ag2 .mes_button.fa-regular {
+    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", FontAwesome !important;
+}
+
+html body.ag2 .fab,
+html body.ag2 .fa-brands,
+html body.ag2 .menu_button.fa-brands {
+    font-family: "Font Awesome 6 Brands", "Font Awesome 5 Brands" !important;
+}
+
+html body.ag2 code,
+html body.ag2 pre,
+html body.ag2 .mes_text code,
+html body.ag2 .monospace {
+    font-family: var(--ag2-mono) !important;
+}
+
+/* ST themes may set a text shadow; glass surfaces look muddy with it */
+html body.ag2 * {
+    text-shadow: none !important;
+}
+
+html body.ag2 {
+    letter-spacing: -0.011em;
+    color: var(--ag2-l1);
+}
+
+html body.ag2 h1,
+html body.ag2 h2,
+html body.ag2 h3,
+html body.ag2 h4,
+html body.ag2 h5 {
+    letter-spacing: -0.02em !important;
+    font-weight: 600 !important;
+    color: var(--ag2-l1);
+}
+
+/* Times, token counts and counters line up in columns (§6 "数字") */
+html body.ag2 .mes_timer,
+html body.ag2 .tokenCounterDisplay,
+html body.ag2 .swipes-counter,
+html body.ag2 .timestamp {
+    font-variant-numeric: tabular-nums;
+}
+
+/* == 14 · Accessibility (reduced motion) == */
+/* ST adds body.reduced-motion for its own switch AND the OS setting; the media
+   query covers the moment before ST has run. Zeroing the duration tokens covers
+   every AG2 rule; the catch-all covers ST and third-party CSS. 0.01ms (not 0)
+   so transitionend / animationend still fire. */
+
+html body.ag2.reduced-motion:not(#_):not(#__) {
+    --ag2-dur-press: 0.01ms;
+    --ag2-dur: 0.01ms;
+    --ag2-dur-panel: 0.01ms;
+}
+
+html body.ag2.reduced-motion:not(#_):not(#__) *,
+html body.ag2.reduced-motion:not(#_):not(#__) *::before,
+html body.ag2.reduced-motion:not(#_):not(#__) *::after {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html body.ag2:not(#_):not(#__) {
+        --ag2-dur-press: 0.01ms;
+        --ag2-dur: 0.01ms;
+        --ag2-dur-panel: 0.01ms;
+    }
+
+    html body.ag2:not(#_):not(#__) *,
+    html body.ag2:not(#_):not(#__) *::before,
+    html body.ag2:not(#_):not(#__) *::after {
+        transition-duration: 0.01ms !important;
+        transition-delay: 0s !important;
+        animation-duration: 0.01ms !important;
+        animation-delay: 0s !important;
+        animation-iteration-count: 1 !important;
+    }
+}
