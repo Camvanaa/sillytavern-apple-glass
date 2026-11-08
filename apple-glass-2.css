@@ -1202,6 +1202,33 @@ html body.ag2.immersive-mode:not(#_):not(#__) #ap-jump-latest {
     display: none !important;
 }
 
+/* == 13 · Ported fixes (apple-theme.css §15m, §19b) == */
+/* Under AG2 ST's own panels still render with the theme JSON's blur strength and
+   none of AG Dark's fixes; these two keep the §4.6 regression at zero until the
+   P2 settings window restyles the panels. */
+
+/* §7 / §18a: a blurred panel never contains another blurred layer (ST gives the
+   formatting notice, background tabs and tile toggles their own blur). */
+html body.ag2:not(#_):not(#__) .drawer-content *,
+html body.ag2:not(#_):not(#__) .bg_example .mobile-only-menu-toggle {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* §19b: text buttons keep their label on one line (“重置”, Extras “连接” were
+   squeezed into one-glyph-per-line pills). :not(:empty) leaves glyph-only buttons round. */
+html body.ag2:not(#_):not(#__) .menu_button:not(:empty):not(.mes_text *),
+html body.ag2:not(#_):not(#__) .menu_button_icon:not(:empty):not(.mes_text *),
+html body.ag2:not(#_):not(#__) .api_button {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    max-width: 100%;
+}
+
+html body.ag2:not(#_):not(#__) .extensions_url_block {
+    flex: 0 0 auto !important;
+}
+
 /* == 14 · Accessibility (reduced motion) == */
 /* ST adds body.reduced-motion for its own switch AND the OS setting; the media
    query covers the moment before ST has run. Zeroing the duration tokens covers
