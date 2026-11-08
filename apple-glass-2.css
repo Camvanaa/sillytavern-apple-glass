@@ -12,7 +12,9 @@
    Sections follow the design numbering:
      0 · Tokens (§6 visual spec, §7 motion)        ← P0
      1 · Typography (ported from apple-theme.css §1) ← P0
-     2 · Layout / 3 · Sidebar / 4 · Capsules / 5 · Reading / ...  (P1a+)
+     2 · Layout · 2.1 Shell frame · 3 · Sidebar · 4 · Capsules  ← P1a
+     5.8 · Menus · 5.10 · Welcome                    ← P1a
+     5 · Reading / ...                               (P1b+)
      14 · Accessibility (reduced motion)            ← P0 (token level only)
    ============================================================================= */
 
@@ -218,6 +220,931 @@ html body.ag2 .tokenCounterDisplay,
 html body.ag2 .swipes-counter,
 html body.ag2 .timestamp {
     font-variant-numeric: tabular-nums;
+}
+
+/* == 2 · Layout (§4) == */
+/* Desktop only (≥1001px). ≤1000px keeps ST's native mobile layout until the P5
+   phone shell; the shell frame is hidden there. */
+
+html body.ag2 {
+    /* #sheld sits between the sidebar and the (optional, P3) inspector */
+    --ag2-sheld-left: calc(var(--ag2-inset) * 2 + var(--ag2-side-w));
+    --ag2-sheld-right: var(--ag2-inset);
+    /* chat fades: top under the capsules; bottom grows to 140px once the composer
+       floats over the chat (P1b) */
+    --ag2-fade-top: 70px;
+    --ag2-fade-bottom: 24px;
+}
+
+html body.ag2.ag2-side-collapsed {
+    --ag2-sheld-left: var(--ag2-inset);
+}
+
+@media (max-width: 1000px) {
+    html body.ag2:not(#_):not(#__) #ag2-shell {
+        display: none !important;
+    }
+}
+
+@media (min-width: 1001px) {
+    /* Old top bar: background strip goes; the icon holder must stay a z-3005
+       stacking context (no display:none / transform / filter — §9.2 #1/#2), so its
+       toggles are only made invisible and the strip click-through. Drawers inside
+       still open through ST's own handler. */
+    html body.ag2:not(#_):not(#__) #top-bar {
+        display: none !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #top-settings-holder {
+        pointer-events: none !important;
+        background: none !important;
+        border: 0 !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #top-settings-holder > .drawer > .drawer-toggle {
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #top-settings-holder .drawer-content {
+        pointer-events: auto !important;
+    }
+
+    /* #sheld stays the chat body; only its box moves (§9.2 #8). ST writes
+       --sheldWidth inline on :root, hence the !important overrides. */
+    html body.ag2:not(#_):not(#__) #sheld {
+        position: fixed !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        left: var(--ag2-sheld-left) !important;
+        right: var(--ag2-sheld-right) !important;
+        width: auto !important;
+        max-width: none !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        margin: 0 !important;
+        transition: left var(--ag2-dur-panel) var(--ag2-ease-sheet);
+    }
+
+    /* Reading column width is a shell variable (appearance page, P2a). The scroll
+       container stays full width so the scrollbar sits at the edge of the chat area;
+       the padding centres the column. Top padding clears the capsules. */
+    html body.ag2:not(#_):not(#__) #chat {
+        padding-top: 72px !important;
+        padding-inline: max(var(--ag2-pad), calc((100% - var(--ag2-read-width)) / 2)) !important;
+        background: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        /* text flows under the glass capsules instead of being cut hard (§4) */
+        -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--ag2-fade-top), #000 calc(100% - var(--ag2-fade-bottom)), transparent 100%);
+        mask-image: linear-gradient(to bottom, transparent 0, #000 var(--ag2-fade-top), #000 calc(100% - var(--ag2-fade-bottom)), transparent 100%);
+    }
+
+    /* Native composer (restyled into the input island in P1b) follows the column */
+    html body.ag2:not(#_):not(#__) #form_sheld {
+        width: min(100%, calc(var(--ag2-read-width) + var(--ag2-pad) * 2)) !important;
+        max-width: none !important;
+        margin-inline: auto !important;
+        padding-bottom: var(--ag2-inset);
+    }
+
+    /* Welcome: ST's .welcomePanel + system messages in #chat are hidden; the shell
+       draws its own page outside #sheld (§5.10). visibility keeps ST's layout and
+       scroll maths intact. */
+    html body.ag2.ag2-welcome:not(#_):not(#__) #sheld {
+        visibility: hidden !important;
+    }
+}
+
+/* == 2.1 · Shell frame == */
+/* #ag2-shell is a child of <body>, outside #sheld. z 40: above #sheld (30) but
+   below #top-settings-holder (3005) and ST's legacy popups (§9.2 #2/#10). The frame
+   itself is click-through; only its islands take pointer events. */
+
+html body.ag2 #ag2-shell {
+    position: fixed;
+    inset: 0;
+    z-index: var(--ag2-z-capsule);
+    pointer-events: none;
+    color: var(--ag2-l1);
+    font-size: var(--ag2-fs-body);
+}
+
+html body.ag2 #ag2-shell > * {
+    pointer-events: auto;
+}
+
+html body.ag2 #ag2-shell button {
+    font: inherit;
+    color: inherit;
+    margin: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html body.ag2 #ag2-shell :focus {
+    outline: none;
+}
+
+/* Focus ring only for keyboard use (§8): 3px accent */
+html body.ag2 #ag2-shell :focus-visible {
+    outline: 3px solid var(--ag2-accent) !important;
+    outline-offset: 1px;
+}
+
+html body.ag2 .ag2-i {
+    flex: none;
+    display: block;
+}
+
+/* Icon button: 32×32 control, no blur (small control, §7) */
+html body.ag2 #ag2-shell .ag2-ib {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: var(--ag2-r-ctl);
+    color: var(--ag2-l2);
+    transition: background-color var(--ag2-dur) ease, color var(--ag2-dur) ease;
+}
+
+html body.ag2 #ag2-shell .ag2-ib:hover {
+    background: var(--ag2-f4);
+    color: var(--ag2-l1);
+}
+
+html body.ag2 #ag2-shell .ag2-ib:active {
+    background: var(--ag2-f3);
+    transition-duration: var(--ag2-dur-press);
+}
+
+/* Pill button (welcome / empty states) */
+html body.ag2 #ag2-shell .ag2-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 18px;
+    background: var(--ag2-f2);
+    color: var(--ag2-l1);
+    font-size: var(--ag2-fs-body);
+    font-weight: 590;
+    white-space: nowrap;
+    transition: background-color var(--ag2-dur) ease;
+}
+
+html body.ag2 #ag2-shell .ag2-btn:hover {
+    background: var(--ag2-f1);
+}
+
+html body.ag2 .ag2-av {
+    flex: none;
+    display: block;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--ag2-f3);
+}
+
+html body.ag2 .ag2-av-42 { width: 42px; height: 42px; }
+html body.ag2 .ag2-av-36 { width: 36px; height: 36px; }
+html body.ag2 .ag2-av-32 { width: 32px; height: 32px; }
+html body.ag2 .ag2-av-28 { width: 28px; height: 28px; }
+
+/* Group avatar without a custom image: two member avatars overlapped */
+html body.ag2 .ag2-av-stack {
+    position: relative;
+    background: none;
+    color: var(--ag2-l2);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+html body.ag2 .ag2-av-stack > img {
+    position: absolute;
+    width: 72%;
+    height: 72%;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 0 0 1.5px rgba(30, 30, 36, 0.9);
+}
+
+html body.ag2 .ag2-av-stack > img:first-child { left: 0; top: 0; }
+html body.ag2 .ag2-av-stack > img:nth-child(2) { right: 0; bottom: 0; }
+html body.ag2 .ag2-av-stack > img:only-child { position: static; width: 100%; height: 100%; }
+
+/* == 3 · Sidebar (§5.1) == */
+
+html body.ag2 #ag2-sidebar {
+    position: absolute;
+    left: var(--ag2-inset);
+    top: var(--ag2-inset);
+    bottom: var(--ag2-inset);
+    width: var(--ag2-side-w);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: var(--ag2-r-panel);
+    background: var(--ag2-mat-side);
+    -webkit-backdrop-filter: var(--ag2-blur-side);
+    backdrop-filter: var(--ag2-blur-side);
+    box-shadow: var(--ag2-rim), var(--ag2-sh2);
+    transition: transform var(--ag2-dur-panel) var(--ag2-ease-sheet), visibility 0s linear 0s;
+}
+
+/* Collapsed: slide out, then drop from the a11y tree / tab order */
+html body.ag2.ag2-side-collapsed #ag2-sidebar {
+    transform: translateX(calc(-100% - var(--ag2-inset) * 2));
+    visibility: hidden;
+    transition: transform var(--ag2-dur-panel) var(--ag2-ease-sheet), visibility 0s linear var(--ag2-dur-panel);
+}
+
+html body.ag2 .ag2-side-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 52px;
+    flex: none;
+    padding: 6px 10px 0 10px;
+}
+
+html body.ag2 .ag2-side-title {
+    flex: 1;
+    min-width: 0;
+    font-size: var(--ag2-fs-headline);
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Search opens the ⌘K palette (P4); it is a button, not a second search UI */
+html body.ag2 #ag2-shell .ag2-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: none;
+    height: 34px;
+    margin: 4px 12px 10px;
+    padding: 0 8px 0 10px;
+    border-radius: 10px;
+    background: var(--ag2-f3);
+    color: var(--ag2-l3);
+    font-size: var(--ag2-fs-sub);
+    text-align: left;
+    transition: background-color var(--ag2-dur) ease;
+}
+
+html body.ag2 #ag2-shell .ag2-search:hover {
+    background: var(--ag2-f2);
+}
+
+html body.ag2 .ag2-search-ph {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+html body.ag2 #ag2-shell kbd {
+    flex: none;
+    padding: 1px 6px;
+    border-radius: 5px;
+    background: var(--ag2-f4);
+    box-shadow: inset 0 0 0 0.5px var(--ag2-sep-strong);
+    color: var(--ag2-l3);
+    font: 600 11px/16px var(--ag2-font);
+}
+
+/* Segmented control: filled track, raised selected segment, no borders */
+html body.ag2 .ag2-seg {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    flex: none;
+    margin: 0 12px 8px;
+    padding: 2px;
+    border-radius: var(--ag2-r-ctl);
+    background: var(--ag2-f3);
+}
+
+html body.ag2 #ag2-shell .ag2-seg > button {
+    height: 28px;
+    border-radius: 7px;
+    color: var(--ag2-l2);
+    font-size: 13px;
+    font-weight: 590;
+    white-space: nowrap;
+    transition: background-color var(--ag2-dur) ease, color var(--ag2-dur) ease;
+}
+
+html body.ag2 #ag2-shell .ag2-seg > button.ag2-on {
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--ag2-l1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25), inset 0 0.5px 0 rgba(255, 255, 255, 0.12);
+}
+
+html body.ag2 .ag2-side-list {
+    flex: 1;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 6px 8px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--ag2-f2) transparent;
+}
+
+/* Group header (置顶 / 最近 / 更早): 11.5/620, quaternary-ish grey */
+html body.ag2 .ag2-sec {
+    padding: 12px 10px 4px;
+    color: var(--ag2-l3);
+    font-size: var(--ag2-fs-section);
+    font-weight: 620;
+}
+
+html body.ag2 #ag2-shell .ag2-row {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    width: 100%;
+    min-width: 0;
+    padding: 8px 10px;
+    border-radius: var(--ag2-r-row);
+    text-align: left;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: background-color var(--ag2-dur) ease;
+}
+
+html body.ag2 #ag2-shell .ag2-row:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* Selected: .11 fill + top inner highlight (§5.1) */
+html body.ag2 #ag2-shell .ag2-row.ag2-on {
+    background: rgba(255, 255, 255, 0.11);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+html body.ag2 .ag2-row-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+html body.ag2 .ag2-row-top {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    min-width: 0;
+}
+
+html body.ag2 .ag2-row-name {
+    flex: 1;
+    min-width: 0;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 19px;
+    color: var(--ag2-l1);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+html body.ag2 .ag2-row-time {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--ag2-l3);
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
+}
+
+html body.ag2 .ag2-row-time .ag2-pin,
+html body.ag2 .ag2-row-time .ag2-fav {
+    color: var(--ag2-l3);
+}
+
+html body.ag2 .ag2-row-sub {
+    display: block;
+    min-width: 0;
+    color: var(--ag2-l2);
+    font-size: var(--ag2-fs-foot);
+    line-height: 17px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+html body.ag2 .ag2-row-prefix {
+    color: var(--ag2-l3);
+}
+
+html body.ag2 .ag2-empty,
+html body.ag2 .ag2-empty-note {
+    padding: 28px 16px;
+    color: var(--ag2-l3);
+    font-size: var(--ag2-fs-sub);
+    text-align: center;
+}
+
+html body.ag2 .ag2-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+html body.ag2 .ag2-empty-title {
+    color: var(--ag2-l2);
+    font-size: var(--ag2-fs-headline);
+    font-weight: 600;
+}
+
+html body.ag2 .ag2-empty-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* Footer: hairline above, inset to the content edge (§2.4) */
+html body.ag2 .ag2-side-foot {
+    flex: none;
+    position: relative;
+    padding: 8px 10px 10px;
+}
+
+html body.ag2 .ag2-side-foot::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 14px;
+    right: 14px;
+    height: 0.5px;
+    background: var(--ag2-sep-strong);
+}
+
+html body.ag2 #ag2-shell .ag2-conn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    height: 30px;
+    padding: 0 8px;
+    border-radius: var(--ag2-r-ctl);
+    color: var(--ag2-l2);
+    font-size: var(--ag2-fs-foot);
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+html body.ag2 #ag2-shell .ag2-conn:hover,
+html body.ag2 #ag2-shell .ag2-persona:hover {
+    background: var(--ag2-f4);
+}
+
+html body.ag2 .ag2-dot {
+    flex: none;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--ag2-red);
+}
+
+html body.ag2 .ag2-conn.ag2-ok .ag2-dot {
+    background: var(--ag2-green);
+    box-shadow: 0 0 6px rgba(48, 209, 88, 0.55);
+}
+
+html body.ag2 .ag2-conn-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+html body.ag2 .ag2-foot-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+html body.ag2 #ag2-shell .ag2-persona {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 40px;
+    padding: 0 6px;
+    border-radius: var(--ag2-r-row);
+    text-align: left;
+}
+
+html body.ag2 .ag2-persona-name {
+    min-width: 0;
+    font-size: var(--ag2-fs-sub);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+html body.ag2 .ag2-persona-sub {
+    flex: none;
+    color: var(--ag2-l3);
+    font-size: 11.5px;
+}
+
+/* == 4 · Capsules (§5.2) == */
+
+html body.ag2 #ag2-shell .ag2-cap {
+    position: absolute;
+    top: var(--ag2-inset);
+    height: 44px;
+    display: flex;
+    align-items: center;
+    border-radius: 22px;
+    background: var(--ag2-mat-float);
+    -webkit-backdrop-filter: var(--ag2-blur-float);
+    backdrop-filter: var(--ag2-blur-float);
+    box-shadow: var(--ag2-rim), var(--ag2-sh2);
+    transition: left var(--ag2-dur-panel) var(--ag2-ease-sheet), right var(--ag2-dur-panel) var(--ag2-ease-sheet);
+}
+
+html body.ag2 #ag2-title {
+    left: calc(var(--ag2-sheld-left) + var(--ag2-inset));
+    max-width: calc(100vw - var(--ag2-sheld-left) - var(--ag2-sheld-right) - 330px);
+    padding: 0 10px 0 6px;
+    gap: 2px;
+}
+
+html body.ag2 #ag2-shell .ag2-expand {
+    display: none;
+}
+
+html body.ag2.ag2-side-collapsed #ag2-shell .ag2-expand {
+    display: inline-flex;
+}
+
+html body.ag2 #ag2-shell .ag2-title-btn {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+    height: 44px;
+    padding: 0 2px;
+    text-align: left;
+}
+
+html body.ag2 .ag2-title-av {
+    flex: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+html body.ag2 .ag2-title-av.ag2-av-stack {
+    overflow: visible;
+}
+
+html body.ag2 .ag2-title-av > img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+html body.ag2 .ag2-title-av.ag2-av-stack > img {
+    width: 72%;
+    height: 72%;
+}
+
+html body.ag2 .ag2-title-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+html body.ag2 .ag2-title-name {
+    font-size: 14px;
+    font-weight: 640;
+    line-height: 18px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+html body.ag2 .ag2-title-sub {
+    color: var(--ag2-l2);
+    font-size: 11.5px;
+    line-height: 15px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+html body.ag2 .ag2-chev {
+    color: var(--ag2-l3);
+}
+
+html body.ag2 #ag2-tools {
+    right: calc(var(--ag2-sheld-right) + var(--ag2-inset));
+    padding: 0 6px;
+    gap: 2px;
+}
+
+html body.ag2 #ag2-shell .ag2-tool {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 16px;
+    color: var(--ag2-l1);
+    font-size: 13px;
+    white-space: nowrap;
+    transition: background-color var(--ag2-dur) ease;
+}
+
+html body.ag2 #ag2-shell .ag2-tool:hover {
+    background: var(--ag2-f4);
+}
+
+html body.ag2 #ag2-shell .ag2-tool .ag2-i {
+    color: var(--ag2-l2);
+}
+
+/* Small dot: chat has a bound lorebook / non-empty author's note (§5.2) */
+html body.ag2 .ag2-badge {
+    display: none;
+    position: absolute;
+    top: 5px;
+    left: 20px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--ag2-accent);
+}
+
+html body.ag2 .ag2-tool.ag2-has .ag2-badge {
+    display: block;
+}
+
+html body.ag2 .ag2-cap-sep {
+    width: 0.5px;
+    height: 18px;
+    margin: 0 4px;
+    background: var(--ag2-sep-strong);
+}
+
+/* No chat open: the welcome page owns the stage; the title capsule only keeps
+   its expand button when the sidebar is collapsed. */
+html body.ag2.ag2-welcome #ag2-tools,
+html body.ag2.ag2-welcome:not(.ag2-side-collapsed) #ag2-title,
+html body.ag2.ag2-welcome #ag2-title .ag2-title-btn {
+    display: none;
+}
+
+html body.ag2.ag2-welcome #ag2-title {
+    padding: 0 6px;
+}
+
+/* == 5.8 · Menus (popover) == */
+
+html body.ag2 #ag2-shell .ag2-menu {
+    position: fixed;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 208px;
+    max-width: 320px;
+    padding: 5px;
+    border-radius: 14px;
+    background: var(--ag2-mat-menu);
+    -webkit-backdrop-filter: var(--ag2-blur-menu);
+    backdrop-filter: var(--ag2-blur-menu);
+    box-shadow: var(--ag2-rim), var(--ag2-sh3);
+    animation: ag2-pop var(--ag2-dur) var(--ag2-ease);
+}
+
+@keyframes ag2-pop {
+    from { opacity: 0; transform: scale(0.97); }
+    to { opacity: 1; transform: none; }
+}
+
+html body.ag2 #ag2-shell .ag2-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 9px;
+    color: var(--ag2-l1);
+    font-size: var(--ag2-fs-sub);
+    text-align: left;
+    white-space: nowrap;
+}
+
+html body.ag2 #ag2-shell .ag2-menu-item .ag2-i {
+    color: var(--ag2-l2);
+}
+
+html body.ag2 #ag2-shell .ag2-menu-item:hover:not(:disabled),
+html body.ag2 #ag2-shell .ag2-menu-item:focus-visible {
+    background: var(--ag2-accent);
+    color: #fff;
+    outline: none !important;
+}
+
+html body.ag2 #ag2-shell .ag2-menu-item:hover:not(:disabled) .ag2-i,
+html body.ag2 #ag2-shell .ag2-menu-item:focus-visible .ag2-i {
+    color: #fff;
+}
+
+html body.ag2 #ag2-shell .ag2-menu-item.ag2-danger,
+html body.ag2 #ag2-shell .ag2-menu-item.ag2-danger .ag2-i {
+    color: var(--ag2-red);
+}
+
+html body.ag2 #ag2-shell .ag2-menu-item.ag2-danger:hover,
+html body.ag2 #ag2-shell .ag2-menu-item.ag2-danger:focus-visible {
+    background: var(--ag2-red);
+}
+
+html body.ag2 #ag2-shell .ag2-menu-item.ag2-danger:hover .ag2-i,
+html body.ag2 #ag2-shell .ag2-menu-item.ag2-danger:focus-visible .ag2-i {
+    color: #fff;
+}
+
+html body.ag2 #ag2-shell .ag2-menu-item:disabled {
+    color: var(--ag2-l4);
+    cursor: default;
+}
+
+html body.ag2 #ag2-shell .ag2-menu-item:disabled .ag2-i {
+    color: var(--ag2-l4);
+}
+
+html body.ag2 .ag2-menu-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+html body.ag2 .ag2-menu-hint {
+    color: var(--ag2-l3);
+    font-size: 12px;
+}
+
+html body.ag2 .ag2-i-pad {
+    flex: none;
+    width: 16px;
+}
+
+html body.ag2 .ag2-menu-sep {
+    height: 0.5px;
+    margin: 5px 10px;
+    background: var(--ag2-sep-strong);
+}
+
+html body.ag2 .ag2-menu-head {
+    padding: 6px 10px 2px;
+    color: var(--ag2-l3);
+    font-size: var(--ag2-fs-section);
+    font-weight: 620;
+}
+
+/* == 5.10 · Welcome page (no chat open) == */
+
+html body.ag2 #ag2-welcome {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--ag2-sheld-left);
+    right: var(--ag2-sheld-right);
+    display: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+    transition: left var(--ag2-dur-panel) var(--ag2-ease-sheet);
+}
+
+html body.ag2.ag2-welcome #ag2-welcome {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* soft scrim (no blur) so the greeting stays legible on bright backgrounds */
+    background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0.12) 70%, transparent 100%);
+}
+
+/* Welcome actions sit on the wallpaper: tinted like the cards */
+html body.ag2 #ag2-shell .ag2-wel-actions .ag2-btn {
+    background: rgba(30, 30, 36, 0.72);
+    box-shadow: var(--ag2-rim);
+}
+
+html body.ag2 #ag2-shell .ag2-wel-actions .ag2-btn:hover {
+    background: rgba(44, 44, 51, 0.86);
+}
+
+html body.ag2 .ag2-wel-inner {
+    width: min(760px, calc(100% - var(--ag2-pad-wide) * 2));
+    margin: auto 0;
+    padding: 48px 0;
+}
+
+html body.ag2 .ag2-wel-title {
+    margin: 0 0 6px !important;
+    color: var(--ag2-l1);
+    font-size: 30px !important;
+    font-weight: 720 !important;
+    line-height: 1.2;
+}
+
+html body.ag2 .ag2-wel-sub {
+    margin: 0 0 24px;
+    color: var(--ag2-l2);
+    font-size: var(--ag2-fs-headline);
+}
+
+html body.ag2 .ag2-wel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+/* Cards are small surfaces: tinted fill + rim, no blur (§7 budget) */
+html body.ag2 #ag2-shell .ag2-wel-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+    padding: 14px;
+    border-radius: var(--ag2-r-card);
+    background: rgba(30, 30, 36, 0.72);
+    box-shadow: var(--ag2-rim), var(--ag2-sh1);
+    text-align: left;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: background-color var(--ag2-dur) ease;
+}
+
+html body.ag2 #ag2-shell .ag2-wel-card:hover {
+    background: rgba(44, 44, 51, 0.82);
+}
+
+html body.ag2 .ag2-wel-card-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+html body.ag2 .ag2-wel-card-text {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    color: var(--ag2-l2);
+    font-size: 13px;
+    line-height: 19px;
+    min-height: 38px;
+}
+
+html body.ag2 .ag2-wel-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 22px;
 }
 
 /* == 14 · Accessibility (reduced motion) == */

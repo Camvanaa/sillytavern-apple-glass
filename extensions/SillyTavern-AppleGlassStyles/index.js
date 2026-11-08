@@ -5,6 +5,8 @@
 // 2. Fits option-card iframes (Ny-Gemini 4-option card) to their content.
 // 3. Adds a "jump to latest" pill when the chat is scrolled up (styled in §17g).
 // 4. Tags the start-up splash popup so splash.css keeps it transparent while it closes.
+// 5. Under the "Apple Glass 2" theme (and no ?classic) loads the AG2 shell (shell/index.js).
+// Features 1–4 work under both "Apple Glass Dark" and "Apple Glass 2".
 
 const STYLES = [
     { value: 3, cls: 'ap-chat-echo', label: '回声 Echo' },
@@ -14,12 +16,16 @@ const STYLES = [
 ];
 const ALL_CLASSES = STYLES.map(s => s.cls);
 const NATIVE_CLASSES = ['bubblechat', 'documentstyle'];
-const THEME_NAME = 'Apple Glass Dark';
+const THEME_NAMES = ['Apple Glass Dark', 'Apple Glass 2'];
+const AG2_THEME = 'Apple Glass 2';
+// Keep in sync with BUILD in shell/index.js (tools/ag2/bump-build.sh updates both).
+const SHELL_BUILD = '202611081843';
 const STYLE_KEY = 'apGlass.chatStyle';
 
 function themeActive() {
-    // The theme's CSS defines --ap-blue on :root; nothing else does.
-    return getComputedStyle(document.documentElement).getPropertyValue('--ap-blue').trim() !== '';
+    // AG Dark defines --ap-blue on :root; AG2 is recognised by name (its tokens live on body.ag2).
+    return THEME_NAMES.includes(currentThemeName())
+        || getComputedStyle(document.documentElement).getPropertyValue('--ap-blue').trim() !== '';
 }
 
 function currentThemeName() {
@@ -205,6 +211,36 @@ function markSplashPopup() {
 markSplashPopup();
 
 // ---------------------------------------------------------------------------
+// Apple Glass 2 shell: theme "Apple Glass 2" and no `classic` in the URL
+// (?classic / #classic is the emergency switch, DESIGN §9.4). Loaded lazily so
+// other themes never download the shell modules.
+let shellMod = null;
+let shellLoadFailed = false;
+function shellWanted() {
+    return currentThemeName() === AG2_THEME && !/classic/i.test(location.search + location.hash);
+}
+async function syncShell() {
+    try {
+        if (shellWanted()) {
+            shellMod ??= await import(`./shell/index.js?v=${SHELL_BUILD}`);
+            if (shellWanted()) shellMod.enable();
+        } else {
+            shellMod?.disable();
+        }
+    } catch (e) {
+        console.error('[AG2] shell could not start', e);
+        try { shellMod?.disable?.(); } catch { /* */ }
+        if (!shellLoadFailed) {
+            shellLoadFailed = true;
+            window.toastr?.error?.('Apple Glass 2 外壳加载失败，已使用原生布局。', 'Apple Glass 2');
+        }
+    }
+}
+// Extensions run inside ST's getSettings, after power_user (theme) is loaded, while the
+// splash still covers the page — so the frame is built before the old layout can show.
+syncShell();
+
+// ---------------------------------------------------------------------------
 
 let timer;
 function scheduleChatWork() {
@@ -228,7 +264,7 @@ jQuery(() => {
     // Remember the style picked while Apple Glass Dark is active: the theme file
     // carries chat_display=0, so switching away and back would reset it.
     $(document).on('change', '#chat_display', () => setTimeout(() => {
-        if (currentThemeName() === THEME_NAME) {
+        if (THEME_NAMES.includes(currentThemeName())) {
             localStorage.setItem(STYLE_KEY, String(powerUser()?.chat_display ?? 0));
         }
     }, 0));
@@ -237,13 +273,14 @@ jQuery(() => {
     $(document).on('change', '#themes', () => setTimeout(() => {
         ensureOptions();
         const saved = localStorage.getItem(STYLE_KEY);
-        if (currentThemeName() === THEME_NAME && saved !== null && Number(saved) !== Number(powerUser()?.chat_display)) {
+        if (THEME_NAMES.includes(currentThemeName()) && saved !== null && Number(saved) !== Number(powerUser()?.chat_display)) {
             // Goes through SillyTavern's own handler, which stores + saves the value.
             $('#chat_display').val(saved).trigger('change');
         }
         applyStyle();
         ensureJumpButton();
         scheduleJumpButton();
+        syncShell();
     }, 50));
 
     const chat = document.getElementById('chat');
@@ -258,7 +295,7 @@ jQuery(() => {
     }, true);
 
     const { eventSource, eventTypes } = SillyTavern.getContext();
-    eventSource?.on?.(eventTypes.SETTINGS_LOADED, () => { ensureOptions(); applyStyle(); });
+    eventSource?.on?.(eventTypes.SETTINGS_LOADED, () => { ensureOptions(); applyStyle(); syncShell(); });
     eventSource?.on?.(eventTypes.CHAT_CHANGED, () => {
         chatSettledAt = performance.now() + 1500;
         scheduleChatWork();

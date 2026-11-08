@@ -103,19 +103,54 @@ async function main() {
         async prepare(page, opt = {}) {
             const ok = r => r.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' });
             for (const p of WRITE_ROUTES) await page.route(p, ok);
+            // Stubbed /api/characters/edit would make ST re-read the card from disk, reverting the
+            // card's `chat` field (= getCurrentChatId) after openCharacterChat. Emulate the write in
+            // memory: remember chat per avatar and patch characters/all|get responses.
+            const cardChat = page.__cardChat = {};
+            await page.route('**/api/characters/edit', r => {
+                const body = r.request().postData() || '';
+                const field = n => { const m = body.match(new RegExp('name="' + n + '"\\r?\\n\\r?\\n([^\\r\\n]*)')); return m ? m[1] : null; };
+                const av = field('avatar_url'), chat = field('chat');
+                if (av && chat) cardChat[av] = chat;
+                return ok(r);
+            });
+            const patchCard = c => { if (c && cardChat[c.avatar]) c.chat = cardChat[c.avatar]; return c; };
+            await page.route('**/api/characters/all', async r => {
+                if (!Object.keys(cardChat).length) return r.continue();
+                const res = await r.fetch(); const j = await res.json();
+                (Array.isArray(j) ? j : []).forEach(patchCard);
+                await r.fulfill({ response: res, body: JSON.stringify(j) });
+            });
+            await page.route('**/api/characters/get', async r => {
+                if (!Object.keys(cardChat).length) return r.continue();
+                const res = await r.fetch(); const j = await res.json();
+                patchCard(j);
+                await r.fulfill({ response: res, body: JSON.stringify(j) });
+            });
             // Guard first (routes registered later win in Playwright): no model backend is reachable.
             await page.route('**/api/backends/**', r => r.abort());
             await page.route('**/api/openai/**', r => r.abort());
             if (opt.mock !== false) await T.mockGen(page, opt.gen);
             // In-memory settings overrides (the response is rewritten; nothing is written to disk):
-            // powerUser → power_user, extSettings → extension_settings (shallow-merged per key).
-            if (opt.powerUser || opt.extSettings) {
+            // powerUser → power_user, extSettings → extension_settings (shallow-merged per key),
+            // theme: 'ag2' → activate "Apple Glass 2" with the worktree's apple-glass-2.css (debug path;
+            // acceptance shots use the real sync-css.sh publish).
+            if (opt.powerUser || opt.extSettings || opt.theme || opt.mutate) {
+                const themeCss = opt.theme === 'ag2' ? readFileSync(path.resolve(TOOLS, '..', 'apple-glass-2.css'), 'utf8')
+                    : opt.theme === 'dark' ? readFileSync(path.resolve(TOOLS, '..', 'apple-theme.css'), 'utf8') : null;
+                const themeName = opt.theme === 'ag2' ? 'Apple Glass 2' : 'Apple Glass Dark';
                 await page.route('**/api/settings/get', async route => {
                     const res = await route.fetch();
                     const j = await res.json();
                     const s = JSON.parse(j.settings);
+                    if (themeCss) {
+                        s.power_user.theme = themeName;
+                        s.power_user.custom_css = themeCss;
+                        for (const t of j.themes || []) if (t.name === themeName) t.custom_css = themeCss;
+                    }
                     Object.assign(s.power_user, opt.powerUser || {});
                     for (const [k, v] of Object.entries(opt.extSettings || {})) s.extension_settings[k] = { ...(s.extension_settings[k] || {}), ...v };
+                    if (opt.mutate) opt.mutate(s, j);
                     j.settings = JSON.stringify(s);
                     await route.fulfill({ response: res, body: JSON.stringify(j) });
                 });
