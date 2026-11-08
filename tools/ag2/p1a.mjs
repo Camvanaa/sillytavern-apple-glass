@@ -270,9 +270,35 @@ async function pins(T) {
     return out;
 }
 
+
+// Shell is built before the splash/preloader goes away (no flash of the old layout, §7)
+async function boot(T) {
+    const out = [];
+    for (let i = 0; i < 3; i++) {
+        const page = await T.newPage();
+        await page.addInitScript(() => {
+            const t0 = performance.now(); window.__ag2t = {};
+            const mo = new MutationObserver(() => {
+                const b = document.body; if (!b) return;
+                if (!window.__ag2t.ag2 && b.classList.contains('ag2')) window.__ag2t.ag2 = Math.round(performance.now() - t0);
+                if (!window.__ag2t.shell && document.getElementById('ag2-sidebar')) window.__ag2t.shell = Math.round(performance.now() - t0);
+                if (window.__ag2t.pre === undefined && document.getElementById('preloader')) window.__ag2t.pre = -1;
+                if (window.__ag2t.pre === -1 && !document.getElementById('preloader')) window.__ag2t.pre = Math.round(performance.now() - t0);
+                if (!window.__ag2t.splash && document.querySelector('#loader.splash-screen, #loader')) window.__ag2t.splash = Math.round(performance.now() - t0);
+            });
+            mo.observe(document, { subtree: true, childList: true, attributes: true, attributeFilter: ['class'] });
+        });
+        await T.prepare(page);
+        const b = await T.boot(page, { ag2: true, settle: 300 });
+        out.push({ readyMs: b.readyMs, ...(await page.evaluate(() => window.__ag2t)) });
+        await page.context().close();
+    }
+    return { runs: out, median: T.median(out.map(x => x.readyMs)), shellBeforePreloaderGone: out.every(x => x.shell > 0 && x.shell < x.pre) };
+}
+
 export default async function (T) {
     const part = T.cfg.part || 'func';
-    const fn = { func, themes, classic, shots, pins }[part];
+    const fn = { func, themes, classic, shots, pins, boot }[part];
     if (!fn) throw new Error('unknown part ' + part);
     return T.save('p1a-' + part, await fn(T));
 }

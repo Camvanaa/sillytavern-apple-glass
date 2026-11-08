@@ -19,12 +19,14 @@ const NATIVE_CLASSES = ['bubblechat', 'documentstyle'];
 const THEME_NAMES = ['Apple Glass Dark', 'Apple Glass 2'];
 const AG2_THEME = 'Apple Glass 2';
 // Keep in sync with BUILD in shell/index.js (tools/ag2/bump-build.sh updates both).
-const SHELL_BUILD = '202611081902';
+const SHELL_BUILD = '202611081914';
 const STYLE_KEY = 'apGlass.chatStyle';
 
 function themeActive() {
     // AG Dark defines --ap-blue on :root; AG2 is recognised by name (its tokens live on body.ag2).
-    return THEME_NAMES.includes(currentThemeName())
+    // Under ?classic the AG2 CSS is inert (no body.ag2), so AG2 counts only when the shell runs.
+    const name = currentThemeName();
+    return name === THEME_NAMES[0] || (name === AG2_THEME && shellWanted())
         || getComputedStyle(document.documentElement).getPropertyValue('--ap-blue').trim() !== '';
 }
 

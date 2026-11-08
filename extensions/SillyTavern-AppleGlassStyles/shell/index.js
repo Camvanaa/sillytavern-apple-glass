@@ -7,13 +7,13 @@
 // class and listener it added and reloads the current chat.
 // Any exception during enable → automatic teardown + one toastr.
 
-export const BUILD = '202611081902';
+export const BUILD = '202611081914';
 
-import { local, importStPinsOnce } from './store.js?v=202611081902';
-import { ctx, h, toggleDrawer } from './util.js?v=202611081902';
-import { closeMenu } from './menu.js?v=202611081902';
-import * as sidebar from './sidebar.js?v=202611081902';
-import * as chrome from './chrome.js?v=202611081902';
+import { local, importStPinsOnce } from './store.js?v=202611081914';
+import { ctx, h, toggleDrawer } from './util.js?v=202611081914';
+import { closeMenu } from './menu.js?v=202611081914';
+import * as sidebar from './sidebar.js?v=202611081914';
+import * as chrome from './chrome.js?v=202611081914';
 
 const BODY_CLASSES = ['ag2', 'ag2-welcome', 'ag2-side-collapsed', 'ag2-ready'];
 let on = false;

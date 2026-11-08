@@ -2,13 +2,13 @@
 // Header · search (placeholder until the P4 palette) · segments 对话/角色/群组 ·
 // list · footer (connection, persona, settings).
 
-import { icon } from './icons.js?v=202611081902';
-import { openMenu } from './menu.js?v=202611081902';
-import { local, isPinned, setPinned, renamePin, pinList } from './store.js?v=202611081902';
+import { icon } from './icons.js?v=202611081914';
+import { openMenu } from './menu.js?v=202611081914';
+import { local, isPinned, setPinned, renamePin, pinList } from './store.js?v=202611081914';
 import {
     ctx, h, toast, guard, fmtTime, ageDays, summary, stem, thumb, charIndex, toggleDrawer, clickSt,
     openEntry, openCharacter, openGroup, renameEntry, deleteEntry, getCurrentChatId, personaAvatar, onlineStatus,
-} from './util.js?v=202611081902';
+} from './util.js?v=202611081914';
 
 const SEGMENTS = [['chats', '对话'], ['chars', '角色'], ['groups', '群组']];
 let root = null;
@@ -297,7 +297,9 @@ function renderChars(frag) {
         if (!x.fav && !started && favs.length) { section(frag, '全部'); started = true; }
         const img = h('img', 'ag2-av ag2-av-36'); img.alt = ''; img.loading = 'lazy'; img.draggable = false; img.src = thumb('avatar', x.ch.avatar);
         const active = !c.groupId && String(c.characterId) === String(x.id);
-        frag.append(entityRow('char', x.id, x.name, summary(x.ch.description || x.ch.data?.description || '', 60), img, x.fav, active));
+        // Secondary line: the character's tags (descriptions are prompt text, often macros).
+        const tagNames = (c.tagMap?.[x.ch.avatar] || []).map(id => c.tags?.find(t => t.id === id)?.name).filter(Boolean).join(' · ');
+        frag.append(entityRow('char', x.id, x.name, tagNames, img, x.fav, active));
     }
 }
 

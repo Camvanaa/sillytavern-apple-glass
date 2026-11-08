@@ -1,9 +1,9 @@
 // Apple Glass 2 shell — title capsule, tool capsule, welcome page (DESIGN §5.2, §5.10).
 
-import { icon } from './icons.js?v=202611081902';
-import { openMenu } from './menu.js?v=202611081902';
-import { ctx, h, toast, guard, thumb, fmtTime, toggleDrawer, clickSt, openEntry, newAssistantChat } from './util.js?v=202611081902';
-import { getRecent, isLoaded, openRightMenu, row, rowKeys } from './sidebar.js?v=202611081902';
+import { icon } from './icons.js?v=202611081914';
+import { openMenu } from './menu.js?v=202611081914';
+import { ctx, h, toast, guard, thumb, fmtTime, toggleDrawer, clickSt, openEntry, newAssistantChat } from './util.js?v=202611081914';
+import { getRecent, isLoaded, openRightMenu, row, rowKeys } from './sidebar.js?v=202611081914';
 
 let title = null, tools = null, welcome = null;
 let generating = false;
@@ -14,11 +14,11 @@ export function mount(shell, api) {
     title.id = 'ag2-title';
     title.innerHTML = `
         <button type="button" class="ag2-ib ag2-expand" data-act="expand" aria-label="展开侧栏" title="展开侧栏">${icon('panel-left', 18)}</button>
-        <button type="button" class="ag2-title-btn" data-act="title" aria-haspopup="menu" aria-label="对话菜单">
+        <div class="ag2-title-btn" role="button" tabindex="0" data-act="title" aria-haspopup="menu" aria-label="对话菜单">
             <span class="ag2-title-av"></span>
             <span class="ag2-title-text"><span class="ag2-title-name"></span><span class="ag2-title-sub"></span></span>
             ${icon('chevron-down', 14, 'ag2-chev')}
-        </button>`;
+        </div>`;
     title.addEventListener('click', e => {
         const b = e.target.closest('[data-act]');
         if (!b) return;
@@ -68,6 +68,7 @@ export function mount(shell, api) {
     });
 
     rowKeys(welcome);
+    rowKeys(title); // the title trigger is a two-line div[role=button]
     shell.append(title, tools, welcome);
 }
 
