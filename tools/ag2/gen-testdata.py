@@ -198,7 +198,10 @@ def long_chat():
         31: dict(text=HTML_FRONTEND, tokens=150, gen=7),
     }
     for day in range(3):
-        base = day0 + timedelta(days=day, hours=19 if day == 0 else 9 + day * 3)
+        # day 3 is "today": anchor it ~2.5h before now so no message lies in the future and
+        # the final reply (now − 20 min) stays last. (Generated before 02:30 local, day 3 would
+        # fall on yesterday — regenerate later in the day if that matters.)
+        base = day0 + timedelta(hours=19) if day == 0 else day0 + timedelta(days=1, hours=12) if day == 1 else NOW - timedelta(hours=2, minutes=30)
         t = base + timedelta(minutes=5)
         for i in range(11):
             n += 1
