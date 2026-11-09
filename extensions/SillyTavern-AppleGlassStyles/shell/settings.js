@@ -13,10 +13,10 @@
 // Switching uses doNavbarIconClick (util.toggleDrawer) — ST closes the previous unpinned
 // drawer itself; pinned leftovers are closed here. Closing the window closes the drawer.
 
-import { ctx, h, guard, toggleDrawer, SET_PANELS, pageOfPanel } from './util.js?v=202611090410';
-import { icon } from './icons.js?v=202611090410';
-import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=202611090410';
-import { isMenuOpen } from './menu.js?v=202611090410';
+import { ctx, h, guard, toggleDrawer, SET_PANELS, pageOfPanel } from './util.js?v=202611090839';
+import { icon } from './icons.js?v=202611090839';
+import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=202611090839';
+import { isMenuOpen } from './menu.js?v=202611090839';
 
 const PAGES = [
     { id: 'api', name: '连接', icon: 'plug', tile: 'green', group: 0, lead: '选择 API 来源，填写地址、密钥和模型。' },
@@ -135,7 +135,7 @@ let results = [];
 
 const loadSearch = async () => {
     if (!searchMod) {
-        searchMod = await import('./search.js?v=202611090410');
+        searchMod = await import('./search.js?v=202611090839');
         searchMod.init(PAGES.map(({ id, name, lead }) => ({ id, name, lead })));
     }
     return searchMod;
@@ -170,8 +170,9 @@ async function onSearch(raw) {
     }
     box.innerHTML = results.map((r, i) => {
         const p = PAGE[r.page];
-        const path = r.kind === 'page' ? '设置页' : [p.name, r.group].filter(Boolean).join(' › ');
-        const full = r.kind === 'page' ? p.name : [p.name, r.group, r.label].filter(Boolean).join(' › ');
+        const grp = r.group && r.group !== p.name ? r.group : ''; // “背景 › 背景 › …” reads as a stutter
+        const path = r.kind === 'page' ? '设置页' : [p.name, grp].filter(Boolean).join(' › ');
+        const full = r.kind === 'page' ? p.name : [p.name, grp, r.label].filter(Boolean).join(' › ');
         return `<button type="button" class="ag2-res${i === 0 ? ' ag2-sel' : ''}" role="listitem" data-i="${i}" title="${escHtml(full)}" aria-label="${escHtml(full)}">
             <span class="ag2-tile ag2-tile-${p.tile}">${icon(p.icon, 13)}</span>
             <span class="ag2-res-txt"><span class="ag2-res-item">${markMatch(r.label, q)}</span><span class="ag2-res-path">${escHtml(path)}</span></span>

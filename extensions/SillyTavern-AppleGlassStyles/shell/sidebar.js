@@ -2,13 +2,13 @@
 // Header · search (placeholder until the P4 palette) · segments 对话/角色/群组 ·
 // list · footer (connection, persona, settings).
 
-import { icon } from './icons.js?v=202611090410';
-import { openMenu } from './menu.js?v=202611090410';
-import { local, isPinned, setPinned, renamePin, pinList } from './store.js?v=202611090410';
+import { icon } from './icons.js?v=202611090839';
+import { openMenu } from './menu.js?v=202611090839';
+import { local, isPinned, setPinned, renamePin, pinList } from './store.js?v=202611090839';
 import {
     ctx, h, toast, guard, fmtTime, ageDays, summary, stem, thumb, charIndex, toggleDrawer, clickSt,
     openSettings, openEntry, openCharacter, openGroup, renameEntry, deleteEntry, getCurrentChatId, personaAvatar, onlineStatus,
-} from './util.js?v=202611090410';
+} from './util.js?v=202611090839';
 
 const SEGMENTS = [['chats', '对话'], ['chars', '角色'], ['groups', '群组']];
 let root = null;

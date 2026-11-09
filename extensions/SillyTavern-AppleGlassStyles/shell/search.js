@@ -8,7 +8,7 @@
 // utils.toggleDrawer), scrolls it into view inside the drawer and flashes an accent ring.
 
 import { toggleDrawer as stToggleInline } from '../../../../utils.js';
-import { SET_PANELS } from './util.js?v=202611090410';
+import { SET_PANELS } from './util.js?v=202611090839';
 
 /** Shell-built pages: static entries (their DOM is rendered on demand). */
 const SHELL_ITEMS = [
@@ -54,7 +54,6 @@ const textOf = el => {
 
 function build() {
     const out = [];
-    const seen = new Set();
     for (const [page, id] of Object.entries(SET_PANELS)) {
         const root = document.getElementById(id);
         if (!root) continue;
@@ -66,15 +65,19 @@ function build() {
             if (el.matches('label') && el.closest('.inline-drawer-header, h3, h4')) continue;
             const label = textOf(el);
             const isHead = el.matches(HEAD_SEL);
-            if (isHead && label) head = label.slice(0, 40);
+            // a heading ST hides (another API source's block) must not name the group of
+            // the visible controls after it (“文本补全预设 › 温度” under Chat Completion)
+            if (isHead && label) {
+                if (!shownIn(el, root)) continue;
+                head = label.slice(0, 40);
+            }
             if ([...label].length < 2 || label.length > 60) continue;
             // group: the enclosing collapsible group wins, else the last heading above
             const drawer = el.closest('.inline-drawer-content')?.parentElement;
             const dh = drawer && root.contains(drawer) ? textOf(drawer.querySelector(':scope > .inline-drawer-header') || drawer) : '';
             const group = el.matches('.inline-drawer-header') || isHead ? '' : (dh || (head !== label ? head : ''));
-            const key = page + '\u0001' + group + '\u0001' + label;
-            if (seen.has(key)) continue;
-            seen.add(key);
+            // same-named copies (ST keeps one block per API source, only one shown) all stay
+            // in the index; query() keeps the first reachable one per path
             out.push({ page, group: group.slice(0, 40), label, el, lc: label.toLowerCase(), kw: '' });
         }
     }
@@ -85,16 +88,18 @@ function build() {
 /** Hidden by ST (other API source, display:none) → not a result; inside a collapsed
  *  .inline-drawer → still a result (it gets opened). The drawer root itself is closed
  *  while another page shows, so it is not checked. */
-function reachable(it) {
-    if (!it.el) return true;
-    if (!it.el.isConnected) return false;
-    const root = document.getElementById(SET_PANELS[it.page]);
-    for (let p = it.el; p && p !== root; p = p.parentElement) {
+function shownIn(el, root) {
+    for (let p = el; p && p !== root; p = p.parentElement) {
         if (p.classList?.contains('inline-drawer-content')) continue;
         const cs = getComputedStyle(p);
         if (cs.display === 'none' || cs.visibility === 'hidden') return false;
     }
     return true;
+}
+function reachable(it) {
+    if (!it.el) return true;
+    if (!it.el.isConnected) return false;
+    return shownIn(it.el, document.getElementById(SET_PANELS[it.page]));
 }
 
 export function init(pages) { PAGES = pages; }
@@ -104,8 +109,12 @@ export function query(q, max = 40) {
     if (!q) return [];
     if (!INDEX) INDEX = build();
     const res = [];
+    const pageHit = new Set();
     for (const p of PAGES || []) {
-        if (p.name.toLowerCase().includes(q)) res.push({ page: p.id, label: p.name, group: '', kind: 'page', score: p.name.toLowerCase() === q ? -2 : -1 });
+        if (p.name.toLowerCase().includes(q)) {
+            pageHit.add(p.id);
+            res.push({ page: p.id, label: p.name, group: '', kind: 'page', score: p.name.toLowerCase() === q ? -2 : -1 });
+        }
     }
     for (const it of INDEX) {
         let score;
@@ -114,13 +123,24 @@ export function query(q, max = 40) {
         else if (it.lc.includes(q)) score = 2;
         else if (it.kw && it.kw.includes(q)) score = 3;
         else continue;
+        // the query names a page (“世界书”, “背景”): that page's own matching items come
+        // right after the page itself, before same-named items elsewhere (extensions …)
+        if (pageHit.has(it.page) && score < 3) score = -0.5;
         res.push({ ...it, kind: 'item', score });
     }
     res.sort((a, b) => a.score - b.score || a.label.length - b.label.length);
     const out = [];
+    const seen = new Set();
+    const pageName = Object.fromEntries((PAGES || []).map(p => [p.id, p.name]));
     for (const r of res) {
         if (out.length >= max) break;
-        if (r.kind === 'item' && !reachable(r)) continue;
+        if (r.kind === 'item') {
+            // a page's own title heading (“世界书 › 世界书”) duplicates the page result
+            if (!r.group && r.label === pageName[r.page]) continue;
+            const key = r.page + '\u0001' + (r.group || '') + '\u0001' + r.label;
+            if (seen.has(key) || !reachable(r)) continue;
+            seen.add(key);
+        }
         out.push(r);
     }
     return out;
