@@ -14,11 +14,11 @@
 // group_edit of the open group. Anything else → ask ST to re-select (its own
 // #rm_button_selected_ch) and show a neutral placeholder meanwhile.
 
-import { icon } from './icons.js?v=202611091428';
-import { openMenu, closeMenu } from './menu.js?v=202611091428';
-import { local } from './store.js?v=202611091428';
-import { ctx, h, guard, clickSt, isDesktop, INSP_ID, setInspector, restoreInspectorPin, getCurrentChatId, summary, toDate } from './util.js?v=202611091428';
-import { guarded } from './index.js?v=202611091428';
+import { icon } from './icons.js?v=202611091515';
+import { openMenu, closeMenu } from './menu.js?v=202611091515';
+import { local } from './store.js?v=202611091515';
+import { ctx, h, guard, clickSt, isDesktop, INSP_ID, setInspector, restoreInspectorPin, getCurrentChatId, summary, toDate } from './util.js?v=202611091515';
+import { guarded } from './index.js?v=202611091515';
 import { openGroupId } from '../../../../group-chats.js';
 
 let panel = null;
@@ -138,8 +138,10 @@ export function mount() {
         E.CHARACTER_DELETED, E.GROUP_UPDATED, E.MESSAGE_SENT, E.MESSAGE_RECEIVED, E.MESSAGE_DELETED,
         E.SETTINGS_UPDATED, E.WORLDINFO_SETTINGS_UPDATED]) listen(t, schedule);
     listen(E.CHAT_CHANGED, () => { resyncKey = ''; });
-    // ST's menu switch (data-menu-type) and chat clearing (switching chats) re-check freshness.
-    const mo = new MutationObserver(guarded(schedule));
+    // ST's menu switch (data-menu-type) and chat clearing / filling (switching chats) re-check
+    // freshness synchronously: observer callbacks run as a microtask, before the next paint,
+    // so a switched characterId never gets a frame with the previous character's form.
+    const mo = new MutationObserver(guarded(() => render()));
     mo.observe(panel, { attributes: true, attributeFilter: ['data-menu-type'] });
     const chatEl = $id('chat');
     if (chatEl) mo.observe(chatEl, { childList: true });

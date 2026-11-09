@@ -8,7 +8,7 @@ import {
     is_send_press, isChatSaving, getThumbnailUrl, user_avatar, online_status,
 } from '../../../../../script.js';
 import { openGroupById, openGroupChat, deleteGroupChatByName, is_group_generating } from '../../../../group-chats.js';
-import { local } from './store.js?v=202611091428';
+import { local } from './store.js?v=202611091515';
 
 export { doNavbarIconClick, getCurrentChatId, newAssistantChat };
 
@@ -132,7 +132,7 @@ export const settingsModule = () => setMod;
 export async function openSettings(page = null, opt = {}) {
     if (!isDesktop()) return toggleDrawer(SET_PANELS[page] || 'user-settings-block', true);
     if (!setMod) {
-        setLoading ||= import('./settings.js?v=202611091428');
+        setLoading ||= import('./settings.js?v=202611091515');
         try { setMod = await setLoading; } finally { setLoading = null; }
     }
     if (!document.body.classList.contains('ag2')) return false; // shell torn down meanwhile
@@ -151,7 +151,7 @@ let inspLoading = null;
 export const inspectorModule = () => inspMod;
 export async function loadInspector() {
     if (!inspMod) {
-        inspLoading ||= import('./inspector.js?v=202611091428');
+        inspLoading ||= import('./inspector.js?v=202611091515');
         try { inspMod = await inspLoading; } finally { inspLoading = null; }
     }
     if (document.body.classList.contains('ag2')) inspMod.mount();

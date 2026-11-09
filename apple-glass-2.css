@@ -4726,7 +4726,303 @@ html body.ag2.ag2-insp-open {
     }
 }
 
-/* ST's group / create blocks inside the inspector: §5.6b */
+/* == 5.6b · Inspector: group page (#rm_group_chats_block, ST's nodes re-laid out) == */
+/* Each of ST's three inline drawers (群聊控制 / 当前成员 / 添加成员) becomes a card;
+   inside, the avatar + action buttons lead, the strategy selects follow as a 2-column
+   grid, members are compact rows. Display of individual controls is never forced: ST
+   toggles some (join prefix/suffix, restore avatar, submit) with inline display. */
+@media (min-width: 1001px) {
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #rm_group_chats_block {
+        color: var(--ag2-l1);
+        font-size: var(--ag2-fs-sub);
+        --mainFontSize: 13.5px;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #rm_group_chats_block > .inline-drawer {
+        flex: none;
+        margin: 0 !important;
+        padding: 8px 12px 12px !important;
+        border: 0 !important;
+        border-radius: var(--ag2-r-card);
+        background: var(--ag2-f3);
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #rm_group_chats_block .inline-drawer-header {
+        min-height: 30px;
+        padding: 0 !important;
+        border: 0 !important;
+        background: none !important;
+        color: var(--ag2-l3) !important;
+        font-size: 12.5px !important;
+        font-weight: 640;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #rm_group_chats_block .inline-drawer-header .inline-drawer-icon {
+        color: var(--ag2-l3);
+        font-size: 15px !important;
+    }
+
+    /* the “back to list” arrow: the shell sidebar is the list */
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #rm_button_back_from_group {
+        display: none !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #group-metadata-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin: 4px 0 0 !important;
+    }
+
+    /* avatar + action buttons first */
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #rm_group_top_bar {
+        order: -1;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: flex-start;
+        gap: 10px 12px;
+        width: 100% !important;
+        font-size: var(--ag2-fs-sub) !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #rm_group_top_bar > div:first-child {
+        flex: none;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #group_avatar_preview :is(.avatar, .collage_2, .collage_3, .collage_4, img) {
+        width: 64px !important;
+        height: 64px !important;
+        flex: none;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #group_avatar_preview .avatar,
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #group_avatar_preview > div {
+        overflow: hidden;
+        border-radius: 16px !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #GroupFavDelOkBack {
+        order: 0;
+        flex: 1 1 180px;
+        flex-wrap: wrap;
+        justify-content: flex-start !important;
+        align-content: flex-start;
+        gap: 6px !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #GroupFavDelOkBack > .menu_button {
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        align-items: center;
+        justify-content: center;
+        border: 0 !important;
+        border-radius: 10px !important;
+        background: var(--ag2-f2) !important;
+        color: var(--ag2-l2) !important;
+        font-size: 14px !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #GroupFavDelOkBack > .menu_button:hover {
+        background: var(--ag2-f1) !important;
+        color: var(--ag2-l1) !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #group_favorite_button.fav_on {
+        color: #ffcc00 !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #rm_group_delete {
+        color: var(--ag2-red) !important;
+    }
+
+    /* checkbox column → full-width rows under the buttons */
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #GroupFavDelOkBack > .flex1 {
+        flex: 1 0 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #GroupFavDelOkBack label.checkbox_label {
+        min-height: 28px;
+        margin: 0 !important;
+        gap: 8px;
+        align-items: center;
+        white-space: nowrap;
+        font-size: var(--ag2-fs-sub) !important;
+    }
+
+    /* strategy / generation mode (+ join prefix / suffix when ST shows them): 2 columns */
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #rm_group_buttons {
+        order: 1;
+        flex: 1 0 100% !important;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px 10px;
+        padding: 0 !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #rm_group_buttons > div {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #rm_group_buttons label {
+        color: var(--ag2-l3);
+        font-size: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* inputs / selects in the panel: one quiet style */
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #rm_group_chats_block :is(input.text_pole, select, textarea) {
+        min-height: 32px;
+        margin: 0 !important;
+        padding: 0 10px !important;
+        border: 0 !important;
+        border-radius: 9px !important;
+        background: rgba(0, 0, 0, 0.24) !important;
+        box-shadow: inset 0 0 0 0.5px var(--ag2-sep-strong) !important;
+        color: var(--ag2-l1) !important;
+        font-size: var(--ag2-fs-sub) !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #rm_group_chats_block textarea {
+        padding: 6px 10px !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #rm_group_chats_block #rm_group_automode_delay {
+        width: 52px;
+        min-height: 26px;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #group-metadata-controls > .flex-container {
+        flex-wrap: nowrap;
+        gap: 6px;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #group-metadata-controls .chat_lorebook_button,
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #group_tags_div .tags_view {
+        width: 32px !important;
+        height: 32px !important;
+        margin: 0 !important;
+        border: 0 !important;
+        border-radius: 9px !important;
+        background: var(--ag2-f2) !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #group_tags_div .tag_controls {
+        gap: 6px;
+    }
+
+    /* --- members (current / to add): compact rows, round 40px avatars --- */
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel :is(#rm_group_members, #rm_group_add_members) {
+        gap: 2px !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: none !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel :is(#rm_group_members, #rm_group_add_members) .group_member {
+        display: flex !important;
+        align-items: center;
+        gap: 10px;
+        min-height: 52px;
+        margin: 0 !important;
+        padding: 6px 4px !important;
+        border: 0 !important;
+        border-radius: 10px;
+        background: none !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel :is(#rm_group_members, #rm_group_add_members) .group_member:hover {
+        background: var(--ag2-f4) !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel :is(#rm_group_members, #rm_group_add_members) .group_member .avatar {
+        flex: none;
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px;
+        overflow: hidden;
+        border-radius: 50% !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel :is(#rm_group_members, #rm_group_add_members) .group_member .avatar img {
+        width: 100% !important;
+        height: 100% !important;
+        border-radius: 50% !important;
+        object-fit: cover;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel :is(#rm_group_members, #rm_group_add_members) .group_member_name {
+        flex: 1;
+        min-width: 0;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel :is(#rm_group_members, #rm_group_add_members) .ch_name {
+        display: block;
+        overflow: hidden;
+        color: var(--ag2-l1);
+        font-size: var(--ag2-fs-sub);
+        font-weight: 590;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    /* tags and version line are noise at this width */
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel :is(#rm_group_members, #rm_group_add_members) .group_member :is(.tags_inline, .ch_additional_info) {
+        display: none !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel :is(#rm_group_members, #rm_group_add_members) .group_member_icon {
+        flex: none;
+        gap: 2px;
+        align-items: center;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel :is(#rm_group_members, #rm_group_add_members) .group_member_icon .right_menu_button {
+        padding: 4px !important;
+        color: var(--ag2-l3);
+        font-size: 14px !important;
+        opacity: 1;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel :is(#rm_group_members, #rm_group_add_members) .group_member_icon .right_menu_button:hover {
+        color: var(--ag2-l1);
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel :is(#rm_group_members, #rm_group_add_members) .group_member_icon [data-action="remove"] {
+        color: var(--ag2-red);
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel :is(#rm_group_members, #rm_group_add_members) .group_member_icon [data-action="add"] {
+        color: var(--ag2-accent);
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel :is(#rm_group_members_header, #rm_group_add_members_header) input {
+        width: 100%;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel :is(#currentGroupMembers, #unaddedCharList) {
+        gap: 6px;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel .group_pagination {
+        font-size: 12px !important;
+    }
+}
 
 /* == 13 · Ported fixes (apple-theme.css §15m, §19b, §17a) == */
 /* Under AG2 ST's own panels still render with the theme JSON's blur strength and
