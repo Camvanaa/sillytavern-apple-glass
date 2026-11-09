@@ -457,8 +457,33 @@ async function touch(T) {
     return r;
 }
 
+// ---------------------------------------------------------------- wide: tablet portrait 820×1180 (still the phone layout, §4)
+async function wide(T) {
+    const { page } = await enter(T, { page: { phone: false, w: 820, h: 1180 } });
+    const r = {};
+    r.list = await st(page);
+    const spec = await T.longChat(page);
+    await page.click(`#ag2-sidebar .ag2-chat-row[title*="${spec.file}"]`); await T.sleep(2500);
+    r.chat = await st(page);
+    r.chatCol = await page.evaluate(() => { const t = document.querySelector('#chat .last_mes .mes_text').getBoundingClientRect(); const f = document.getElementById('nonQRFormItems').getBoundingClientRect(); return { text: [Math.round(t.left), Math.round(t.width)], island: [Math.round(f.left), Math.round(f.width)] }; });
+    await T.shot(page, 'wide-820-chat');
+    await page.click('#ag2-title .ag2-title-btn'); await T.sleep(1200);
+    r.insp = await st(page);
+    await T.shot(page, 'wide-820-insp');
+    await page.click('#right-nav-panel [data-ag2-act="close"]'); await T.sleep(700);
+    await page.click('#ag2-ph-back'); await T.sleep(800);
+    await page.click('#ag2-tabbar [data-tab="settings"]'); await T.sleep(1200);
+    await page.click('#ag2-settings .ag2-set-item[data-page="ai"]'); await T.sleep(1500);
+    r.sheet = await st(page);
+    const sc = await T.scan(page, ['#ag2-settings', '.drawer-content.openDrawer']);
+    r.sheetScan = { ovf: sc.ovf, dbl: sc.dbl, unhid: sc.unhid, nest: sc.nest, btn: sc.btn, panels: sc.panels };
+    await T.shot(page, 'wide-820-sheet');
+    r.errors = T.errors(page).filter(e => !/404/.test(e));
+    return r;
+}
+
 export default async function (T) {
-    const parts = { dev, menus, flow, edge, gest, pages, reduced, teardown, touch };
+    const parts = { dev, menus, flow, edge, gest, pages, reduced, teardown, touch, wide };
     if (!parts[part]) throw new Error('unknown part ' + part);
     const r = await parts[part](T);
     await T.save('p5-' + part, r);

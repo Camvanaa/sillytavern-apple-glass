@@ -5302,6 +5302,15 @@ html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-scope {
         --ag2-ph-bottom: 8px;
     }
 
+    /* tablets in portrait / narrow windows (641–1000px) still get the phone layout (§4: width
+       only); sheets stay phone-wide and centred instead of stretching edge to edge */
+    @media (min-width: 641px) {
+        html body.ag2.ag2-phone:not(#_):not(#__) {
+            --ag2-win-w: 600px;
+            --ag2-win-x: calc((100vw - 600px) / 2);
+        }
+    }
+
     /* <html> is the containing block of every fixed element (ST: translateZ(0)), and with
        ST's phone `body { position: fixed }` it has no in-flow content → 0px tall. Give it
        the viewport height so inset / bottom-anchored layers (#ag2-shell, the sheet dim,
@@ -5337,8 +5346,9 @@ html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-scope {
 
     html body.ag2.ag2-phone:not(#_):not(#__) #chat {
         padding-top: calc(var(--ag2-safe-t) + 62px) !important;
-        padding-left: max(14px, var(--ag2-safe-l)) !important;
-        padding-right: max(14px, var(--ag2-safe-r)) !important;
+        /* the 外观 › 行宽 column still applies when the phone layout is wide (tablet) */
+        padding-left: max(14px, var(--ag2-safe-l), calc((100% - var(--ag2-read-width)) / 2)) !important;
+        padding-right: max(14px, var(--ag2-safe-r), calc((100% - var(--ag2-read-width)) / 2)) !important;
         padding-bottom: calc(var(--ag2-dock-h, 112px) + 12px) !important;
         border: 0 !important;
     }
@@ -5370,7 +5380,7 @@ html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-scope {
 
     /* composer: full width minus 10px gutters, above the home indicator / keyboard */
     html body.ag2.ag2-phone:not(#_):not(#__) #form_sheld {
-        width: calc(100% - 20px - var(--ag2-safe-l) - var(--ag2-safe-r)) !important;
+        width: min(calc(100% - 20px - var(--ag2-safe-l) - var(--ag2-safe-r)), calc(var(--ag2-read-width) + 40px)) !important;
         padding: 0 0 var(--ag2-ph-bottom) !important;
     }
 
@@ -5632,9 +5642,9 @@ html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-scope {
     html body.ag2.ag2-phone.ag2-insp-open:not(#_):not(#__) #right-nav-panel.openDrawer {
         top: calc(var(--ag2-safe-t) + 8px) !important;
         bottom: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        width: 100vw !important;
+        left: var(--ag2-win-x) !important;
+        right: auto !important;
+        width: var(--ag2-win-w) !important;
         height: auto !important;
         padding: 0 var(--ag2-safe-r) var(--ag2-safe-b) var(--ag2-safe-l) !important;
         border-radius: var(--ag2-r-window) var(--ag2-r-window) 0 0 !important;
@@ -5666,10 +5676,10 @@ html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-scope {
 
     /* --- settings = bottom sheet with a grabber, list → page (design 05 right) --- */
     html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings.ag2-set-phone {
-        left: 0;
+        left: var(--ag2-win-x);
         top: var(--ag2-win-y);
         grid-template-columns: minmax(0, 1fr);
-        width: 100vw;
+        width: var(--ag2-win-w);
         height: var(--ag2-win-h);
         border-radius: var(--ag2-r-window) var(--ag2-r-window) 0 0;
         /* nearly opaque: the list's controls must not read through the sheet */
