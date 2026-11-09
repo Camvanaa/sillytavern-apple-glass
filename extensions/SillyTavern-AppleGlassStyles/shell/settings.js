@@ -19,10 +19,10 @@
 // the sheet below the head (same CSS variables as the window). Drag the grabber / head down
 // to dismiss.
 
-import { ctx, h, guard, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar } from './util.js?v=202611092036';
-import { icon } from './icons.js?v=202611092036';
-import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=202611092036';
-import { isMenuOpen } from './menu.js?v=202611092036';
+import { ctx, h, guard, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar } from './util.js?v=202611092102';
+import { icon } from './icons.js?v=202611092102';
+import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=202611092102';
+import { isMenuOpen } from './menu.js?v=202611092102';
 
 const PAGES = [
     { id: 'api', name: '连接', icon: 'plug', tile: 'green', group: 0, lead: '选择 API 来源，填写地址、密钥和模型。' },
@@ -90,9 +90,9 @@ function build() {
             <div class="ag2-set-phead"><span class="ag2-set-ptitle">设置</span><button type="button" class="ag2-set-done">完成</button></div>
             <label class="ag2-set-search">${icon('search', 15)}<input type="search" placeholder="搜索设置" aria-label="搜索设置" aria-controls="ag2-set-results" autocomplete="off" spellcheck="false"></label>
             <div class="ag2-set-results" id="ag2-set-results" role="list" aria-label="搜索结果" hidden></div>
-            <button type="button" class="ag2-set-me" data-page="persona" aria-label="人设">
+            <div class="ag2-set-me" role="button" tabindex="0" data-page="persona" aria-label="人设">
                 <img class="ag2-av" alt="" draggable="false"><span class="ag2-set-me-t"><span class="ag2-set-me-name"></span><span class="ag2-set-me-sub">当前人设</span></span>${icon('chevron-right', 16, 'ag2-set-chev')}
-            </button>
+            </div>
             ${groups}
         </nav>
         <div class="ag2-set-page">
@@ -109,6 +109,8 @@ function build() {
         if (b) go(b.dataset.page);
     });
     root.querySelector('.ag2-set-nav').addEventListener('keydown', onNavKey);
+    // the persona row is a two-line cell (div[role=button], like the sidebar rows)
+    root.querySelector('.ag2-set-me').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go('persona'); } });
     root.querySelector('.ag2-set-close').addEventListener('click', () => close());
     root.querySelector('.ag2-set-done').addEventListener('click', () => close());
     root.querySelector('.ag2-set-back').addEventListener('click', () => list({ focus: true }));
@@ -151,7 +153,7 @@ let results = [];
 
 const loadSearch = async () => {
     if (!searchMod) {
-        searchMod = await import('./search.js?v=202611092036');
+        searchMod = await import('./search.js?v=202611092102');
         searchMod.init(PAGES.map(({ id, name, lead }) => ({ id, name, lead })));
     }
     return searchMod;

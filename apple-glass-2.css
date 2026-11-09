@@ -5354,8 +5354,18 @@ html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-scope {
 
     /* the buttons keep their 30px: otherwise the row's min-content shrinks them and the
        meta column paints over the last one */
+    html body.ag2.ag2-phone:not(#_):not(#__) #chat .mes .mes_buttons {
+        min-width: max-content;
+    }
+
     html body.ag2.ag2-phone:not(#_):not(#__) #chat .mes .mes_buttons > * {
         flex-shrink: 0;
+    }
+
+    /* menus: 44px rows on touch (§5.9) */
+    html body.ag2.ag2-phone:not(#_):not(#__) :is(#ag2-shell, #ag2-layer) .ag2-menu-item {
+        min-height: 44px;
+        font-size: 15px;
     }
 
     /* composer: full width minus 10px gutters, above the home indicator / keyboard */
@@ -5762,6 +5772,13 @@ html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-scope {
         background: rgba(255, 255, 255, 0.06);
         color: var(--ag2-l1);
         text-align: left;
+        cursor: pointer;
+    }
+
+    /* 外观 › 聊天样式: 4 + 3 thumbnails per row on a phone (7 in a row are 39px wide) */
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings .ag2-styles {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        row-gap: 12px;
     }
 
     html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings .ag2-set-me .ag2-av {

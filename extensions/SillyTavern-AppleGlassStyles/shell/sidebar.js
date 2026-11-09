@@ -2,14 +2,14 @@
 // Header · search (opens the ⌘K command palette, P4) · segments 对话/角色/群组 ·
 // list · footer (connection, persona, settings).
 
-import { icon } from './icons.js?v=202611092036';
-import { openMenu } from './menu.js?v=202611092036';
-import { local, isPinned, setPinned, renamePin, pinList } from './store.js?v=202611092036';
+import { icon } from './icons.js?v=202611092102';
+import { openMenu } from './menu.js?v=202611092102';
+import { local, isPinned, setPinned, renamePin, pinList } from './store.js?v=202611092102';
 import {
     ctx, h, toast, guard, fmtTime, ageDays, summary, stem, thumb, charIndex, toggleDrawer, clickSt,
     openSettings, openEntry, openCharacter, openGroup, renameEntry, deleteEntry, getCurrentChatId, personaAvatar, onlineStatus, isDesktop, setInspector,
     openPalette, modKeyLabel, modCombo,
-} from './util.js?v=202611092036';
+} from './util.js?v=202611092102';
 
 const SEGMENTS = [['chats', '对话'], ['chars', '角色'], ['groups', '群组']];
 let root = null;

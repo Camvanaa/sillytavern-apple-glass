@@ -14,12 +14,12 @@
 // keyboard's top edge.
 // State: localStorage ag2.phPage = list | chat (per device, §9.1).
 
-import { icon } from './icons.js?v=202611092036';
-import { openMenu, closeMenu } from './menu.js?v=202611092036';
-import { local } from './store.js?v=202611092036';
-import { ctx, h, guard, getCurrentChatId, openSettings, setInspector, inspectorModule, openPalette, clickSt } from './util.js?v=202611092036';
-import { chatMenuItems } from './chrome.js?v=202611092036';
-import { segment, setSegment } from './sidebar.js?v=202611092036';
+import { icon } from './icons.js?v=202611092102';
+import { openMenu, closeMenu } from './menu.js?v=202611092102';
+import { local } from './store.js?v=202611092102';
+import { ctx, h, guard, getCurrentChatId, openSettings, setInspector, inspectorModule, openPalette, clickSt } from './util.js?v=202611092102';
+import { chatMenuItems } from './chrome.js?v=202611092102';
+import { segment, setSegment } from './sidebar.js?v=202611092102';
 
 const TABS = [['chats', '对话', 'messages-square'], ['chars', '角色', 'users'], ['wi', '世界书', 'book-open'], ['settings', '设置', 'settings']];
 const SEG_TITLE = { chats: '对话', chars: '角色', groups: '群组' };
@@ -95,6 +95,8 @@ export function mount(shell) {
     onViewport();
 
     want = local.get('phPage', 'list') === 'chat' ? 'chat' : 'list';
+    // mounted mid-session (window narrowed, theme switched): stay on the open chat
+    if (document.body.classList.contains('ag2-ready') && chatKey()) want = 'chat';
     lastChat = chatKey();
     apply();
     syncTabs();
