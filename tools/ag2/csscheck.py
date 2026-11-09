@@ -21,7 +21,7 @@ def top_split(sel):
 bad = []
 for m in re.finditer(r'([^{};]+)\{', body):
     sel = m.group(1).strip()
-    if sel.startswith('@') or sel in ('from', 'to') or re.match(r'^[\d.]+%$', sel):
+    if sel.startswith('@') or sel in ('from', 'to') or re.match(r'^[\d.%,\s]+$', sel):
         continue
     for part in top_split(sel):
         if not (part.startswith('html body.ag2') or part.startswith('html:has(> body.ag2')):

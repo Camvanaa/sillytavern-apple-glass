@@ -79,13 +79,15 @@ function build() {
     }
     root.innerHTML = `
         <nav class="ag2-set-nav" aria-label="设置分类">
-            <label class="ag2-set-search">${icon('search', 15)}<input type="search" placeholder="搜索设置" aria-label="搜索设置" autocomplete="off" spellcheck="false"></label>
+            <label class="ag2-set-search">${icon('search', 15)}<input type="search" placeholder="搜索设置" aria-label="搜索设置" aria-controls="ag2-set-results" autocomplete="off" spellcheck="false"></label>
+            <div class="ag2-set-results" id="ag2-set-results" role="list" aria-label="搜索结果" hidden></div>
             ${groups}
         </nav>
         <div class="ag2-set-page">
             <header class="ag2-set-head">
                 <div class="ag2-set-titles"><h1 id="ag2-set-title"></h1><p class="ag2-set-lead"></p></div>
                 <button type="button" class="ag2-set-close" aria-label="关闭设置" title="关闭（Esc）">${icon('x', 17)}</button>
+                <nav class="ag2-anchors" aria-label="页内跳转" hidden></nav>
             </header>
             <div class="ag2-set-body" tabindex="-1"></div>
         </div>`;
@@ -95,8 +97,14 @@ function build() {
     });
     root.querySelector('.ag2-set-nav').addEventListener('keydown', onNavKey);
     root.querySelector('.ag2-set-close').addEventListener('click', () => close());
-    // P2a: the field filters the nav; the cross-page index (page › group › item) is P2b.
-    root.querySelector('.ag2-set-search input').addEventListener('input', e => filterNav(e.target.value));
+    // Cross-page search (P2b): search.js + its index load on the first keystroke.
+    const q = root.querySelector('.ag2-set-search input');
+    q.addEventListener('input', e => onSearch(e.target.value));
+    q.addEventListener('keydown', onSearchKey);
+    const results = root.querySelector('.ag2-set-results');
+    results.addEventListener('click', e => { const b = e.target.closest('.ag2-res'); if (b) pickResult(Number(b.dataset.i)); });
+    results.addEventListener('keydown', onResultsKey);
+    root.querySelector('.ag2-anchors').addEventListener('click', onAnchorClick);
     const body = root.querySelector('.ag2-set-body');
     body.addEventListener('click', e => { if (cur === 'look') onLookClick(e); });
     body.addEventListener('input', e => { if (cur === 'look') onLookInput(e); });
@@ -107,19 +115,240 @@ function build() {
     const { eventSource, eventTypes: E } = ctx();
     for (const t of [E.ONLINE_STATUS_CHANGED, E.CHATCOMPLETION_SOURCE_CHANGED, E.MAIN_API_CHANGED, E.SETTINGS_UPDATED]) {
         if (!t) continue;
-        const fn = () => { if (isOpenNow) updateNavStatus(); };
+        const fn = () => {
+            searchMod?.reset(); // the API source decides which ST controls exist
+            if (!isOpenNow) return;
+            updateNavStatus();
+            // the source changes which headings exist on 连接 / 生成参数
+            if (ANCHORS[cur]) setTimeout(() => { if (isOpenNow && ANCHORS[cur]) renderAnchors(cur); }, 60);
+        };
         eventSource.on(t, fn);
         stEvents.push([t, fn]);
     }
 }
 
-function filterNav(q) {
-    q = String(q || '').trim().toLowerCase();
-    for (const b of root.querySelectorAll('.ag2-set-item')) {
-        const p = PAGE[b.dataset.page];
-        b.hidden = !!q && !p.name.toLowerCase().includes(q) && !p.lead.toLowerCase().includes(q);
+// ------------------------------------------------------------------ cross-page search (§5.5)
+
+let searchMod = null;
+let searchSeq = 0;
+let results = [];
+
+const loadSearch = async () => {
+    if (!searchMod) {
+        searchMod = await import('./search.js?v=202611090410');
+        searchMod.init(PAGES.map(({ id, name, lead }) => ({ id, name, lead })));
     }
-    for (const g of root.querySelectorAll('.ag2-set-grp')) g.hidden = ![...g.children].some(b => !b.hidden);
+    return searchMod;
+};
+
+const escHtml = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+function markMatch(text, q) {
+    const i = text.toLowerCase().indexOf(q.toLowerCase());
+    if (!q || i < 0) return escHtml(text);
+    return escHtml(text.slice(0, i)) + '<mark>' + escHtml(text.slice(i, i + q.length)) + '</mark>' + escHtml(text.slice(i + q.length));
+}
+
+async function onSearch(raw) {
+    const q = String(raw || '').trim();
+    const seq = ++searchSeq;
+    const box = root.querySelector('.ag2-set-results');
+    if (!q) {
+        results = [];
+        box.replaceChildren();
+        box.hidden = true;
+        root.classList.remove('ag2-searching');
+        return;
+    }
+    const mod = await loadSearch();
+    if (seq !== searchSeq || !root) return; // a newer keystroke won
+    results = mod.query(q);
+    root.classList.add('ag2-searching');
+    box.hidden = false;
+    if (!results.length) {
+        box.innerHTML = '<div class="ag2-res-empty">没有找到相关设置</div>';
+        return;
+    }
+    box.innerHTML = results.map((r, i) => {
+        const p = PAGE[r.page];
+        const path = r.kind === 'page' ? '设置页' : [p.name, r.group].filter(Boolean).join(' › ');
+        const full = r.kind === 'page' ? p.name : [p.name, r.group, r.label].filter(Boolean).join(' › ');
+        return `<button type="button" class="ag2-res${i === 0 ? ' ag2-sel' : ''}" role="listitem" data-i="${i}" title="${escHtml(full)}" aria-label="${escHtml(full)}">
+            <span class="ag2-tile ag2-tile-${p.tile}">${icon(p.icon, 13)}</span>
+            <span class="ag2-res-txt"><span class="ag2-res-item">${markMatch(r.label, q)}</span><span class="ag2-res-path">${escHtml(path)}</span></span>
+        </button>`;
+    }).join('');
+}
+
+function clearSearch() {
+    const q = root?.querySelector('.ag2-set-search input');
+    if (q?.value) q.value = '';
+    onSearch('');
+}
+
+function onSearchKey(e) {
+    if (e.isComposing) return;
+    if (e.key === 'ArrowDown') {
+        const first = root.querySelector('.ag2-res');
+        if (first) { e.preventDefault(); first.focus(); }
+    } else if (e.key === 'Enter') {
+        if (results.length) { e.preventDefault(); pickResult(0); }
+    }
+}
+
+function onResultsKey(e) {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    const items = [...root.querySelectorAll('.ag2-res')];
+    const i = items.indexOf(document.activeElement);
+    if (i < 0) return;
+    e.preventDefault();
+    if (e.key === 'ArrowUp' && i === 0) { root.querySelector('.ag2-set-search input').focus(); return; }
+    items[Math.min(items.length - 1, Math.max(0, i + (e.key === 'ArrowDown' ? 1 : -1)))].focus();
+}
+
+/** Go to the result's page, open its group, scroll it into view, flash it. */
+async function pickResult(i) {
+    const r = results[i];
+    if (!r || !searchMod) return null;
+    for (const b of root.querySelectorAll('.ag2-res')) b.classList.toggle('ag2-sel', Number(b.dataset.i) === i);
+    return searchMod.reveal(r, page => go(page), root.querySelector('.ag2-set-body'));
+}
+
+/** Test / P4 hook: run a query and reveal the first hit (P4's palette shares the index). */
+export async function searchAndReveal(q, i = 0) {
+    const input = root?.querySelector('.ag2-set-search input');
+    if (!input) return null;
+    input.value = q;
+    await onSearch(q);
+    return { results: results.map(r => ({ page: r.page, group: r.group || '', label: r.label, kind: r.kind })), hit: await pickResult(i) };
+}
+
+export async function searchIndex(q) {
+    const mod = await loadSearch();
+    return mod.query(q).map(r => ({ page: r.page, group: r.group || '', label: r.label, kind: r.kind }));
+}
+
+// ------------------------------------------------------------------ sliders: accent fill
+// ST's range inputs get --ag2-pct (CSS draws the accent part of the track up to it).
+function paintRanges(scope) {
+    if (!scope) return;
+    for (const r of scope.querySelectorAll('input[type="range"]')) paintOne(r);
+}
+function paintOne(r) {
+    const min = Number(r.min || 0), max = Number(r.max || 100);
+    const pct = max > min ? (Number(r.value) - min) / (max - min) * 100 : 0;
+    r.style.setProperty('--ag2-pct', Math.max(0, Math.min(100, pct)).toFixed(2) + '%');
+}
+function onPanelInput(e) {
+    const t = e.target;
+    if (!(t instanceof HTMLInputElement) || !PAGE[cur]?.panel) return;
+    const panel = document.getElementById(PAGE[cur].panel);
+    if (!panel?.contains(t)) return;
+    if (t.type === 'range') paintOne(t);
+    else if (t.type === 'number') setTimeout(() => paintRanges(panel), 0); // ST syncs the slider from its box
+}
+
+// ------------------------------------------------------------------ anchor capsules (long pages)
+const visibleEl = el => !!el && el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden';
+const shortLabel = s => String(s || '').replace(/\s*[（(][^）)]*[）)]\s*/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 12);
+const firstVisible = (root, sel) => [...root.querySelectorAll(sel)].find(visibleEl) || null;
+const ANCHORS = {
+    api: {
+        scroll: '#rm_api_block',
+        items: root => [...root.querySelectorAll('h3, h4')].filter(visibleEl).map(e => [shortLabel(e.firstChild?.textContent?.trim() ? e.firstChild.textContent : e.textContent), e]),
+    },
+    ai: {
+        scroll: '#left-nav-panel > .scrollableInner',
+        items: root => [
+            ['预设', firstVisible(root, '#respective-presets-block')],
+            ['长度', firstVisible(root, '#respective-ranges-and-temps .range-block, #respective-ranges-and-temps')],
+            ['采样', firstVisible(root, '.range-block:has(input[type="range"][id^="temp"])')],
+            ['提示词', firstVisible(root, '#range_block_openai > .inline-drawer, #range_block_openai .inline-drawer')],
+            ['高级', firstVisible(root, '#advanced-ai-config-block .inline-drawer, #advanced-ai-config-block .range-block, #advanced-ai-config-block')],
+        ],
+    },
+    fmt: {
+        scroll: '#AdvancedFormatting',
+        items: root => [...root.querySelectorAll('h4.standoutHeader')].filter(visibleEl).map(e => [shortLabel(e.textContent), e]),
+    },
+};
+let anchorList = [];
+let anchorScroller = null;
+let spyRaf = 0;
+
+function renderAnchors(page) {
+    const bar = root.querySelector('.ag2-anchors');
+    detachSpy();
+    anchorList = [];
+    const def = ANCHORS[page];
+    const panel = def && document.getElementById(PAGE[page].panel);
+    if (def && panel) {
+        const seen = new Set();
+        for (const [label, el] of def.items(panel)) {
+            if (!el || !label || seen.has(el)) continue;
+            seen.add(el);
+            anchorList.push({ label, el });
+        }
+    }
+    if (anchorList.length < 2) {
+        bar.hidden = true;
+        bar.replaceChildren();
+        delete document.body.dataset.ag2Anchors;
+        anchorList = [];
+        return;
+    }
+    bar.innerHTML = anchorList.map((a, i) => `<button type="button" class="ag2-anchor" data-i="${i}">${escHtml(a.label)}</button>`).join('');
+    bar.hidden = false;
+    document.body.dataset.ag2Anchors = page;
+    anchorScroller = document.querySelector(def.scroll);
+    anchorScroller?.addEventListener('scroll', onSpyScroll, { passive: true });
+    spy();
+}
+
+function detachSpy() {
+    anchorScroller?.removeEventListener('scroll', onSpyScroll);
+    anchorScroller = null;
+    cancelAnimationFrame(spyRaf);
+}
+
+function onSpyScroll() {
+    cancelAnimationFrame(spyRaf);
+    spyRaf = requestAnimationFrame(spy);
+}
+
+/** Current anchor = the last one whose top has reached the scroller's top edge (ties keep
+ *  the current one: 提示词与格式 has three columns starting at the same height). */
+function spy(forced = null) {
+    const sc = anchorScroller;
+    const bar = root?.querySelector('.ag2-anchors');
+    if (!sc || !bar || !anchorList.length) return;
+    let cur = forced;
+    if (cur == null) {
+        const top = sc.getBoundingClientRect().top;
+        const prev = Number(bar.querySelector('[aria-current="true"]')?.dataset.i ?? -1);
+        let best = 0, bestY = -Infinity;
+        anchorList.forEach((a, i) => {
+            const y = a.el.getBoundingClientRect().top - top;
+            if (y <= 24 && (y > bestY + 1 || (Math.abs(y - bestY) <= 1 && i === prev))) { best = i; bestY = y; }
+        });
+        if (sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 2 && prev >= 0) {
+            // at the very bottom the clicked anchor may never reach the top: keep it
+            const py = anchorList[prev]?.el.getBoundingClientRect().top - top;
+            if (py >= 0 && py < sc.clientHeight) best = prev;
+        }
+        cur = best;
+    }
+    for (const b of bar.querySelectorAll('.ag2-anchor')) b.setAttribute('aria-current', String(Number(b.dataset.i) === cur));
+}
+
+function onAnchorClick(e) {
+    const b = e.target.closest('.ag2-anchor');
+    const a = b && anchorList[Number(b.dataset.i)];
+    if (!a || !anchorScroller) return;
+    const sc = anchorScroller;
+    const reduced = document.body.classList.contains('reduced-motion') || matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const top = sc.scrollTop + (a.el.getBoundingClientRect().top - sc.getBoundingClientRect().top) - 8;
+    sc.scrollTo({ top: Math.max(0, top), behavior: reduced ? 'auto' : 'smooth' });
+    spy(Number(b.dataset.i));
 }
 
 function onNavKey(e) {
@@ -183,6 +412,8 @@ export function open(page = null) {
         root.hidden = false;
         window.addEventListener('keydown', onKey, true);
         window.addEventListener('resize', onResize);
+        document.addEventListener('input', onPanelInput, true);
+        document.addEventListener('change', onPanelInput, true);
         updateNavStatus();
     }
     return go(page, { focus: true });
@@ -201,15 +432,18 @@ async function goNow(page, { focus = false } = {}) {
     switching++;
     try {
         setCurrent(page);
+        searchMod?.clearHit();
         if (p.panel) {
             // doNavbarIconClick closes every other unpinned drawer and opens this one.
             await toggleDrawer(p.panel, true);
             for (const id of openPanels()) if (id !== p.panel) await toggleDrawer(id, false); // pinned leftovers
             renderBody(null);
+            paintRanges(document.getElementById(p.panel));
         } else {
             for (const id of openPanels()) await toggleDrawer(id, false);
             renderBody(page);
         }
+        if (cur === page) renderAnchors(page);
     } finally {
         switching--;
     }
@@ -256,6 +490,11 @@ export async function close() {
     clearTimeout(closeTimer);
     window.removeEventListener('keydown', onKey, true);
     window.removeEventListener('resize', onResize);
+    document.removeEventListener('input', onPanelInput, true);
+    document.removeEventListener('change', onPanelInput, true);
+    searchMod?.clearHit();
+    detachSpy();
+    delete document.body.dataset.ag2Anchors;
     // Drawers close first (synchronous class flip inside doNavbarIconClick) while the window
     // CSS still positions them, so nothing flashes at ST's default drawer spot.
     const ids = openPanels();
@@ -264,8 +503,7 @@ export async function close() {
     delete document.body.dataset.ag2Set;
     dim.hidden = true;
     root.hidden = true;
-    const q = root.querySelector('.ag2-set-search input');
-    if (q.value) { q.value = ''; filterNav(''); }
+    clearSearch();
     await Promise.all(pending);
     if (opener?.isConnected) opener.focus({ preventScroll: true });
     opener = null;
@@ -278,6 +516,11 @@ export function unmount() {
     clearTimeout(closeTimer);
     window.removeEventListener('keydown', onKey, true);
     window.removeEventListener('resize', onResize);
+    document.removeEventListener('input', onPanelInput, true);
+    document.removeEventListener('change', onPanelInput, true);
+    searchMod?.clearHit();
+    detachSpy();
+    delete document.body.dataset.ag2Anchors;
     try { const { eventSource } = ctx(); for (const [t, fn] of stEvents) eventSource.removeListener(t, fn); } catch { /* */ }
     stEvents.length = 0;
     document.body.classList.remove('ag2-set-open');
@@ -311,7 +554,7 @@ function onKey(e) {
     const q = root.querySelector('.ag2-set-search input');
     e.preventDefault();
     e.stopImmediatePropagation(); // ST's own Esc would close the drawer behind our back
-    if (a === q && q.value) { q.value = ''; filterNav(''); return; }
+    if (q.value && (a === q || root.querySelector('.ag2-set-results').contains(a))) { clearSearch(); q.focus(); return; }
     // A field being edited inside the page: the first Esc leaves the field.
     if (a instanceof HTMLElement && a !== q && a.matches('input, textarea, select, [contenteditable="true"]')
         && (root.contains(a) || PANEL_IDS.some(id => document.getElementById(id)?.contains(a)))) {

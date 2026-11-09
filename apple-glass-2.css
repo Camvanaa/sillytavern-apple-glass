@@ -3314,6 +3314,668 @@ html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-close:focus-visible {
     }
 }
 
+/* == 5.5b · ST controls inside the settings window (§5.5 table) == */
+/* CSS only, nothing rewritten. Scope: the eight ST drawers while they sit in the window
+   (desktop, body.ag2-set-open). Phones keep ST's own drawers until P5.
+   Display is never forced with !important here: ST hides controls of other API sources
+   with inline display:none / .displayNone, and those must stay hidden (scan “unhid”). */
+@media (min-width: 1001px) {
+    /* base text inside the panels */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) {
+        color: var(--ag2-l1) !important;
+        font-size: var(--ag2-fs-sub) !important;
+        line-height: 1.45;
+        --mainFontSize: 13.5px;
+    }
+
+    /* h3 / h4 → group titles 12/640 grey */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) :is(h3, h4) {
+        margin-top: 14px !important;
+        margin-bottom: 6px !important;
+        padding: 0 2px !important;
+        border: 0 !important;
+        background: none !important;
+        color: var(--ag2-l3) !important;
+        font-size: 12px !important;
+        font-weight: 640 !important;
+        letter-spacing: 0.02em !important;
+        line-height: 1.5 !important;
+        text-align: left;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) hr {
+        height: 0.5px !important;
+        margin: 10px 0 !important;
+        border: 0 !important;
+        background: var(--ag2-sep) !important;
+        opacity: 1 !important;
+    }
+
+    /* descriptions under a row: 12/l3, left-aligned (ST centres them) */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) :is(.toggle-description, .editable-slider-notification) {
+        width: auto !important;
+        margin: -2px 0 8px 2px !important;
+        color: var(--ag2-l3) !important;
+        font-size: 12px !important;
+        line-height: 1.5 !important;
+        text-align: left !important;
+    }
+
+    /* --- label.checkbox_label → list row: text left, iOS switch right --- */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) label.checkbox_label {
+        flex-grow: 1;
+        align-self: stretch;
+        align-items: center !important;
+        column-gap: 10px !important;
+        box-sizing: border-box;
+        min-height: 36px;
+        margin: 0 !important;
+        padding: 4px 2px !important;
+        color: var(--ag2-l1) !important;
+        font-size: var(--ag2-fs-sub) !important;
+        line-height: 1.4;
+        cursor: pointer;
+    }
+
+    /* the label text keeps the row's size (ST wraps most of them in <small>) */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) label.checkbox_label > :is(small, span) {
+        min-width: 0;
+        color: inherit;
+        font-size: inherit !important;
+    }
+
+    /* hairline between consecutive rows (top edge only: not a box, so no double border) */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) label.checkbox_label + label.checkbox_label {
+        box-shadow: inset 0 0.5px 0 var(--ag2-sep);
+    }
+
+    /* the switch goes to the row end, whatever ST's source order is */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) label.checkbox_label > input[type="checkbox"] {
+        order: 99;
+        margin-left: auto !important;
+    }
+
+    /* iOS switch 42×26, on = green (same look as the 外观 page's .ag2-switch) */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) label.checkbox_label > input[type="checkbox"],
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block #power-user-option-checkboxes label > input[type="checkbox"] {
+        position: relative;
+        flex: none !important;
+        width: 42px !important;
+        height: 26px !important;
+        min-width: 42px;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 13px !important;
+        outline: 0 !important;
+        background: var(--ag2-f2) !important;
+        box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.05) !important;
+        filter: none !important;
+        transform: none !important;
+        transition: background-color var(--ag2-dur) ease !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) label.checkbox_label > input[type="checkbox"]::before,
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block #power-user-option-checkboxes label > input[type="checkbox"]::before {
+        content: "" !important;
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 22px !important;
+        height: 22px !important;
+        border-radius: 50%;
+        background: #fff !important;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3), 0 0 0 0.5px rgba(0, 0, 0, 0.04) !important;
+        clip-path: none !important;
+        transform: none !important;
+        transition: transform var(--ag2-dur) var(--ag2-ease) !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) label.checkbox_label > input[type="checkbox"]:checked,
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block #power-user-option-checkboxes label > input[type="checkbox"]:checked {
+        background: var(--ag2-green) !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) label.checkbox_label > input[type="checkbox"]:checked::before,
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block #power-user-option-checkboxes label > input[type="checkbox"]:checked::before {
+        transform: translateX(16px) !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) label.checkbox_label > input[type="checkbox"]:disabled {
+        opacity: 0.45;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) label.checkbox_label > input[type="checkbox"]:focus-visible {
+        outline: 2px solid var(--ag2-accent) !important;
+        outline-offset: 2px;
+    }
+
+    /* any other checkbox (lists, entry rows): a quiet rounded box, accent when on */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) input[type="checkbox"]:not(label.checkbox_label > input):not(#power-user-option-checkboxes label > input) {
+        width: 16px !important;
+        height: 16px !important;
+        border: 0 !important;
+        border-radius: 5px !important;
+        outline: 0 !important;
+        background: var(--ag2-f2) !important;
+        box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.12) !important;
+        filter: none !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) input[type="checkbox"]:not(label.checkbox_label > input):not(#power-user-option-checkboxes label > input):checked {
+        background: var(--ag2-accent) !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) input[type="checkbox"]:not(label.checkbox_label > input):not(#power-user-option-checkboxes label > input)::before {
+        box-shadow: inset 1em 1em #fff !important;
+    }
+
+    /* --- .range-block (title + slider + number) → row: title left, 230px slider + 52px box
+       right; flex-wrap stacks them when the column is narrow (§5.5 “窄屏时上下排列”) --- */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .range-block {
+        align-items: center !important;
+        gap: 6px 14px;
+        margin: 0 0 2px !important;
+        padding: 4px 2px !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .range-block-title {
+        color: var(--ag2-l1) !important;
+        font-size: var(--ag2-fs-sub) !important;
+        font-weight: 500 !important;
+        letter-spacing: 0 !important;
+        text-align: left !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .range-block:has(> .range-block-range-and-counter) > .range-block-title {
+        flex: 1 1 140px;
+        width: auto !important;
+        min-width: 0;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .range-block-range-and-counter {
+        flex: 0 1 294px;
+        align-items: center;
+        gap: 12px;
+        min-width: min(100%, 200px);
+        width: auto !important;
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .range-block-range {
+        flex: 1 1 230px !important;
+        min-width: 0;
+        max-width: 230px;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .range-block-counter {
+        flex: none !important;
+        margin: 0 !important;
+    }
+
+    /* numeric boxes: 52px, f4, centred tabular digits */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) :is(.range-block-counter input, input.neo-range-input) {
+        box-sizing: border-box;
+        width: 52px !important;
+        min-width: 52px;
+        height: 26px !important;
+        margin: 0 !important;
+        padding: 0 4px !important;
+        border: 0 !important;
+        border-radius: 7px !important;
+        background: var(--ag2-f4) !important;
+        box-shadow: none !important;
+        color: var(--ag2-l2) !important;
+        font-size: 12.5px !important;
+        font-variant-numeric: tabular-nums;
+        text-align: center !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) input.neo-range-input {
+        width: 64px !important;
+        margin-top: 8px !important;
+    }
+
+    /* sliders: 4px track (accent fill up to --ag2-pct, set by settings.js), white 20px knob */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) input[type="range"] {
+        height: 20px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: none !important;
+        box-shadow: none !important;
+        filter: none !important;
+        cursor: pointer !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) input[type="range"]::-webkit-slider-runnable-track {
+        height: 4px;
+        border-radius: 2px;
+        background: linear-gradient(to right, var(--ag2-accent) var(--ag2-pct, 0%), var(--ag2-f2) var(--ag2-pct, 0%));
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) input[type="range"]::-webkit-slider-thumb {
+        width: 20px !important;
+        height: 20px !important;
+        margin-top: -8px;
+        border: 0 !important;
+        border-radius: 50%;
+        background: #fff !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+        -webkit-appearance: none;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) input[type="range"]::-moz-range-track {
+        height: 4px;
+        border-radius: 2px;
+        background: linear-gradient(to right, var(--ag2-accent) var(--ag2-pct, 0%), var(--ag2-f2) var(--ag2-pct, 0%));
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) input[type="range"]::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        border: 0;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) input[type="range"]:focus-visible {
+        outline: 2px solid var(--ag2-accent) !important;
+        outline-offset: 2px;
+        border-radius: 10px !important;
+    }
+
+    /* --- select / .text_pole: 30px, fill f3, custom chevron --- */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) :is(select:not([multiple]):not([size]), input.text_pole, input[type="text"]:not(.select2-search__field), input[type="search"], input[type="password"], input[type="url"], input[type="number"]:not(.range-block-counter input):not(.neo-range-input)) {
+        box-sizing: border-box;
+        height: 30px !important;
+        min-height: 30px;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        padding-left: 10px !important;
+        border: 0 !important;
+        border-radius: 8px !important;
+        outline: 0;
+        background-color: var(--ag2-f3) !important;
+        box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.05) !important;
+        color: var(--ag2-l1) !important;
+        font-size: 13px !important;
+        line-height: 30px;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) select:not([multiple]):not([size]) {
+        padding-right: 28px !important;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(235,235,245,0.6)' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 9px center !important;
+        background-size: 12px 12px !important;
+        text-overflow: ellipsis;
+        cursor: pointer;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) select option {
+        background: var(--ag2-solid-menu);
+        color: var(--ag2-l1);
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) :is(select, input, textarea):focus-visible {
+        outline: 2px solid var(--ag2-accent) !important;
+        outline-offset: 1px;
+    }
+
+    /* select2 boxes (世界书 pickers) follow the same field look */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .select2-container .select2-selection {
+        min-height: 30px;
+        border: 0 !important;
+        border-radius: 8px !important;
+        background-color: var(--ag2-f3) !important;
+        box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.05) !important;
+    }
+
+    /* --- textarea: inset dark well, 0.5px inner rim; ST's monospace stays as it is --- */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) textarea {
+        box-sizing: border-box;
+        padding: 8px 10px !important;
+        border: 0 !important;
+        border-radius: 10px !important;
+        outline: 0;
+        background-color: rgba(0, 0, 0, 0.24) !important;
+        box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.1), inset 0 1px 3px rgba(0, 0, 0, 0.22) !important;
+        color: var(--ag2-l1) !important;
+        font-size: 13px !important;
+        line-height: 1.55 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) :is(textarea, input)::placeholder {
+        color: var(--ag2-l3) !important;
+        opacity: 1;
+    }
+
+    /* --- .inline-drawer → collapsible group card, header row with a chevron --- */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .inline-drawer {
+        box-sizing: border-box;
+        margin: 6px 0 !important;
+        border: 0 !important;
+        border-radius: 12px !important;
+        background: var(--ag2-f5) !important;
+        box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.065) !important;
+    }
+
+    /* nested groups don't stack fills */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .inline-drawer .inline-drawer {
+        background: none !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .inline-drawer-header {
+        box-sizing: border-box;
+        align-items: center !important;
+        gap: 8px;
+        min-height: 40px;
+        margin: 0 !important;
+        padding: 6px 12px !important;
+        border: 0 !important;
+        border-radius: 12px !important;
+        background: none !important;
+        box-shadow: none !important;
+        color: var(--ag2-l1) !important;
+        font-size: var(--ag2-fs-sub) !important;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .inline-drawer-header:hover {
+        background: var(--ag2-f5) !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .inline-drawer-header :is(b, strong) {
+        font-weight: 600;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .inline-drawer-content {
+        padding: 2px 12px 10px !important;
+        border: 0 !important;
+        background: none !important;
+    }
+
+    /* ST's circled chevron → a plain 12px chevron in l3 (state classes stay ST's) */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .inline-drawer-icon {
+        flex: none;
+        margin: 0 0 0 auto !important;
+        color: var(--ag2-l3) !important;
+        font-size: 12px !important;
+        filter: none !important;
+        opacity: 1 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .inline-drawer-icon.fa-circle-chevron-down::before {
+        content: "\f078";
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .inline-drawer-icon.fa-circle-chevron-up::before {
+        content: "\f077";
+    }
+
+    /* --- .menu_button → secondary capsule; .redWarningBG → red destructive text --- */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) :is(.menu_button, .menu_button_icon) {
+        box-sizing: border-box;
+        min-height: 30px;
+        padding: 0 12px !important;
+        border: 0 !important;
+        border-radius: 15px !important;
+        background-color: var(--ag2-f3) !important;
+        box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.07) !important;
+        color: var(--ag2-l1) !important;
+        font-size: 13px !important;
+        font-weight: 560;
+        filter: none !important;
+        transition: background-color var(--ag2-dur) ease !important;
+    }
+
+    /* glyph-only buttons: 30px round, 14px l2 icon (§6 “Font Awesome 统一 14px、l2”) */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .menu_button:empty {
+        width: 30px !important;
+        min-width: 30px !important;
+        height: 30px !important;
+        padding: 0 !important;
+        color: var(--ag2-l2) !important;
+        font-size: 14px !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) :is(.menu_button, .menu_button_icon):not(.disabled):not([disabled]):hover {
+        background-color: var(--ag2-f2) !important;
+        color: var(--ag2-l1) !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) :is(.menu_button, .menu_button_icon):is(.toggled, .active, .toggleEnabled) {
+        background-color: var(--ag2-accent-soft) !important;
+        color: var(--ag2-accent-hover) !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) :is(.menu_button, .menu_button_icon):is(.redWarningBG, .danger, .warning) {
+        background-color: rgba(255, 69, 58, 0.14) !important;
+        color: var(--ag2-red) !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) :is(.menu_button, .menu_button_icon):is(.disabled, [disabled]) {
+        opacity: 0.4;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) :is(.menu_button, .menu_button_icon):focus-visible {
+        outline: 2px solid var(--ag2-accent) !important;
+        outline-offset: 2px;
+    }
+
+    /* help “?” links and info glyphs: 14px l3 */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) :is(.note-link-span, .fa-circle-info, .fa-circle-question) {
+        color: var(--ag2-l3) !important;
+        font-size: 13px !important;
+        filter: none !important;
+    }
+}
+
+/* == 5.5c · Anchor capsules · cross-page search · hit flash == */
+/* Long pages (连接, 生成参数, 提示词与格式) get a row of anchor capsules in the window head,
+   under the lead line; the head grows by --ag2-set-anchors so the drawer box (positioned
+   from --ag2-set-head) starts below it. Sticky by construction: it is outside the scroller. */
+html body.ag2[data-ag2-anchors]:not(#_):not(#__) {
+    --ag2-set-head: 124px;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-head {
+    flex-wrap: wrap;
+    align-content: flex-start;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-anchors {
+    display: flex;
+    flex: 0 0 100%;
+    gap: 6px;
+    order: 3;
+    min-width: 0;
+    margin: 4px 0 0;
+    padding: 0 12px 6px 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-anchors::-webkit-scrollbar {
+    display: none;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-anchors[hidden] {
+    display: none;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-anchor {
+    flex: none;
+    height: 26px;
+    margin: 0;
+    padding: 0 11px;
+    border: 0;
+    border-radius: 13px;
+    background: var(--ag2-f4);
+    color: var(--ag2-l2);
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 560;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color var(--ag2-dur) ease, color var(--ag2-dur) ease;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-anchor:hover {
+    background: var(--ag2-f3);
+    color: var(--ag2-l1);
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-anchor[aria-current="true"] {
+    background: var(--ag2-accent-soft);
+    color: var(--ag2-accent-hover);
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-anchor:focus-visible {
+    outline: 2px solid var(--ag2-accent);
+    outline-offset: 1px;
+}
+
+/* search results replace the nav tiles while the field has text */
+html body.ag2:not(#_):not(#__) #ag2-settings.ag2-searching .ag2-set-grp {
+    display: none;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-results {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-height: 0;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-results[hidden] {
+    display: none;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-res {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 44px;
+    margin: 0;
+    padding: 5px 8px;
+    border: 0;
+    border-radius: var(--ag2-r-ctl);
+    background: none;
+    color: var(--ag2-l1);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-res:hover,
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-res.ag2-sel {
+    background: var(--ag2-f4);
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-res:focus-visible {
+    outline: 2px solid var(--ag2-accent);
+    outline-offset: -2px;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-res-txt {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-res-item,
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-res-path {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-res-item {
+    font-size: var(--ag2-fs-sub);
+    font-weight: 520;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-res-item mark {
+    background: none;
+    color: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-res-path {
+    color: var(--ag2-l3);
+    font-size: 11.5px;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-res-empty {
+    padding: 14px 8px;
+    color: var(--ag2-l3);
+    font-size: 12.5px;
+    text-align: center;
+}
+
+/* hit: accent ring + soft fill, blinks for 1.2s; reduced motion → static ring (the §14
+   catch-all collapses the animation to its last frame, which is the ring) */
+html body.ag2:not(#_):not(#__) .ag2-hit {
+    border-radius: 8px;
+    box-shadow: inset 0 0 0 2px var(--ag2-accent) !important;
+    animation: ag2-hit 1.2s ease-in-out both !important;
+}
+
+@keyframes ag2-hit {
+    0%, 50%, 100% { box-shadow: inset 0 0 0 2px var(--ag2-accent); background-color: var(--ag2-accent-soft); }
+    25%, 75% { box-shadow: inset 0 0 0 2px transparent; background-color: transparent; }
+}
+
+/* == 5.5d · 通用: items with no effect under the AG2 layout (greyed + note) == */
+/* 页面宽度 (chat_width: AG2 sizes the reading column from 外观 › 行宽) and 可移动 UI
+   (the shell places every panel itself). ST keeps the values; other themes still use them. */
+@media (min-width: 1001px) {
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block :is(div:has(> #chat_width_slider), div:has(> #movingUIModeCheckBlock), #MovingUI-presets-block) {
+        position: relative;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block :is(div:has(> #chat_width_slider), div:has(> #movingUIModeCheckBlock), #MovingUI-presets-block) > * {
+        opacity: 0.4;
+        pointer-events: none;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block :is(div:has(> #chat_width_slider), div:has(> #movingUIModeCheckBlock))::after {
+        flex: 0 0 100%;
+        margin-top: 4px;
+        color: var(--ag2-l3);
+        font-size: 11.5px;
+        line-height: 1.4;
+        text-align: left;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block div:has(> #chat_width_slider)::after {
+        content: "新布局下无效：聊天宽度请在“外观 › 行宽”中调整";
+        text-align: center;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block div:has(> #movingUIModeCheckBlock) {
+        flex-wrap: wrap;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block div:has(> #movingUIModeCheckBlock)::after {
+        content: "新布局下无效：面板位置由 Apple Glass 2 统一安排";
+    }
+}
+
 /* == 13 · Ported fixes (apple-theme.css §15m, §19b, §17a) == */
 /* Under AG2 ST's own panels still render with the theme JSON's blur strength and
    none of AG Dark's fixes; these two keep the §4.6 regression at zero until the
