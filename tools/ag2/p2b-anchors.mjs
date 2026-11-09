@@ -32,15 +32,21 @@ export default async function (T) {
                 // the section block (ai) — the probe only checks that *something* titled so is in view
                 const vis = e => e.getClientRects().length > 0;
                 const lab = b.textContent;
-                const cand = [...sc.querySelectorAll('h3, h4, .range-block, .inline-drawer, [id$="-block"]')].filter(vis)
-                    .filter(e => (e.textContent || '').replace(/\s+/g, ' ').trim().startsWith(lab.slice(0, 4)));
+                // same normalisation as settings.js shortLabel; headings only (api, fmt). 生成参数 targets are
+                // blocks, not headings → y null there (checked by scrollTop growing instead)
+                const norm = t => String(t || '').replace(/\s*[（(][^）)]*[）)]\s*/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 12);
+                const cand = [...sc.querySelectorAll('h3, h4')].filter(vis)
+                    .filter(e => norm(e.firstChild?.textContent?.trim() ? e.firstChild.textContent : e.textContent) === lab || norm(e.textContent) === lab);
                 const top = sc.getBoundingClientRect().top;
                 const y = cand.length ? Math.round(cand[0].getBoundingClientRect().top - top) : null;
                 return { label: lab, current: b.getAttribute('aria-current'), scrollTop: sc && Math.round(sc.scrollTop), atEnd, barTop: Math.round(bar.top), y,
                     placed: y == null ? null : (Math.abs(y) <= 24 || (atEnd && y >= 0 && y < sc.clientHeight)) };
             }, i));
         }
-        r.ok = bar.hidden ? ['look', 'bg'].includes(p) : r.clicks.every(c => c.current === 'true') && new Set(r.clicks.map(c => c.barTop)).size === 1;
+        const tops = r.clicks.map(c => c.scrollTop);
+        r.ok = bar.hidden ? ['look', 'bg'].includes(p)
+            : r.clicks.every(c => c.current === 'true' && c.placed !== false) && new Set(r.clicks.map(c => c.barTop)).size === 1
+              && (p !== 'ai' || tops.every((t, i) => !i || t >= tops[i - 1]));
         out[p] = r;
     }
     out.errors = T.errors(page);
