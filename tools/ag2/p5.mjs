@@ -64,7 +64,11 @@ export const small = (page, scope = 'body') => page.evaluate(sc => {
         if (c.display === 'none' || c.visibility === 'hidden') continue;
         const r = e.getBoundingClientRect();
         if (r.width < 1 || r.height < 1 || r.bottom < 0 || r.top > innerHeight || r.right < 0 || r.left > innerWidth) continue;
-        if (r.width < 44 || r.height < 44) out.push(((e.id ? '#' + e.id : e.tagName.toLowerCase()) + (typeof e.className === 'string' && e.className ? '.' + e.className.trim().split(/\s+/)[0] : '') + ' ' + Math.round(r.width) + 'x' + Math.round(r.height)));
+        // a transparent ::before hit area (§5.9) counts
+        const b = getComputedStyle(e, '::before');
+        const hw = b.content !== 'none' && b.position === 'absolute' ? Math.max(r.width, parseFloat(b.width) || 0) : r.width;
+        const hh = b.content !== 'none' && b.position === 'absolute' ? Math.max(r.height, parseFloat(b.height) || 0) : r.height;
+        if (hw < 44 || hh < 44) out.push(((e.id ? '#' + e.id : e.tagName.toLowerCase()) + (typeof e.className === 'string' && e.className ? '.' + e.className.trim().split(/\s+/)[0] : '') + ' ' + Math.round(r.width) + 'x' + Math.round(r.height)));
     }
     return out;
 }, scope);
@@ -341,8 +345,117 @@ async function pages(T) {
     return r;
 }
 
+// ---------------------------------------------------------------- reduced motion (ST switch / OS setting) on the phone pages
+async function phoneMotion(T, page) {
+    const computed = () => page.evaluate(() => {
+        let maxTr = 0, maxAn = 0;
+        for (const e of document.querySelectorAll('body *')) {
+            const c = getComputedStyle(e);
+            maxTr = Math.max(maxTr, ...c.transitionDuration.split(',').map(x => parseFloat(x) * 1000));
+            if (c.animationName !== 'none') maxAn = Math.max(maxAn, ...c.animationDuration.split(',').map(x => parseFloat(x) * 1000));
+        }
+        return { maxTransitionMs: Math.round(maxTr * 100) / 100, maxAnimationMs: Math.round(maxAn * 100) / 100 };
+    });
+    const live = async f => {
+        await page.evaluate(() => { window.__mx = 0; window.__run = true; const t = () => { if (!window.__run) return; for (const a of document.getAnimations()) { const d = a.effect?.getComputedTiming?.().duration; if (d > window.__mx) window.__mx = d; } requestAnimationFrame(t); }; requestAnimationFrame(t); });
+        await f(); await T.sleep(600);
+        return page.evaluate(() => { window.__run = false; return Math.round(window.__mx * 100) / 100; });
+    };
+    const out = { bodyClass: await page.evaluate(() => document.body.classList.contains('reduced-motion')), list: await computed(), live: {} };
+    const spec = await T.longChat(page);
+    out.live.push = await live(() => page.tap(`#ag2-sidebar .ag2-chat-row[title*="${spec.file}"]`));
+    await T.sleep(1500);
+    out.chat = await computed();
+    out.live.insp = await live(() => page.tap('#ag2-title .ag2-title-btn'));
+    out.live.inspClose = await live(() => page.tap('#right-nav-panel [data-ag2-act="close"]'));
+    out.live.pop = await live(() => page.tap('#ag2-ph-back'));
+    out.live.sheet = await live(() => page.tap('#ag2-tabbar [data-tab="settings"]'));
+    out.live.pagePush = await live(() => page.tap('#ag2-settings .ag2-set-item[data-page="ai"]'));
+    out.sheet = await computed();
+    return out;
+}
+
+async function reduced(T) {
+    const r = {};
+    { const { page } = await enter(T, { prep: { powerUser: { reduced_motion: true } } }); r.stSwitch = await phoneMotion(T, page); r.stSwitch.errors = T.errors(page).filter(e => !/404/.test(e)); await page.context().close(); }
+    { const { page } = await enter(T, { page: { reduced: true } }); r.osSetting = await phoneMotion(T, page); r.osSetting.errors = T.errors(page).filter(e => !/404/.test(e)); await page.context().close(); }
+    { const { page } = await enter(T); r.normal = await phoneMotion(T, page); }
+    return r;
+}
+
+// ---------------------------------------------------------------- teardown / ?classic / lazy loading on phones
+async function teardown(T) {
+    const r = {};
+    {
+        const { page } = await enter(T);
+        const spec = await T.longChat(page);
+        await tap(T, page, `#ag2-sidebar .ag2-chat-row[title*="${spec.file}"]`, 2500);
+        await page.evaluate(() => { $('#themes').val('Apple Glass Dark').trigger('change'); });
+        await T.sleep(3000);
+        r.toDark = await page.evaluate(() => ({
+            bodyAg2: [...document.body.classList].filter(c => /^ag2/.test(c)), ph: document.body.dataset.ag2Ph || null,
+            nodes: document.querySelectorAll('[id^="ag2-"], .ag2-ph-x').length, vv: document.body.style.getPropertyValue('--ag2-vvh'),
+            mes: document.querySelectorAll('#chat .mes').length, sheldVis: getComputedStyle(document.getElementById('sheld')).visibility,
+        }));
+        const sc = await T.scan(page, ['#chat', '#sheld']);
+        r.toDarkScan = { ovf: sc.ovf, dbl: sc.dbl, unhid: sc.unhid, nest: sc.nest, doc: sc.doc.ok, scrollY: sc.scrollY };
+        await T.shot(page, 'teardown-dark');
+        await page.evaluate(() => { $('#themes').val('Apple Glass 2').trigger('change'); });
+        await T.sleep(3500);
+        r.backToAg2 = await st(page);
+        await T.shot(page, 'teardown-back');
+        r.errors = T.errors(page).filter(e => !/404/.test(e));
+        await page.context().close();
+    }
+    {
+        const page = await T.newPage({ phone: true });
+        await T.prepare(page, {});
+        await T.boot(page, { ag2: false, query: '?classic', settle: 2500 });
+        r.classic = await page.evaluate(() => ({ ag2: document.body.classList.contains('ag2'), nodes: document.querySelectorAll('[id^="ag2-"]').length }));
+        await page.context().close();
+    }
+    // desktop never requests phone.js; a phone does
+    for (const [name, over] of [['desk', { phone: false, w: 1440, h: 900 }], ['phone', { phone: true }]]) {
+        const page = await T.newPage(over);
+        const reqs = [];
+        page.on('request', q => { if (/\/shell\/[a-z]+\.js/.test(q.url())) reqs.push(q.url().replace(/^.*\/shell\//, '').replace(/\?.*$/, '')); });
+        await T.prepare(page, {});
+        await T.boot(page, { ag2: true, settle: 2500 });
+        r['modules_' + name] = [...new Set(reqs)].sort();
+        await page.context().close();
+    }
+    return r;
+}
+
+// ---------------------------------------------------------------- touch targets (shell controls ≥44pt)
+async function touch(T) {
+    const { page } = await enter(T);
+    const r = {};
+    r.list = await small(page, '#ag2-shell');
+    r.listRowH = await page.evaluate(() => [...document.querySelectorAll('#ag2-sidebar .ag2-row')].slice(0, 5).map(e => Math.round(e.getBoundingClientRect().height)));
+    const spec = await T.longChat(page);
+    await tap(T, page, `#ag2-sidebar .ag2-chat-row[title*="${spec.file}"]`, 2500);
+    r.chatShell = await small(page, '#ag2-shell');
+    r.composer = await small(page, '#nonQRFormItems');
+    r.qr = await small(page, '#send_form .qr--buttons');
+    await tap(T, page, '#ag2-title .ag2-title-btn', 1200);
+    r.inspHead = await small(page, '#right-nav-panel .ag2-insp-head');
+    await tap(T, page, '#right-nav-panel [data-ag2-act="close"]', 800);
+    await tap(T, page, '#ag2-ph-back', 800);
+    await tap(T, page, '#ag2-tabbar [data-tab="settings"]', 1200);
+    r.sheetList = await small(page, '#ag2-settings');
+    await tap(T, page, '#ag2-settings .ag2-set-item[data-page="look"]', 1000);
+    r.look = await small(page, '#ag2-settings');
+    await T.shot(page, 'touch-look');
+    await tap(T, page, '#ag2-settings .ag2-set-back', 800);
+    await tap(T, page, '#ag2-settings .ag2-set-item[data-page="user"]', 1500);
+    r.stPanelUser = (await small(page, '#user-settings-block')).length; // ST's own controls (count only)
+    r.errors = T.errors(page).filter(e => !/404/.test(e));
+    return r;
+}
+
 export default async function (T) {
-    const parts = { dev, menus, flow, edge, gest, pages };
+    const parts = { dev, menus, flow, edge, gest, pages, reduced, teardown, touch };
     if (!parts[part]) throw new Error('unknown part ' + part);
     const r = await parts[part](T);
     await T.save('p5-' + part, r);

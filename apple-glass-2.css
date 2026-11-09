@@ -5330,7 +5330,7 @@ html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-scope {
 
     /* list page (or nothing open): the chat stays laid out but leaves the a11y tree and
        the blur count once the list has slid over it */
-    html body.ag2.ag2-phone:is([data-ag2-ph="list"], .ag2-welcome):not(#_):not(#__) #sheld {
+    html body.ag2.ag2-phone:is(:not([data-ag2-ph="chat"]), .ag2-welcome):not(#_):not(#__) #sheld {
         visibility: hidden !important;
         transition: visibility 0s linear var(--ag2-dur-panel);
     }
@@ -5404,8 +5404,10 @@ html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-scope {
         font-size: 16px !important; /* <16px makes iOS zoom the page on focus */
     }
 
+    /* QR capsules: 40px (design 05 draws small chips; the row clips overflow, so no larger
+       invisible hit area is possible) */
     html body.ag2.ag2-phone:not(#_):not(#__) :is(#qr--bar, #qr-bar) :is(.qr--button, .menu_button) {
-        min-height: 36px !important;
+        min-height: 40px !important;
     }
 
     /* “+ 快速回复” stays a desktop affordance (design 05 shows the QR row only) */
@@ -5455,7 +5457,7 @@ html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-scope {
         display: none !important;
     }
 
-    html body.ag2.ag2-phone:is([data-ag2-ph="list"], .ag2-welcome):not(#_):not(#__) :is(#ag2-title, #ag2-ph-back, #ag2-ph-more, #ap-jump-latest) {
+    html body.ag2.ag2-phone:is(:not([data-ag2-ph="chat"]), .ag2-welcome):not(#_):not(#__) :is(#ag2-title, #ag2-ph-back, #ag2-ph-more, #ap-jump-latest) {
         display: none !important;
     }
 
@@ -5514,7 +5516,7 @@ html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-scope {
     }
 
     html body.ag2.ag2-phone:not(#_):not(#__) #ag2-sidebar .ag2-search {
-        height: 40px;
+        height: 44px;
         margin: 0 16px 10px;
         border-radius: 12px;
         font-size: 16px;
@@ -5525,14 +5527,14 @@ html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-scope {
     }
 
     html body.ag2.ag2-phone:not(#_):not(#__) #ag2-sidebar .ag2-seg {
-        height: 44px;
+        height: 50px;
         margin: 0 16px 6px;
         padding: 3px;
         border-radius: 12px;
     }
 
     html body.ag2.ag2-phone:not(#_):not(#__) #ag2-shell .ag2-seg > button {
-        min-height: 38px;
+        min-height: 44px;
         border-radius: 9px;
         font-size: 14px;
     }
@@ -5646,6 +5648,10 @@ html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-scope {
     html body.ag2.ag2-phone.ag2-insp-open:not(#_):not(#__) #right-nav-panel .ag2-insp-ib {
         width: 44px;
         height: 44px;
+    }
+
+    html body.ag2.ag2-phone.ag2-insp-open:not(#_):not(#__) #right-nav-panel .ag2-insp-seg > button {
+        min-height: 44px;
     }
 
     @keyframes ag2-sheet-up {
@@ -5779,6 +5785,36 @@ html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-scope {
     html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings .ag2-styles {
         grid-template-columns: repeat(4, minmax(0, 1fr));
         row-gap: 12px;
+    }
+
+    /* the shell's own small controls (外观): visual size kept, hit area ≥44pt through a
+       transparent ::before (clicks on a button's pseudo-element hit the button) */
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings .ag2-swatches {
+        gap: 12px;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings .ag2-sw {
+        width: 28px;
+        height: 28px;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings :is(.ag2-sw, .ag2-switch, .ag2-set-btn) {
+        position: relative;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings :is(.ag2-sw, .ag2-switch, .ag2-set-btn)::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: max(100%, 44px);
+        height: max(100%, 44px);
+        transform: translate(-50%, -50%);
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings .ag2-select {
+        height: 44px;
+        font-size: 16px; /* no iOS focus zoom */
     }
 
     html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings .ag2-set-me .ag2-av {
@@ -5928,6 +5964,16 @@ html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-scope {
 
     html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel.openDrawer > .scrollableInner {
         padding: 0 calc(16px + var(--ag2-safe-r)) calc(24px + var(--ag2-safe-b)) 0 !important;
+    }
+
+    /* 扩展: ST's head row (title · notify · manage · install) wraps instead of squeezing the
+       title into a one-character column */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_extensions_block .extensions_block > .flex-container:first-child {
+        flex-wrap: wrap;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_extensions_block .extensions_block > .flex-container:first-child > h3 {
+        flex: 1 0 100%;
     }
 
     /* --- command palette: top sheet, clear of the notch and the keyboard --- */
