@@ -305,8 +305,40 @@ async function create(T) {
     return out;
 }
 
+// ---------------------------------------------------------------- teardown: theme → AG Dark with the inspector open, then back
+async function teardown(T) {
+    const { page } = await enter(T);
+    await toggle(T, page);
+    const out = { before: (await st(page)).view };
+    await page.evaluate(() => { $('#themes').val('Apple Glass Dark').trigger('change'); });
+    await T.sleep(3500);
+    out.dark = await page.evaluate(() => {
+        const p = document.getElementById('right-nav-panel');
+        return {
+            ag2Body: [...document.body.classList].filter(c => c.startsWith('ag2')),
+            ag2Nodes: document.querySelectorAll('[id^="ag2-"], .ag2-insp-x').length,
+            attrs: Object.keys(p.dataset).filter(k => k.startsWith('ag2')),
+            pinned: p.classList.contains('pinnedOpen'), lock: !!document.getElementById('rm_button_panel_pin')?.checked,
+            descTa: !!document.querySelector('#descriptionWrapper > #description_textarea'),
+            firstTa: !!document.querySelector('#firstMessageWrapper > #firstmessage_textarea'),
+            tagList: !!document.querySelector('#tags_div > #tagList'),
+            formKids: document.getElementById('form_create').children.length,
+        };
+    });
+    out.darkScan = shortScan(await T.scan(page));
+    await page.evaluate(() => { $('#themes').val('Apple Glass 2').trigger('change'); });
+    await page.waitForFunction(() => document.body.classList.contains('ag2'), null, { timeout: 20000 });
+    await T.sleep(3000);
+    if (!(await st(page)).open) await toggle(T, page);
+    out.back = await st(page);
+    out.ok = out.dark.ag2Body.length === 0 && out.dark.ag2Nodes === 0 && out.dark.attrs.length === 0 && out.dark.pinned === out.dark.lock
+        && out.dark.descTa && out.dark.firstTa && out.dark.tagList && out.back.open && out.back.view === 'char' && out.back.heroVis;
+    out.errors = T.errors(page);
+    return out;
+}
+
 export default async function (T) {
-    const parts = { dev, shots, edit, switch: sw, group, chat, title, state, create };
+    const parts = { dev, shots, edit, switch: sw, group, chat, title, state, create, teardown };
     if (!parts[part]) throw new Error('unknown part ' + part);
     const r = await parts[part](T);
     await T.save('p3-' + part, r);
