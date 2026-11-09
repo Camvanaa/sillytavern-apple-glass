@@ -8,6 +8,7 @@ import {
     is_send_press, isChatSaving, getThumbnailUrl, user_avatar, online_status,
 } from '../../../../../script.js';
 import { openGroupById, openGroupChat, deleteGroupChatByName, is_group_generating } from '../../../../group-chats.js';
+import { local } from './store.js?v=202611091428';
 
 export { doNavbarIconClick, getCurrentChatId, newAssistantChat };
 
@@ -131,11 +132,53 @@ export const settingsModule = () => setMod;
 export async function openSettings(page = null, opt = {}) {
     if (!isDesktop()) return toggleDrawer(SET_PANELS[page] || 'user-settings-block', true);
     if (!setMod) {
-        setLoading ||= import('./settings.js?v=202611091119');
+        setLoading ||= import('./settings.js?v=202611091428');
         try { setMod = await setLoading; } finally { setLoading = null; }
     }
     if (!document.body.classList.contains('ag2')) return false; // shell torn down meanwhile
     return setMod.open(page, opt);
+}
+
+// ---------------------------------------------------------------- inspector (§5.6, §9.2 #3)
+// The inspector IS ST's #right-nav-panel (never moved). Open/close goes through ST's own
+// drawer handler; while open on desktop it carries `pinnedOpen` so ST's “clicked outside”
+// logic leaves it alone. ST's own lock (#rm_button_panel_pin / NavLockOn) is never written:
+// the class is put back to the checkbox state when the inspector closes or the shell goes.
+export const INSP_ID = 'right-nav-panel';
+let inspMod = null;
+let inspLoading = null;
+/** The inspector module once loaded (loaded on first open, never at boot unless it was left open). */
+export const inspectorModule = () => inspMod;
+export async function loadInspector() {
+    if (!inspMod) {
+        inspLoading ||= import('./inspector.js?v=202611091428');
+        try { inspMod = await inspLoading; } finally { inspLoading = null; }
+    }
+    if (document.body.classList.contains('ag2')) inspMod.mount();
+    return inspMod;
+}
+export const isInspectorOpen = () => !!document.getElementById(INSP_ID)?.classList.contains('openDrawer');
+
+/** Puts `pinnedOpen` back to what ST's own lock checkbox says. */
+export function restoreInspectorPin() {
+    const p = document.getElementById(INSP_ID);
+    if (!p) return;
+    const locked = !!document.getElementById('rm_button_panel_pin')?.checked;
+    p.classList.toggle('pinnedOpen', locked);
+}
+
+/** Opens / closes / toggles (want undefined) the inspector. persist → `ag2.inspector`. */
+export async function setInspector(want, { persist = true } = {}) {
+    const p = document.getElementById(INSP_ID);
+    if (!p) return false;
+    if (isDesktop()) await loadInspector();
+    if (!document.body.classList.contains('ag2')) return false; // shell torn down meanwhile
+    if (want === undefined) want = !p.classList.contains('openDrawer');
+    if (persist) local.set('inspector', want ? 'open' : 'closed');
+    if (want && isDesktop()) p.classList.add('pinnedOpen');
+    await toggleDrawer(INSP_ID, want);
+    if (!want) restoreInspectorPin();
+    return true;
 }
 
 export function clickSt(selector) {

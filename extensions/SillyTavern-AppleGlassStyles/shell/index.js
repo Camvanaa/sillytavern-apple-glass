@@ -7,17 +7,17 @@
 // class and listener it added and reloads the current chat.
 // Any exception during enable → automatic teardown + one toastr.
 
-export const BUILD = '202611091119';
+export const BUILD = '202611091428';
 
-import { local, importStPinsOnce, applyAppearance, clearAppearance } from './store.js?v=202611091119';
-import { ctx, h, toggleDrawer, SET_PANELS, settingsModule, openSettings, isDesktop } from './util.js?v=202611091119';
-import { closeMenu } from './menu.js?v=202611091119';
-import * as sidebar from './sidebar.js?v=202611091119';
-import * as chrome from './chrome.js?v=202611091119';
-import * as reading from './reading.js?v=202611091119';
-import * as composer from './composer.js?v=202611091119';
+import { local, importStPinsOnce, applyAppearance, clearAppearance } from './store.js?v=202611091428';
+import { ctx, h, toggleDrawer, SET_PANELS, settingsModule, openSettings, isDesktop, INSP_ID, inspectorModule, loadInspector, setInspector } from './util.js?v=202611091428';
+import { closeMenu } from './menu.js?v=202611091428';
+import * as sidebar from './sidebar.js?v=202611091428';
+import * as chrome from './chrome.js?v=202611091428';
+import * as reading from './reading.js?v=202611091428';
+import * as composer from './composer.js?v=202611091428';
 
-const BODY_CLASSES = ['ag2', 'ag2-welcome', 'ag2-side-collapsed', 'ag2-ready', 'ag2-wand-open', 'ag2-set-open'];
+const BODY_CLASSES = ['ag2', 'ag2-welcome', 'ag2-side-collapsed', 'ag2-ready', 'ag2-wand-open', 'ag2-set-open', 'ag2-insp-open'];
 let on = false;
 let lateEnable = false;
 let shell = null;
@@ -51,6 +51,9 @@ function safe(fn) {
         } catch (e) { fail(e); }
     };
 }
+
+/** For lazily loaded modules (inspector): same teardown-on-error wrapper as the shell's own handlers. */
+export const guarded = fn => safe(fn);
 
 function fail(e) {
     console.error('[AG2] shell failed, falling back to the classic layout', e);
@@ -166,18 +169,23 @@ async function onReady() {
 }
 
 /**
- * Startup alignment (§9.2 #4): close every panel ST opened by itself. The inspector
- * (ST's right panel) stays closed until P3 wires `ag2.inspector`. Storage untouched.
+ * Startup alignment (§9.2 #4): close every panel ST opened by itself (NavLockOn re-opens
+ * the right panel ~300ms after start). The inspector (ST's right panel) then follows
+ * `ag2.inspector` instead — on desktop only; its module is loaded only when it is open.
+ * ST's stored lock state is untouched.
  * After a mid-session theme switch the user is working in a drawer (通用 › 主题): the
  * settings window adopts it instead. Then the drawer observer starts.
  */
 async function alignPanels() {
     const setIds = Object.values(SET_PANELS);
     let adopt = false;
+    const wantInsp = isDesktop() && local.get('inspector') === 'open';
     for (const el of document.querySelectorAll('.drawer-content.openDrawer')) {
         if (lateEnable && setIds.includes(el.id) && isDesktop()) { adopt = true; continue; }
+        if (el.id === INSP_ID && wantInsp) continue;
         if (el.id) await toggleDrawer(el.id, false);
     }
+    if (wantInsp) await setInspector(true, { persist: false });
     if (adopt) await openSettings(null);
     watchPanels();
 }
@@ -207,6 +215,20 @@ function watchPanels() {
         if (el) mo.observe(el, { attributes: true, attributeFilter: ['class'], attributeOldValue: true });
     }
     observers.push(mo);
+    // Inspector = ST's right panel: whoever opens / closes it (shell toggle, 新建角色, ST code),
+    // the inspector module follows `.openDrawer` (loaded on the first open).
+    const insp = document.getElementById(INSP_ID);
+    if (insp) {
+        const mi = new MutationObserver(safe(recs => {
+            const open = insp.classList.contains('openDrawer');
+            if (!recs.some(r => /\bopenDrawer\b/.test(r.oldValue || '') !== open)) return;
+            if (open && isDesktop()) loadInspector().then(m => m?.sync()).catch(fail);
+            else inspectorModule()?.sync();
+        }));
+        mi.observe(insp, { attributes: true, attributeFilter: ['class'], attributeOldValue: true });
+        observers.push(mi);
+        inspectorModule()?.sync();
+    }
 }
 
 function updateWelcome() {
@@ -235,6 +257,7 @@ export function disable({ reload = true } = {}) {
     decorateRaf = 0;
     try { closeMenu(); } catch { /* */ }
     try { settingsModule()?.unmount(); } catch { /* */ }
+    try { inspectorModule()?.unmount(); } catch { /* */ }
     try { clearAppearance(); } catch { /* */ }
     try { sidebar.unmount(); } catch { /* */ }
     try { chrome.unmount(); } catch { /* */ }

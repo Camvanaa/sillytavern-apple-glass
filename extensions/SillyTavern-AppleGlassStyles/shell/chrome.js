@@ -1,9 +1,10 @@
 // Apple Glass 2 shell — title capsule, tool capsule, welcome page (DESIGN §5.2, §5.10).
 
-import { icon } from './icons.js?v=202611091119';
-import { openMenu } from './menu.js?v=202611091119';
-import { ctx, h, toast, guard, thumb, fmtTime, toggleDrawer, clickSt, openEntry, openSettings, newAssistantChat } from './util.js?v=202611091119';
-import { getRecent, isLoaded, openRightMenu, row, rowKeys } from './sidebar.js?v=202611091119';
+import { icon } from './icons.js?v=202611091428';
+import { openMenu } from './menu.js?v=202611091428';
+import { ctx, h, guard, thumb, fmtTime, clickSt, openEntry, openSettings, newAssistantChat, setInspector } from './util.js?v=202611091428';
+import { showBookmarksButtons } from '../../../../bookmarks.js';
+import { getRecent, isLoaded, openRightMenu, row, rowKeys } from './sidebar.js?v=202611091428';
 
 let title = null, tools = null, welcome = null;
 let generating = false;
@@ -33,13 +34,13 @@ export function mount(shell, api) {
         <button type="button" class="ag2-tool" data-act="wi" title="世界书">${icon('book-open', 15)}<span>世界书</span><i class="ag2-badge"></i></button>
         <button type="button" class="ag2-tool" data-act="an" title="作者注释">${icon('notebook-pen', 15)}<span>作者注释</span><i class="ag2-badge"></i></button>
         <span class="ag2-cap-sep"></span>
-        <button type="button" class="ag2-ib" data-act="insp" aria-label="检视器" title="检视器">${icon('panel-right', 18)}</button>`;
+        <button type="button" class="ag2-ib ag2-insp-toggle" data-act="insp" aria-label="检视器" aria-pressed="false" title="检视器">${icon('panel-right', 18)}</button>`;
     tools.addEventListener('click', e => {
         const b = e.target.closest('[data-act]');
         if (!b) return;
         if (b.dataset.act === 'wi') openSettings('wi');
         else if (b.dataset.act === 'an') clickSt('#option_toggle_AN');
-        else if (b.dataset.act === 'insp') toast('info', '检视器将在后续版本接入');
+        else if (b.dataset.act === 'insp') setInspector();
     });
 
     // Welcome page (no chat open), drawn outside #sheld.
@@ -82,12 +83,23 @@ export function setGenerating(on) {
     updateTitle();
 }
 
+/** ST shows / hides its own #option_* rows (inline display); read the result. */
+const stShown = id => { const el = document.getElementById(id); return !!el && el.style.display !== 'none' && !el.classList.contains('displayNone'); };
+
 function titleMenu(anchor) {
     const c = ctx();
     const inChat = c.characterId !== undefined || !!c.groupId;
+    // Checkpoint / back to main / convert to group follow ST's own rules (bookmarks.js §9.2 #6).
+    try { showBookmarksButtons(); } catch { /* no chat */ }
+    const bm = inChat && stShown('option_new_bookmark');
+    const back = inChat && stShown('option_back_to_main');
+    const conv = inChat && !c.groupId && stShown('option_convert_to_group');
     openMenu(anchor, [
         { id: 'select', label: '切换聊天文件…', icon: 'history', disabled: !inChat, onSelect: () => clickSt('#option_select_chat') },
         { id: 'new', label: '新对话', icon: 'message-square-text', disabled: !inChat, onSelect: () => clickSt('#option_start_new_chat') },
+        bm && { id: 'checkpoint', label: '创建检查点', icon: 'flag', onSelect: () => clickSt('#option_new_bookmark') },
+        back && { id: 'main', label: '回到主线', icon: 'git-branch', onSelect: () => clickSt('#option_back_to_main') },
+        conv && { id: 'group', label: '转为群聊', icon: 'users', onSelect: () => clickSt('#option_convert_to_group') },
         { separator: true },
         { id: 'close', label: '关闭对话', icon: 'x', onSelect: () => clickSt('#option_close_chat') },
     ]);

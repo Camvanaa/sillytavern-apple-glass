@@ -337,7 +337,7 @@ html body.ag2 #ag2-shell > * {
     pointer-events: auto;
 }
 
-html body.ag2 #ag2-shell button {
+html body.ag2 :is(#ag2-shell, #ag2-layer) button {
     font: inherit;
     color: inherit;
     margin: 0;
@@ -349,12 +349,12 @@ html body.ag2 #ag2-shell button {
     -webkit-tap-highlight-color: transparent;
 }
 
-html body.ag2 #ag2-shell :focus {
+html body.ag2 :is(#ag2-shell, #ag2-layer) :focus {
     outline: none;
 }
 
 /* Focus ring only for keyboard use (§8): 3px accent */
-html body.ag2 #ag2-shell :focus-visible {
+html body.ag2 :is(#ag2-shell, #ag2-layer) :focus-visible {
     outline: 3px solid var(--ag2-accent) !important;
     outline-offset: 1px;
 }
@@ -941,7 +941,7 @@ html body.ag2.ag2-welcome #ag2-title {
 
 /* == 5.8 · Menus (popover) == */
 
-html body.ag2 #ag2-shell .ag2-menu {
+html body.ag2 :is(#ag2-shell, #ag2-layer) .ag2-menu {
     position: fixed;
     z-index: 1;
     display: flex;
@@ -962,7 +962,7 @@ html body.ag2 #ag2-shell .ag2-menu {
     to { opacity: 1; transform: none; }
 }
 
-html body.ag2 #ag2-shell .ag2-menu-item {
+html body.ag2 :is(#ag2-shell, #ag2-layer) .ag2-menu-item {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -976,43 +976,43 @@ html body.ag2 #ag2-shell .ag2-menu-item {
     white-space: nowrap;
 }
 
-html body.ag2 #ag2-shell .ag2-menu-item .ag2-i {
+html body.ag2 :is(#ag2-shell, #ag2-layer) .ag2-menu-item .ag2-i {
     color: var(--ag2-l2);
 }
 
-html body.ag2 #ag2-shell .ag2-menu-item:hover:not(:disabled),
-html body.ag2 #ag2-shell .ag2-menu-item:focus-visible {
+html body.ag2 :is(#ag2-shell, #ag2-layer) .ag2-menu-item:hover:not(:disabled),
+html body.ag2 :is(#ag2-shell, #ag2-layer) .ag2-menu-item:focus-visible {
     background: var(--ag2-accent);
     color: #fff;
     outline: none !important;
 }
 
-html body.ag2 #ag2-shell .ag2-menu-item:hover:not(:disabled) .ag2-i,
-html body.ag2 #ag2-shell .ag2-menu-item:focus-visible .ag2-i {
+html body.ag2 :is(#ag2-shell, #ag2-layer) .ag2-menu-item:hover:not(:disabled) .ag2-i,
+html body.ag2 :is(#ag2-shell, #ag2-layer) .ag2-menu-item:focus-visible .ag2-i {
     color: #fff;
 }
 
-html body.ag2 #ag2-shell .ag2-menu-item.ag2-danger,
-html body.ag2 #ag2-shell .ag2-menu-item.ag2-danger .ag2-i {
+html body.ag2 :is(#ag2-shell, #ag2-layer) .ag2-menu-item.ag2-danger,
+html body.ag2 :is(#ag2-shell, #ag2-layer) .ag2-menu-item.ag2-danger .ag2-i {
     color: var(--ag2-red);
 }
 
-html body.ag2 #ag2-shell .ag2-menu-item.ag2-danger:hover,
-html body.ag2 #ag2-shell .ag2-menu-item.ag2-danger:focus-visible {
+html body.ag2 :is(#ag2-shell, #ag2-layer) .ag2-menu-item.ag2-danger:hover,
+html body.ag2 :is(#ag2-shell, #ag2-layer) .ag2-menu-item.ag2-danger:focus-visible {
     background: var(--ag2-red);
 }
 
-html body.ag2 #ag2-shell .ag2-menu-item.ag2-danger:hover .ag2-i,
-html body.ag2 #ag2-shell .ag2-menu-item.ag2-danger:focus-visible .ag2-i {
+html body.ag2 :is(#ag2-shell, #ag2-layer) .ag2-menu-item.ag2-danger:hover .ag2-i,
+html body.ag2 :is(#ag2-shell, #ag2-layer) .ag2-menu-item.ag2-danger:focus-visible .ag2-i {
     color: #fff;
 }
 
-html body.ag2 #ag2-shell .ag2-menu-item:disabled {
+html body.ag2 :is(#ag2-shell, #ag2-layer) .ag2-menu-item:disabled {
     color: var(--ag2-l4);
     cursor: default;
 }
 
-html body.ag2 #ag2-shell .ag2-menu-item:disabled .ag2-i {
+html body.ag2 :is(#ag2-shell, #ag2-layer) .ag2-menu-item:disabled .ag2-i {
     color: var(--ag2-l4);
 }
 
@@ -4025,6 +4025,708 @@ html body.ag2.reduced-motion:not(#_):not(#__):not(#___) .ag2-hit {
         content: "新布局下无效：面板位置由 Apple Glass 2 统一安排";
     }
 }
+
+/* == 5.6 · Inspector (§5.6, §4, §9.2 #2/#3) == */
+/* The inspector is ST's #right-nav-panel (never moved): this section only places it and
+   chooses which block shows. inspector.js writes panel[data-ag2-insp] =
+   char | group | chat | create | group_create | empty | pending after checking that ST's
+   editor belongs to the open chat — the form shows only for "char" / "group" (never a
+   stale editor: ST autosaves whatever #avatar_url_pole points to). Desktop only; phones
+   keep ST's drawer until P5. */
+
+html body.ag2.ag2-insp-open {
+    /* what the floating inspector covers at medium widths (title capsule room) */
+    --ag2-insp-cover: calc(var(--ag2-insp-w) + var(--ag2-inset));
+}
+
+@media (min-width: 1360px) {
+    /* wide: the inspector takes its own column; the chat narrows (§4) */
+    html body.ag2.ag2-insp-open {
+        --ag2-sheld-right: calc(var(--ag2-inset) * 2 + var(--ag2-insp-w));
+        --ag2-insp-cover: 0px;
+    }
+}
+
+@media (min-width: 1001px) {
+    html body.ag2:not(#_):not(#__) #sheld {
+        transition: left var(--ag2-dur-panel) var(--ag2-ease-sheet), right var(--ag2-dur-panel) var(--ag2-ease-sheet);
+    }
+
+    /* the tool capsule sits left of the inspector in both forms; the title capsule
+       leaves room for it */
+    html body.ag2.ag2-insp-open #ag2-tools {
+        right: calc(var(--ag2-inset) * 3 + var(--ag2-insp-w));
+    }
+
+    html body.ag2.ag2-insp-open #ag2-title {
+        max-width: calc(100vw - var(--ag2-sheld-left) - var(--ag2-sheld-right) - var(--ag2-insp-cover) - 330px);
+    }
+
+    html body.ag2.ag2-insp-open #ag2-shell .ag2-insp-toggle {
+        background: var(--ag2-f3);
+        color: var(--ag2-l1);
+    }
+
+    /* Closed, or opened by ST before the shell adopted it (NavLockOn re-open at start):
+       not shown at all. */
+    html body.ag2:not(.ag2-insp-open):not(#_):not(#__) #right-nav-panel {
+        display: none !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel.openDrawer {
+        display: flex !important;
+        flex-direction: column;
+        position: fixed !important;
+        top: var(--ag2-inset) !important;
+        bottom: var(--ag2-inset) !important;
+        right: var(--ag2-inset) !important;
+        left: auto !important;
+        width: var(--ag2-insp-w) !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        border: 0 !important;
+        border-radius: var(--ag2-r-panel) !important;
+        background: var(--ag2-mat-side) !important;
+        -webkit-backdrop-filter: var(--ag2-blur-side) !important;
+        backdrop-filter: var(--ag2-blur-side) !important;
+        box-shadow: var(--ag2-rim), var(--ag2-sh2) !important;
+        color: var(--ag2-l1);
+        font-size: var(--ag2-fs-body);
+        opacity: 1 !important;
+        animation: ag2-insp-in var(--ag2-dur-panel) var(--ag2-ease-sheet);
+    }
+
+    @keyframes ag2-insp-in {
+        from { opacity: 0; transform: translateX(16px); }
+        to { opacity: 1; transform: none; }
+    }
+
+    /* medium: floats over the chat, so a deeper shadow separates it (§4) */
+    @media (max-width: 1359px) {
+        html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel.openDrawer {
+            box-shadow: var(--ag2-rim), var(--ag2-sh3) !important;
+        }
+    }
+
+    /* ST's own chrome of the panel (drag grip, lock, list button, hot swaps, name tab,
+       token line) — the shell head replaces it; ST still updates it unseen. */
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel > :is(#right-nav-panelheader, #CharListButtonAndHotSwaps, #rm_PinAndTabs) {
+        display: none !important;
+    }
+
+    /* ST's blocks scroll inside .scrollableInner; only the vetted one shows */
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel > .scrollableInner {
+        flex: 1 1 auto;
+        min-height: 0;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 12px 14px !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        overscroll-behavior: contain;
+        background: none !important;
+        -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 18px), transparent);
+        mask-image: linear-gradient(to bottom, #000 calc(100% - 18px), transparent);
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel .scrollableInner > .right_menu {
+        display: none !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel:is([data-ag2-insp="char"][data-menu-type="character_edit"], [data-ag2-insp="create"][data-menu-type="create"]) #rm_ch_create_block {
+        display: block !important;
+        opacity: 1 !important;
+        width: auto !important;
+        padding: 0 !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel:is([data-ag2-insp="group"][data-menu-type="group_edit"], [data-ag2-insp="group_create"][data-menu-type="group_create"]) #rm_group_chats_block {
+        display: flex !important;
+        flex-direction: column;
+        gap: 10px;
+        opacity: 1 !important;
+        width: auto !important;
+        padding: 0 !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel:is([data-ag2-insp="chat"], [data-ag2-insp="empty"], [data-ag2-insp="pending"], :not([data-ag2-insp])) > .scrollableInner {
+        display: none !important;
+    }
+
+    /* --- head: segments + close --- */
+    html body.ag2 #right-nav-panel .ag2-insp-head {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 12px 10px 10px 12px;
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-seg {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2px;
+        padding: 2px;
+        border-radius: var(--ag2-r-ctl);
+        background: var(--ag2-f3);
+    }
+
+    /* reset at low specificity (:where) so the component rules below win */
+    html body.ag2 :where(#right-nav-panel) :where(.ag2-insp-x button, button.ag2-insp-x) {
+        font: inherit;
+        color: inherit;
+        margin: 0;
+        border: 0;
+        background: none;
+        cursor: pointer;
+        -webkit-appearance: none;
+        appearance: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    html body.ag2 #right-nav-panel :is(.ag2-insp-x button, button.ag2-insp-x):focus {
+        outline: none;
+    }
+
+    html body.ag2 #right-nav-panel :is(.ag2-insp-x button, button.ag2-insp-x):focus-visible {
+        outline: 3px solid var(--ag2-accent) !important;
+        outline-offset: 1px;
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-seg > button {
+        height: 28px;
+        border-radius: 7px;
+        color: var(--ag2-l2);
+        font-size: 13px;
+        font-weight: 590;
+        white-space: nowrap;
+        transition: background-color var(--ag2-dur) ease, color var(--ag2-dur) ease;
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-seg > button.ag2-on {
+        background: rgba(255, 255, 255, 0.15);
+        color: var(--ag2-l1);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25), inset 0 0.5px 0 rgba(255, 255, 255, 0.12);
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-seg > button:disabled {
+        color: var(--ag2-l4);
+        cursor: default;
+    }
+
+    /* creating a character / group: ST's fresh form; segments mean nothing there */
+    html body.ag2 #right-nav-panel .ag2-insp-head-new .ag2-insp-seg {
+        visibility: hidden;
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-ib {
+        flex: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: var(--ag2-r-ctl);
+        color: var(--ag2-l2);
+        transition: background-color var(--ag2-dur) ease, color var(--ag2-dur) ease;
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-ib:hover {
+        background: var(--ag2-f4);
+        color: var(--ag2-l1);
+    }
+
+    /* --- empty / pending --- */
+    html body.ag2 #right-nav-panel .ag2-insp-empty {
+        display: none;
+        flex: 1;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 0 32px 60px;
+        color: var(--ag2-l3);
+        text-align: center;
+    }
+
+    html body.ag2 #right-nav-panel:is([data-ag2-insp="empty"], [data-ag2-insp="pending"], :not([data-ag2-insp])) .ag2-insp-empty {
+        display: flex;
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-empty p {
+        margin: 0;
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-empty .ag2-i {
+        margin-bottom: 6px;
+        color: var(--ag2-l4);
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-empty-t {
+        color: var(--ag2-l2);
+        font-size: 15px;
+        font-weight: 640;
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-empty-s {
+        font-size: var(--ag2-fs-foot);
+        line-height: 1.5;
+    }
+
+    html body.ag2 #right-nav-panel[data-ag2-insp="pending"] .ag2-when-empty,
+    html body.ag2 #right-nav-panel:not([data-ag2-insp="pending"]) .ag2-when-pending {
+        display: none;
+    }
+
+    /* --- character page: ST's form reflowed into cards (fields stay in the form) --- */
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel[data-ag2-insp="char"] #form_create {
+        position: relative;
+        display: flex !important;
+        flex-direction: column;
+        gap: 10px;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: none !important;
+        --ag2-hero-h: 290px;
+    }
+
+    /* our nodes are only part of the character page */
+    html body.ag2 #right-nav-panel:not([data-ag2-insp="char"]) :is(.ag2-insp-hero, .ag2-insp-actions, .ag2-insp-name, .ag2-insp-addtag, .ag2-insp-card-head, .ag2-insp-sum, .ag2-insp-links, .ag2-insp-foot) {
+        display: none !important;
+    }
+
+    html body.ag2 #right-nav-panel:not([data-ag2-insp="chat"]) .ag2-insp-chat {
+        display: none !important;
+    }
+
+    /* the avatar / name / buttons block disappears; its tag box is laid over the hero */
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel[data-ag2-insp="char"] :is(#avatar-and-name-block, #avatar-and-name-block > .expander) {
+        display: contents !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel[data-ag2-insp="char"] :is(#name_div, #avatar_div, #creators_note_desc_hidden, #description_div, #first_message_div, #descriptionWrapper > .extension_token_counter, #firstMessageWrapper > .extension_token_counter) {
+        display: none !important;
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-hero {
+        position: relative;
+        flex: none;
+        order: -2;
+        height: var(--ag2-hero-h);
+        overflow: hidden;
+        border-radius: 18px;
+        background: var(--ag2-f3);
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-hero > img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center 22%;
+    }
+
+    /* dark gradient on the lower 60% so name and tags read on any picture */
+    html body.ag2 #right-nav-panel .ag2-insp-hero-fade {
+        position: absolute;
+        inset: 40% 0 0;
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.72));
+        pointer-events: none;
+    }
+
+    /* ST's #tags_div (tag capsules + its own input) over the hero's lower edge */
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel[data-ag2-insp="char"] #tags_div {
+        position: absolute;
+        z-index: 1;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: var(--ag2-hero-h);
+        display: flex !important;
+        flex-wrap: wrap;
+        align-content: flex-end;
+        align-items: center;
+        gap: 6px;
+        margin: 0 !important;
+        padding: 0 16px 14px !important;
+        overflow: hidden;
+        pointer-events: none;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel[data-ag2-insp="char"] #tags_div > * {
+        pointer-events: auto;
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-name {
+        flex: 0 0 100%;
+        order: -1;
+        overflow: hidden;
+        color: #fff;
+        font-size: 19px;
+        font-weight: 720;
+        line-height: 1.25;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel[data-ag2-insp="char"] #tagList {
+        display: contents !important;
+    }
+
+    /* tag capsules: translucent fill, no blur (small controls, §7) */
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel[data-ag2-insp="char"] #tagList .tag {
+        display: inline-flex !important;
+        align-items: center;
+        gap: 4px;
+        height: 24px;
+        margin: 0 !important;
+        padding: 0 10px !important;
+        border: 0 !important;
+        border-radius: 12px !important;
+        background: rgba(255, 255, 255, 0.18) !important;
+        color: #fff !important;
+        font-size: 12px !important;
+        font-weight: 640;
+        line-height: 24px;
+        box-shadow: none !important;
+        opacity: 1 !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel[data-ag2-insp="char"] #tagList .tag .tag_remove {
+        margin: 0 -3px 0 0 !important;
+        opacity: 0.65;
+        font-size: 11px;
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-x.ag2-insp-addtag {
+        height: 24px;
+        padding: 0 10px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.10);
+        color: rgba(255, 255, 255, 0.82);
+        font-size: 12px;
+        font-weight: 590;
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-x.ag2-insp-addtag:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: #fff;
+    }
+
+    /* ST's tag input appears only after “+ 标签” */
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel[data-ag2-insp="char"] #tags_div > .tag_controls {
+        display: none !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel[data-ag2-insp="char"][data-ag2-tagging] #tags_div > .tag_controls {
+        display: flex !important;
+        flex: 0 0 100%;
+        order: 9;
+        gap: 6px;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel[data-ag2-insp="char"] #tagInput {
+        height: 30px;
+        padding: 0 10px !important;
+        border: 0 !important;
+        border-radius: 10px !important;
+        background: rgba(20, 20, 24, 0.82) !important;
+        color: #fff !important;
+        font-size: 13px !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel[data-ag2-insp="char"] #tags_div .tags_view {
+        display: none !important;
+    }
+
+    /* quick actions: 4 tiles */
+    html body.ag2 #right-nav-panel .ag2-insp-actions {
+        flex: none;
+        order: -1;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-actions > button {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        height: 60px;
+        border-radius: var(--ag2-r-row);
+        background: var(--ag2-f3);
+        color: var(--ag2-l1);
+        font-size: 12px;
+        font-weight: 590;
+        transition: background-color var(--ag2-dur) ease;
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-actions > button:hover {
+        background: var(--ag2-f2);
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-actions > button:active {
+        background: var(--ag2-f4);
+        transition-duration: var(--ag2-dur-press);
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-actions > button .ag2-i {
+        color: var(--ag2-l2);
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-actions > button.ag2-on .ag2-i {
+        color: #ffcc00;
+        fill: #ffcc00;
+    }
+
+    /* cards: description, first message, entries, footer (in this order) */
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel[data-ag2-insp="char"] :is(#descriptionWrapper, #firstMessageWrapper) {
+        display: flex !important;
+        flex: none !important;
+        flex-direction: column;
+        gap: 6px;
+        margin: 0 !important;
+        padding: 12px 14px !important;
+        border-radius: var(--ag2-r-card);
+        background: var(--ag2-f3);
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel[data-ag2-insp="char"] #descriptionWrapper { order: 1; }
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel[data-ag2-insp="char"] #firstMessageWrapper { order: 2; }
+    html body.ag2 #right-nav-panel .ag2-insp-links { order: 3; }
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel[data-ag2-insp="char"] #spoiler_free_desc { order: 4; }
+    html body.ag2 #right-nav-panel .ag2-insp-foot { order: 5; }
+
+    html body.ag2 #right-nav-panel .ag2-insp-card-head {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-card-t {
+        flex: 1;
+        color: var(--ag2-l3);
+        font-size: 12.5px;
+        font-weight: 640;
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-link {
+        color: var(--ag2-accent);
+        font-size: 12.5px;
+        font-weight: 640;
+        white-space: nowrap;
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-link:hover {
+        color: var(--ag2-accent-hover);
+    }
+
+    /* 3-line summary (description), 2 lines (first message) */
+    html body.ag2 #right-nav-panel .ag2-insp-sum {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+        overflow: hidden;
+        color: var(--ag2-l1);
+        font-size: var(--ag2-fs-sub);
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+    }
+
+    html body.ag2 #right-nav-panel #ag2-insp-first-sum {
+        -webkit-line-clamp: 2;
+    }
+
+    /* “编辑”: ST's own textarea opens in place of the summary */
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel[data-ag2-insp="char"] :is(#description_textarea, #firstmessage_textarea) {
+        display: none !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel[data-ag2-insp="char"][data-ag2-edit="desc"] #description_textarea,
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel[data-ag2-insp="char"][data-ag2-edit="first"] #firstmessage_textarea {
+        display: block !important;
+        width: 100% !important;
+        min-height: 180px;
+        max-height: 50vh;
+        box-sizing: border-box;
+        margin: 2px 0 0 !important;
+        padding: 9px 11px !important;
+        border: 0 !important;
+        border-radius: 10px !important;
+        background: rgba(0, 0, 0, 0.28) !important;
+        box-shadow: inset 0 0 0 0.5px var(--ag2-sep-strong) !important;
+        color: var(--ag2-l1) !important;
+        font-size: var(--ag2-fs-sub) !important;
+        line-height: 1.55 !important;
+        resize: vertical;
+        field-sizing: fixed;
+    }
+
+    html body.ag2 #right-nav-panel[data-ag2-edit="desc"] #ag2-insp-desc-sum,
+    html body.ag2 #right-nav-panel[data-ag2-edit="first"] #ag2-insp-first-sum {
+        display: none;
+    }
+
+    /* creator's notes: ST's own block, shown on request from the entry list */
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel[data-ag2-insp="char"] #spoiler_free_desc {
+        display: none !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel[data-ag2-insp="char"][data-ag2-notes] #spoiler_free_desc {
+        display: flex !important;
+        margin: 0 !important;
+        padding: 10px 14px !important;
+        border-radius: var(--ag2-r-card);
+        background: var(--ag2-f3);
+        font-size: var(--ag2-fs-sub);
+    }
+
+    /* secondary entries: one grouped list */
+    html body.ag2 #right-nav-panel .ag2-insp-links,
+    html body.ag2 #right-nav-panel .ag2-insp-card {
+        flex: none;
+        display: flex;
+        flex-direction: column;
+        padding: 4px 0;
+        border-radius: var(--ag2-r-card);
+        background: var(--ag2-f3);
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-row,
+    html body.ag2 #right-nav-panel .ag2-insp-kv {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 40px;
+        margin: 0 4px;
+        padding: 0 10px;
+        border-radius: 10px;
+        text-align: left;
+    }
+
+    html body.ag2 #right-nav-panel :is(.ag2-insp-row, .ag2-insp-kv) + :is(.ag2-insp-row, .ag2-insp-kv) {
+        box-shadow: 0 -0.5px 0 var(--ag2-sep);
+    }
+
+    html body.ag2 #right-nav-panel button:is(.ag2-insp-row, .ag2-insp-kv):hover {
+        background: var(--ag2-f4);
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-row > .ag2-i:first-child {
+        color: var(--ag2-l2);
+    }
+
+    html body.ag2 #right-nav-panel :is(.ag2-insp-row-t, .ag2-insp-k) {
+        flex: none;
+        color: var(--ag2-l1);
+        font-size: var(--ag2-fs-sub);
+    }
+
+    html body.ag2 #right-nav-panel :is(.ag2-insp-row-v, .ag2-insp-v) {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        color: var(--ag2-l3);
+        font-size: 12.5px;
+        text-align: right;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-chev {
+        color: var(--ag2-l4);
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-foot {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 2px 6px 4px;
+        color: var(--ag2-l3);
+        font-size: 11.5px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* --- 本次对话 page --- */
+    html body.ag2 #right-nav-panel .ag2-insp-chat {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 0 12px 14px;
+        overflow-y: auto;
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-v {
+        color: var(--ag2-l2);
+        white-space: normal;
+        overflow-wrap: anywhere;
+        padding: 9px 0;
+    }
+
+    html body.ag2 #right-nav-panel .ag2-insp-hint {
+        margin: 2px 6px;
+        color: var(--ag2-l3);
+        font-size: var(--ag2-fs-foot);
+        line-height: 1.5;
+    }
+
+    /* ST's floating panels (作者注释 / CFG / Logprobs) keep their own nodes and
+       behaviour; only placed: left of the open inspector, else under the tool capsule
+       (§5.6). ST may have written a saved MovingUI position inline, hence !important. */
+    html body.ag2:not(#_):not(#__) :is(#floatingPrompt, #cfgConfig, #logprobsViewer) {
+        position: fixed !important;
+        top: calc(var(--ag2-inset) + 54px) !important;
+        right: var(--ag2-inset) !important;
+        left: auto !important;
+        bottom: auto !important;
+        width: var(--ag2-insp-w) !important;
+        min-width: 0 !important;
+        max-width: calc(100vw - var(--ag2-sheld-left) - var(--ag2-inset) * 2) !important;
+        height: auto !important;
+        max-height: calc(100dvh - var(--ag2-inset) * 2 - 54px) !important;
+        margin: 0 !important;
+        border: 0 !important;
+        border-radius: var(--ag2-r-panel) !important;
+        background: var(--ag2-mat-menu) !important;
+        -webkit-backdrop-filter: var(--ag2-blur-menu) !important;
+        backdrop-filter: var(--ag2-blur-menu) !important;
+        box-shadow: var(--ag2-rim), var(--ag2-sh3) !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) :is(#floatingPrompt, #cfgConfig, #logprobsViewer) {
+        top: var(--ag2-inset) !important;
+        right: calc(var(--ag2-inset) * 2 + var(--ag2-insp-w)) !important;
+        max-height: calc(100dvh - var(--ag2-inset) * 2) !important;
+    }
+
+    /* menus anchored in the inspector: above ST's z-3005 layer, below its popups (4000+) */
+    html body.ag2 #ag2-layer {
+        position: fixed;
+        inset: 0;
+        z-index: 3006;
+        pointer-events: none;
+        color: var(--ag2-l1);
+        font-size: var(--ag2-fs-body);
+    }
+
+    html body.ag2 #ag2-layer > * {
+        pointer-events: auto;
+    }
+}
+
+/* ST's group / create blocks inside the inspector: §5.6b */
 
 /* == 13 · Ported fixes (apple-theme.css §15m, §19b, §17a) == */
 /* Under AG2 ST's own panels still render with the theme JSON's blur strength and

@@ -4,13 +4,16 @@
 //   items:  { label, icon, onSelect(btn), danger, disabled, hint, submenu, keepOpen }
 //           | { separator: true } | { header: 'text' }
 //           submenu → trailing chevron; keepOpen → the menu stays open after the click
-//   opt:    { align: 'start'|'end', id, className, onClose, focusFirst,
+//   opt:    { align: 'start'|'end', id, className, onClose, focusFirst, host,
 //             ignore: () => [Element] — pointer-downs inside these count as “inside” }
+//           host: container for the menu (default #ag2-shell, z 40). Menus anchored in the
+//           inspector (ST's right panel, inside the z-3005 #top-settings-holder) use
+//           #ag2-layer (z 3006) so they are not drawn under the panel.
 // Closes on outside pointer-down (capture phase, so it still works although shell
 // nodes stop mousedown propagation), Esc (capture, stopped so ST's own Esc logic
 // doesn't also run — §8 order), resize and blur. Arrow keys move focus.
 
-import { icon } from './icons.js?v=202611091119';
+import { icon } from './icons.js?v=202611091428';
 
 let current = null;
 
@@ -35,7 +38,7 @@ export function isMenuOpen() {
 
 export function openMenu(anchor, items, opt = {}) {
     closeMenu();
-    const host = document.getElementById('ag2-shell') || document.body;
+    const host = opt.host || document.getElementById('ag2-shell') || document.body;
     const el = document.createElement('div');
     el.className = 'ag2-menu' + (opt.className ? ' ' + opt.className : '');
     if (opt.id) el.id = opt.id;

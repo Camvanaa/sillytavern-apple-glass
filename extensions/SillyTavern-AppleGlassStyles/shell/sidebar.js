@@ -2,13 +2,13 @@
 // Header · search (placeholder until the P4 palette) · segments 对话/角色/群组 ·
 // list · footer (connection, persona, settings).
 
-import { icon } from './icons.js?v=202611091119';
-import { openMenu } from './menu.js?v=202611091119';
-import { local, isPinned, setPinned, renamePin, pinList } from './store.js?v=202611091119';
+import { icon } from './icons.js?v=202611091428';
+import { openMenu } from './menu.js?v=202611091428';
+import { local, isPinned, setPinned, renamePin, pinList } from './store.js?v=202611091428';
 import {
     ctx, h, toast, guard, fmtTime, ageDays, summary, stem, thumb, charIndex, toggleDrawer, clickSt,
-    openSettings, openEntry, openCharacter, openGroup, renameEntry, deleteEntry, getCurrentChatId, personaAvatar, onlineStatus,
-} from './util.js?v=202611091119';
+    openSettings, openEntry, openCharacter, openGroup, renameEntry, deleteEntry, getCurrentChatId, personaAvatar, onlineStatus, isDesktop, setInspector,
+} from './util.js?v=202611091428';
 
 const SEGMENTS = [['chats', '对话'], ['chars', '角色'], ['groups', '群组']];
 let root = null;
@@ -107,7 +107,8 @@ function newMenu(anchor) {
 
 /** Character create / group create live in ST's right panel (the P3 inspector); open it first. */
 export async function openRightMenu(buttonSel) {
-    await toggleDrawer('right-nav-panel', true);
+    if (isDesktop()) await setInspector(true);
+    else await toggleDrawer('right-nav-panel', true);
     clickSt(buttonSel);
 }
 
