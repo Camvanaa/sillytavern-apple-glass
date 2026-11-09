@@ -13,10 +13,10 @@
 // Switching uses doNavbarIconClick (util.toggleDrawer) — ST closes the previous unpinned
 // drawer itself; pinned leftovers are closed here. Closing the window closes the drawer.
 
-import { ctx, h, guard, toggleDrawer, SET_PANELS, pageOfPanel } from './util.js?v=202611091045';
-import { icon } from './icons.js?v=202611091045';
-import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=202611091045';
-import { isMenuOpen } from './menu.js?v=202611091045';
+import { ctx, h, guard, toggleDrawer, SET_PANELS, pageOfPanel } from './util.js?v=202611091119';
+import { icon } from './icons.js?v=202611091119';
+import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=202611091119';
+import { isMenuOpen } from './menu.js?v=202611091119';
 
 const PAGES = [
     { id: 'api', name: '连接', icon: 'plug', tile: 'green', group: 0, lead: '选择 API 来源，填写地址、密钥和模型。' },
@@ -135,7 +135,7 @@ let results = [];
 
 const loadSearch = async () => {
     if (!searchMod) {
-        searchMod = await import('./search.js?v=202611091045');
+        searchMod = await import('./search.js?v=202611091119');
         searchMod.init(PAGES.map(({ id, name, lead }) => ({ id, name, lead })));
     }
     return searchMod;
@@ -275,9 +275,17 @@ const ANCHORS = {
 let anchorList = [];
 let anchorScroller = null;
 let spyRaf = 0;
+// a clicked capsule stays current until the user scrolls by hand: the smooth scroll passes
+// other sections on the way, and near the end of a page the target may never reach the top
+let anchorPin = null;
+const unpin = () => { anchorPin = null; };
+const PIN_OFF = ['wheel', 'touchstart', 'pointerdown', 'keydown'];
 
 function renderAnchors(page) {
     const bar = root.querySelector('.ag2-anchors');
+    // a re-render on the same page (ST settings events fire often) keeps the clicked
+    // capsule pinned when its label still exists
+    const keep = document.body.dataset.ag2Anchors === page && anchorPin != null ? anchorList[anchorPin]?.label : null;
     detachSpy();
     anchorList = [];
     const def = ANCHORS[page];
@@ -302,18 +310,23 @@ function renderAnchors(page) {
     document.body.dataset.ag2Anchors = page;
     anchorScroller = document.querySelector(def.scroll);
     anchorScroller?.addEventListener('scroll', onSpyScroll, { passive: true });
+    for (const t of PIN_OFF) anchorScroller?.addEventListener(t, unpin, { passive: true });
+    const k = keep == null ? -1 : anchorList.findIndex(a => a.label === keep);
+    anchorPin = k >= 0 ? k : null;
     spy();
 }
 
 function detachSpy() {
     anchorScroller?.removeEventListener('scroll', onSpyScroll);
+    for (const t of PIN_OFF) anchorScroller?.removeEventListener(t, unpin);
     anchorScroller = null;
+    anchorPin = null;
     cancelAnimationFrame(spyRaf);
 }
 
 function onSpyScroll() {
     cancelAnimationFrame(spyRaf);
-    spyRaf = requestAnimationFrame(spy);
+    spyRaf = requestAnimationFrame(() => spy()); // not (spy): rAF passes a timestamp as `forced`
 }
 
 /** Current anchor = the last one whose top has reached the scroller's top edge (ties keep
@@ -322,7 +335,7 @@ function spy(forced = null) {
     const sc = anchorScroller;
     const bar = root?.querySelector('.ag2-anchors');
     if (!sc || !bar || !anchorList.length) return;
-    let cur = forced;
+    let cur = forced ?? anchorPin;
     if (cur == null) {
         const top = sc.getBoundingClientRect().top;
         const prev = Number(bar.querySelector('[aria-current="true"]')?.dataset.i ?? -1);
@@ -348,8 +361,9 @@ function onAnchorClick(e) {
     const sc = anchorScroller;
     const reduced = document.body.classList.contains('reduced-motion') || matchMedia('(prefers-reduced-motion: reduce)').matches;
     const top = sc.scrollTop + (a.el.getBoundingClientRect().top - sc.getBoundingClientRect().top) - 8;
+    anchorPin = Number(b.dataset.i);
     sc.scrollTo({ top: Math.max(0, top), behavior: reduced ? 'auto' : 'smooth' });
-    spy(Number(b.dataset.i));
+    spy();
 }
 
 function onNavKey(e) {

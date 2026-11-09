@@ -10,7 +10,7 @@
 // nodes stop mousedown propagation), Esc (capture, stopped so ST's own Esc logic
 // doesn't also run — §8 order), resize and blur. Arrow keys move focus.
 
-import { icon } from './icons.js?v=202611091045';
+import { icon } from './icons.js?v=202611091119';
 
 let current = null;
 
