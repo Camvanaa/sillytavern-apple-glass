@@ -408,9 +408,12 @@ async function teardown(T) {
         await page.context().close();
     }
     {
-        const page = await T.newPage({ phone: true });
-        await T.prepare(page, {});
-        await T.boot(page, { ag2: false, query: '?classic', settle: 2500 });
+        let page;
+        for (let i = 0; i < 3; i++) { // boot's early getContext() poll can hit ST's TDZ under ?classic: retry
+            page = await T.newPage({ phone: true });
+            await T.prepare(page, {});
+            try { await T.boot(page, { ag2: false, query: '?classic', settle: 2500 }); break; } catch (e) { r.classicRetry = (r.classicRetry || 0) + 1; await page.context().close(); }
+        }
         r.classic = await page.evaluate(() => ({ ag2: document.body.classList.contains('ag2'), nodes: document.querySelectorAll('[id^="ag2-"]').length }));
         await page.context().close();
     }

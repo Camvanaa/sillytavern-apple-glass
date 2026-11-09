@@ -5787,6 +5787,10 @@ html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-scope {
         row-gap: 12px;
     }
 
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings .ag2-sty-th {
+        aspect-ratio: 16 / 10; /* a card, not a tall pill, at ~75px wide */
+    }
+
     /* the shell's own small controls (外观): visual size kept, hit area ≥44pt through a
        transparent ::before (clicks on a button's pseudo-element hit the button) */
     html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings .ag2-swatches {
