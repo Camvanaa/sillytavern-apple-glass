@@ -7,15 +7,17 @@
 // class and listener it added and reloads the current chat.
 // Any exception during enable → automatic teardown + one toastr.
 
-export const BUILD = '202611081914';
+export const BUILD = '202611090053';
 
-import { local, importStPinsOnce } from './store.js?v=202611081914';
-import { ctx, h, toggleDrawer } from './util.js?v=202611081914';
-import { closeMenu } from './menu.js?v=202611081914';
-import * as sidebar from './sidebar.js?v=202611081914';
-import * as chrome from './chrome.js?v=202611081914';
+import { local, importStPinsOnce } from './store.js?v=202611090053';
+import { ctx, h, toggleDrawer } from './util.js?v=202611090053';
+import { closeMenu } from './menu.js?v=202611090053';
+import * as sidebar from './sidebar.js?v=202611090053';
+import * as chrome from './chrome.js?v=202611090053';
+import * as reading from './reading.js?v=202611090053';
+import * as composer from './composer.js?v=202611090053';
 
-const BODY_CLASSES = ['ag2', 'ag2-welcome', 'ag2-side-collapsed', 'ag2-ready'];
+const BODY_CLASSES = ['ag2', 'ag2-welcome', 'ag2-side-collapsed', 'ag2-ready', 'ag2-wand-open'];
 let on = false;
 let shell = null;
 let listeners = [];
@@ -85,13 +87,26 @@ export function enable({ appReady = false } = {}) {
         document.body.append(shell);
         sidebar.mount(shell, api);
         chrome.mount(shell, api);
+        composer.mount();
+        // Message template (§9.2 #7): copy + branch join the action row. Messages already on
+        // screen (theme switched mid-session) are re-rendered once so they get it too.
+        if (reading.patchTemplate() && document.querySelector('#chat > .mes')) {
+            const c = ctx();
+            if (c.characterId !== undefined || c.groupId) c.reloadCurrentChat?.()?.catch?.(() => {});
+        }
+        reading.decorate();
         updateWelcome();
 
         const { eventTypes: E } = ctx();
         const refreshRecent = debounced(() => sidebar.refresh(), 250);
         const refreshSoon = debounced(() => sidebar.refresh(), 1500);
         listen(E.APP_READY, safe(onReady));
-        listen(E.CHAT_CHANGED, safe(() => { chrome.updateTitle(); updateWelcome(); sidebar.render(); refreshRecent(); }));
+        listen(E.CHAT_CHANGED, safe(() => { chrome.updateTitle(); updateWelcome(); sidebar.render(); refreshRecent(); decorateSoon(); composer.syncText(); }));
+        for (const t of [E.MESSAGE_SWIPED, E.MESSAGE_UPDATED, E.MESSAGE_EDITED, E.MESSAGE_RECEIVED, E.MESSAGE_DELETED,
+            E.MORE_MESSAGES_LOADED, E.CHARACTER_MESSAGE_RENDERED, E.USER_MESSAGE_RENDERED]) if (t) listen(t, decorateSoon);
+        for (const t of [E.ONLINE_STATUS_CHANGED, E.CHATCOMPLETION_MODEL_CHANGED, E.CHATCOMPLETION_SOURCE_CHANGED,
+            E.MAIN_API_CHANGED, E.SETTINGS_UPDATED, E.CONNECTION_PROFILE_LOADED, E.SETTINGS_LOADED]) if (t) listen(t, safe(() => composer.updateModel()));
+        for (const t of [E.MESSAGE_SENT, E.GENERATION_ENDED, E.GENERATION_STOPPED, E.IMPERSONATE_READY]) if (t) listen(t, safe(() => setTimeout(composer.syncText, 0)));
         for (const t of [E.CHAT_CREATED, E.CHAT_DELETED, E.CHAT_RENAMED, E.GROUP_CHAT_CREATED, E.GROUP_CHAT_DELETED,
             E.CHARACTER_DELETED, E.CHARACTER_EDITED, E.CHARACTER_RENAMED, E.GROUP_UPDATED]) if (t) listen(t, refreshRecent);
         for (const t of [E.MESSAGE_SENT, E.MESSAGE_RECEIVED, E.MESSAGE_DELETED, E.MESSAGE_SWIPED]) if (t) listen(t, safe(() => { chrome.updateTitle(); refreshSoon(); }));
@@ -107,7 +122,9 @@ export function enable({ appReady = false } = {}) {
         // Welcome state follows what ST renders into #chat (welcomePanel ⇢ no chat open).
         const chat = document.getElementById('chat');
         if (chat) {
-            const mo = new MutationObserver(debounced(updateWelcome, 30));
+            const welcomeSoon = debounced(updateWelcome, 30);
+            // Messages added / removed → re-derive ag2-day / ag2-cont (classes only, §5.3)
+            const mo = new MutationObserver(() => { welcomeSoon(); decorateSoon(); });
             mo.observe(chat, { childList: true });
             observers.push(mo);
         }
@@ -120,6 +137,12 @@ export function enable({ appReady = false } = {}) {
     }
 }
 
+let decorateRaf = 0;
+function decorateSoon() {
+    if (decorateRaf || !on) return;
+    decorateRaf = requestAnimationFrame(safe(() => { decorateRaf = 0; reading.decorate(); }));
+}
+
 let readyRun = 0;
 async function onReady() {
     readyHint = true;
@@ -130,6 +153,8 @@ async function onReady() {
     await importStPinsOnce();
     sidebar.updateFooter();
     chrome.updateTitle();
+    composer.updateModel();
+    reading.decorate();
     updateWelcome();
     await sidebar.refresh();
     // ST re-opens pinned drawers ~300ms after start (RossAscends-mods); align once after it.
@@ -167,14 +192,20 @@ export function disable({ reload = true } = {}) {
     observers = [];
     timers.forEach(clearTimeout);
     timers = [];
+    if (decorateRaf) cancelAnimationFrame(decorateRaf);
+    decorateRaf = 0;
     try { closeMenu(); } catch { /* */ }
     try { sidebar.unmount(); } catch { /* */ }
     try { chrome.unmount(); } catch { /* */ }
+    try { composer.unmount(); } catch { /* */ }
+    try { reading.restoreTemplate(); } catch { /* */ }
+    try { reading.undecorate(); } catch { /* */ }
     shell?.remove();
     shell = null;
     document.querySelectorAll('[id^="ag2-"]').forEach(n => n.remove());
     document.body.classList.remove(...BODY_CLASSES);
-    // Messages get shell-specific structure from P1b on; reload so they re-render natively.
+    // Messages carry the patched template (copy / branch in the action row): reload so they
+    // re-render from ST's original template.
     if (reload) {
         const c = ctx();
         if (c.characterId !== undefined || c.groupId) c.reloadCurrentChat?.().catch?.(() => {});

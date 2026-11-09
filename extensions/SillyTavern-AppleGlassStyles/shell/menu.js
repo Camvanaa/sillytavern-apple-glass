@@ -1,13 +1,16 @@
 // Apple Glass 2 shell — generic popover menu (DESIGN §5.8).
 // openMenu(anchor, items, opt) → close()
 //   anchor: Element (menu below/aligned to it) or { x, y } (context menu at a point)
-//   items:  { label, icon, onSelect, danger, disabled, hint } | { separator: true } | { header: 'text' }
-//   opt:    { align: 'start'|'end', id, className, onClose }
+//   items:  { label, icon, onSelect(btn), danger, disabled, hint, submenu, keepOpen }
+//           | { separator: true } | { header: 'text' }
+//           submenu → trailing chevron; keepOpen → the menu stays open after the click
+//   opt:    { align: 'start'|'end', id, className, onClose, focusFirst,
+//             ignore: () => [Element] — pointer-downs inside these count as “inside” }
 // Closes on outside pointer-down (capture phase, so it still works although shell
 // nodes stop mousedown propagation), Esc (capture, stopped so ST's own Esc logic
 // doesn't also run — §8 order), resize and blur. Arrow keys move focus.
 
-import { icon } from './icons.js?v=202611081914';
+import { icon } from './icons.js?v=202611090053';
 
 let current = null;
 
@@ -46,15 +49,17 @@ export function openMenu(anchor, items, opt = {}) {
         b.className = 'ag2-menu-item' + (it.danger ? ' ag2-danger' : '');
         b.setAttribute('role', 'menuitem');
         b.disabled = !!it.disabled;
-        b.innerHTML = (it.icon ? icon(it.icon, 16) : '<span class="ag2-i-pad"></span>') + '<span class="ag2-menu-label"></span>' + (it.hint ? '<span class="ag2-menu-hint"></span>' : '');
+        b.innerHTML = (it.icon ? icon(it.icon, 16) : '<span class="ag2-i-pad"></span>') + '<span class="ag2-menu-label"></span>'
+            + (it.hint ? '<span class="ag2-menu-hint"></span>' : '') + (it.submenu ? icon('chevron-right', 14, 'ag2-menu-sub') : '');
+        if (it.submenu) b.setAttribute('aria-haspopup', 'menu');
         b.querySelector('.ag2-menu-label').textContent = it.label;
         if (it.hint) b.querySelector('.ag2-menu-hint').textContent = it.hint;
         if (it.id) b.dataset.item = it.id;
         b.addEventListener('click', async e => {
             e.preventDefault();
             e.stopPropagation();
-            closeMenu();
-            try { await it.onSelect?.(); } catch (err) { console.error('[AG2] menu action failed', err); }
+            if (!it.keepOpen) closeMenu();
+            try { await it.onSelect?.(b); } catch (err) { console.error('[AG2] menu action failed', err); }
         });
         el.append(b);
     }
@@ -84,7 +89,12 @@ export function openMenu(anchor, items, opt = {}) {
         el, opt,
         anchor: anchor instanceof Element ? anchor : null,
         restoreFocus: anchor instanceof Element ? anchor : document.activeElement,
-        onDown: e => { if (!el.contains(e.target) && !(c.anchor && c.anchor.contains(e.target))) closeMenu(); },
+        onDown: e => {
+            if (el.contains(e.target) || (c.anchor && c.anchor.contains(e.target))) return;
+            const extra = opt.ignore ? opt.ignore().filter(Boolean) : [];
+            if (extra.some(x => x.contains(e.target))) return;
+            closeMenu();
+        },
         onClose: () => closeMenu(),
         onKey: e => {
             if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); closeMenu(); return; }

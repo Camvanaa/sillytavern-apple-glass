@@ -14,7 +14,7 @@
      1 · Typography (ported from apple-theme.css §1) ← P0
      2 · Layout · 2.1 Shell frame · 3 · Sidebar · 4 · Capsules  ← P1a
      5.8 · Menus · 5.10 · Welcome                    ← P1a
-     5 · Reading / ...                               (P1b+)
+     5.3 · Reading · 5.3b · Chat styles · 5.4 · Input island · 5.4c · + menu  ← P1b
      14 · Accessibility (reduced motion)            ← P0 (token level only)
    ============================================================================= */
 
@@ -303,7 +303,7 @@ html body.ag2.ag2-side-collapsed {
         mask-image: linear-gradient(to bottom, transparent 0, #000 var(--ag2-fade-top), #000 calc(100% - var(--ag2-fade-bottom)), transparent 100%);
     }
 
-    /* Native composer (restyled into the input island in P1b) follows the column */
+    /* Composer column (the floating input island itself: §5.4) */
     html body.ag2:not(#_):not(#__) #form_sheld {
         width: min(100%, calc(var(--ag2-read-width) + var(--ag2-pad) * 2)) !important;
         max-width: none !important;
@@ -1202,7 +1202,1384 @@ html body.ag2.immersive-mode:not(#_):not(#__) #ap-jump-latest {
     display: none !important;
 }
 
-/* == 13 · Ported fixes (apple-theme.css §15m, §19b) == */
+/* == 5.3 · Reading area (§5.3) == */
+/* Desktop (≥1001px) only; ≤1000px keeps ST's native message layout until P5.
+   Every message keeps ST's DOM. The layout is a CSS grid on .mes: the wrappers
+   .mesAvatarWrapper / .mes_block / .ch_name / .swipeRightBlock become display:contents,
+   so their children (avatar, name line, reasoning, text, buttons, swipe chevrons and
+   counter, timer, token count) are placed straight into named grid areas. Nothing is
+   moved or inserted (§9.2 #7/#8); 小白X still finds .mes_block > .ch_name and
+   .mes_buttons. Pseudo-elements carry the extra visuals:
+     .mes::before                 day separator (data-ag2-day, set by shell/reading.js)
+     .mes::after                  model name in the meta line (data-ag2-model)
+     .mes_block::before           card surface of the card styles (z -1, behind the text)
+     .mes_block::after            portrait backdrop (echo / whisper)
+     .swipeRightBlock::before     ‹ 2/3 › capsule background
+   Columns: outer | card pad | ‹ | count | › | buttons | 1fr | model | tokens | time | pad
+   Rows:    day | top pad | head | reasoning | text | media | file | bias | actions | bottom pad
+   The chat styles (§5.3b) only change the pad variables, the card and the portrait. */
+
+@media (min-width: 1001px) {
+    html body.ag2:not(#_):not(#__) {
+        /* the composer floats over the chat from P1b on (§4: bottom fade 140px) */
+        --ag2-fade-bottom: 140px;
+    }
+
+    /* Wallpaper scrim (design 01 “wall”): long prose sits directly on the wallpaper
+       now (no bubble), so the background is darkened towards the bottom. */
+    html body.ag2:not(#_):not(#__) #bg1::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(9, 9, 13, 0.52), rgba(9, 9, 13, 0.70) 55%, rgba(9, 9, 13, 0.82));
+        pointer-events: none;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat {
+        /* the island floats over the chat: pad by its live height (composer.js) */
+        padding-bottom: calc(var(--ag2-dock-h, 112px) + 18px) !important;
+        max-height: none !important;
+        text-shadow: none !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes {
+        --ag2-mes-ol: 0px;      /* outer column (ripple portrait) */
+        --ag2-mes-pl: 0px;      /* card inner padding: left / right / top / bottom */
+        --ag2-mes-pr: 0px;
+        --ag2-mes-pt: 0px;
+        --ag2-mes-pb: 0px;
+        grid-template-columns:
+            [outer] var(--ag2-mes-ol) [card] var(--ag2-mes-pl)
+            [in sw] auto [cnt] auto [swr] auto [btns] auto [gap] minmax(0, 1fr)
+            [model] auto [tok] auto [tim] auto [pr] var(--ag2-mes-pr) [end];
+        grid-template-rows:
+            [day] auto [top] var(--ag2-mes-pt) [head] auto [reason] auto [text] auto
+            [media] auto [file] auto [bias] auto [acts] auto [bottom] var(--ag2-mes-pb) [end];
+        align-items: start;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 0 18px !important;
+        background: none !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        color: var(--ag2-l1);
+    }
+
+    /* ST hides some messages with .displayNone (tool calls): keep that */
+    html body.ag2:not(#_):not(#__) #chat .mes:not(.displayNone) {
+        display: grid !important;
+    }
+
+    /* unknown (third-party) children get the content column; rows: auto placement
+       after the occupied ones, i.e. under the message. :where() keeps these at the
+       lowest specificity so every named placement below wins. */
+    html body.ag2:not(#_):not(#__) #chat .mes > :where(*),
+    html body.ag2:not(#_):not(#__) #chat .mes > :where(.mes_block) > :where(*),
+    html body.ag2:not(#_):not(#__) #chat .mes > :where(.mes_block) > :where(.ch_name) > :where(*) {
+        grid-column: in / pr;
+        min-width: 0;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes:not(.smallSysMes) > .mesAvatarWrapper,
+    html body.ag2:not(#_):not(#__) #chat .mes > .mes_block,
+    html body.ag2:not(#_):not(#__) #chat .mes > .mes_block > .ch_name,
+    html body.ag2:not(#_):not(#__) #chat .mes > .swipeRightBlock {
+        display: contents !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes > .for_checkbox,
+    html body.ag2:not(#_):not(#__) #chat .mes .mesIDDisplay {
+        display: none !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes > .del_checkbox {
+        grid-row: head;
+        grid-column: in / pr;
+        justify-self: end;
+        margin: 4px 0 0;
+    }
+
+    /* Day separator: centred small date above the first message of a day (§5.3).
+       Generated for every message (empty unless a new day) so the row is always taken
+       and third-party children are never auto-placed above the message. */
+    html body.ag2:not(#_):not(#__) #chat .mes::before {
+        content: "";
+        grid-row: day;
+        grid-column: outer / end;
+        display: block;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes.ag2-day::before {
+        content: attr(data-ag2-day);
+        margin: 6px 0 22px;
+        text-align: center;
+        color: var(--ag2-l3);
+        font-size: var(--ag2-fs-section);
+        font-weight: 560;
+        letter-spacing: 0.02em;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Card surface (card styles paint it; spans the message box, behind the text —
+       #chat is the stacking context, it has no background). Always generated so the
+       card rows are occupied (see above). */
+    html body.ag2:not(#_):not(#__) #chat .mes > .mes_block::before {
+        content: "";
+        grid-row: top / end;
+        grid-column: card / end;
+        align-self: stretch;
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    /* --- head: avatar 28 · name 13.5/640 · time 11.5 --- */
+    html body.ag2:not(#_):not(#__) #chat .mes .mesAvatarWrapper > .avatar {
+        grid-row: head;
+        grid-column: in / pr;
+        justify-self: start;
+        align-self: center;
+        width: 28px !important;
+        height: 28px !important;
+        min-width: 28px !important;
+        flex: none !important;
+        margin: 0 0 9px !important;
+        border: 0 !important;
+        border-radius: 50% !important;
+        box-shadow: none !important;
+        overflow: hidden;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .mesAvatarWrapper > .avatar img {
+        width: 100% !important;
+        height: 100% !important;
+        border: 0 !important;
+        border-radius: 50% !important;
+        box-shadow: none !important;
+        object-fit: cover;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .ch_name > :first-child {
+        grid-row: head;
+        grid-column: in / pr;
+        align-self: center;
+        display: flex;
+        align-items: center;
+        min-height: 28px;
+        margin: 0 0 9px;
+        padding-left: 38px;
+        overflow: hidden;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .ch_name > :first-child > .flex-container {
+        align-items: baseline;
+        flex-wrap: nowrap;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .ch_name .name_text {
+        overflow: hidden;
+        color: var(--ag2-l1) !important;
+        font-size: 13.5px !important;
+        font-weight: 640 !important;
+        letter-spacing: -0.01em;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .ch_name .timestamp {
+        color: var(--ag2-l3) !important;
+        font-size: 11.5px !important;
+        font-weight: 400 !important;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        opacity: 1 !important;
+    }
+
+    /* ST's optional model glyph next to the time (power_user.timestamp_model_icon): quiet */
+    html body.ag2:not(#_):not(#__) #chat .mes .ch_name .timestamp-icon {
+        width: 12px !important;
+        height: 12px !important;
+        opacity: 0.45;
+        filter: grayscale(1);
+    }
+
+    /* short time (“17:58”, shell/reading.js) instead of ST's long date — the date is
+       in the day separator */
+    html body.ag2:not(#_):not(#__) #chat .mes .ch_name .timestamp[data-ag2-time] {
+        font-size: 0 !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .ch_name .timestamp[data-ag2-time]::after {
+        content: attr(data-ag2-time);
+        font-size: 11.5px;
+    }
+
+    /* consecutive messages of one speaker: no repeated avatar + name (§5.3) */
+    html body.ag2:not(#_):not(#__) #chat .mes.ag2-cont .mesAvatarWrapper > .avatar,
+    html body.ag2:not(#_):not(#__) #chat .mes.ag2-cont .ch_name > :first-child {
+        display: none !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes:has(+ .mes.ag2-cont) {
+        margin-bottom: 4px !important;
+    }
+
+    /* --- reasoning: folded into a “已思考 14 秒” capsule; tap to unfold --- */
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_reasoning_details {
+        grid-row: reason;
+        margin: 0 0 12px !important;
+        padding: 0 !important;
+        border: 0 !important;
+        background: none !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_reasoning_summary {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0 !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_reasoning_header_block {
+        flex: 0 1 auto;
+        min-width: 0;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_reasoning_header {
+        display: inline-flex !important;
+        align-items: center;
+        gap: 6px;
+        height: 28px;
+        margin: 0 !important;
+        padding: 0 11px !important;
+        border-radius: 14px !important;
+        background: var(--ag2-f4) !important;
+        color: var(--ag2-l2) !important;
+        font-size: 12.5px !important;
+        font-weight: 520;
+        white-space: nowrap;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_reasoning_header > .icon-svg {
+        display: none;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_reasoning_header_title {
+        margin: 0 !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_reasoning_arrow {
+        position: static !important;
+        width: auto !important;
+        height: auto !important;
+        transform: none !important;
+        color: var(--ag2-l4);
+        font-size: 10px !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_reasoning_details:not([open]) .mes_reasoning_arrow {
+        transform: rotate(180deg) !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_reasoning {
+        margin: 10px 0 2px !important;
+        padding: 2px 0 2px 14px !important;
+        border: 0 !important;
+        border-left: 2px solid var(--ag2-sep-strong) !important;
+        border-radius: 0 !important;
+        background: none !important;
+        color: var(--ag2-l2) !important;
+        font-size: 14px !important;
+        font-weight: 400 !important;
+        line-height: 1.7 !important;
+    }
+
+    /* --- text: 16 / 1.86, .012em, rgba(255,255,255,.90), .8em paragraphs --- */
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_text {
+        grid-row: text;
+        margin: 0 !important;
+        padding: 0 !important;
+        color: rgba(255, 255, 255, 0.90) !important;
+        font-size: var(--ag2-read-size) !important;
+        font-weight: 400 !important;
+        line-height: var(--ag2-read-lh) !important;
+        letter-spacing: var(--ag2-read-ls);
+        overflow-wrap: anywhere;
+        text-wrap: pretty;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_text p {
+        margin: 0 0 0.8em !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_text > :last-child,
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_text p:last-child {
+        margin-bottom: 0 !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_text :is(strong, b) {
+        font-weight: 600 !important;
+    }
+
+    /* dialogue in quotes: soft light blue; italics / em: l2 grey (§5.3) */
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_text q,
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_text q * {
+        color: var(--ag2-quote) !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_text :is(i, em) {
+        color: var(--ag2-l2) !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_text blockquote {
+        margin: 0.6em 0 0.8em !important;
+        padding: 2px 0 2px 14px !important;
+        border: 0 !important;
+        border-left: 2px solid var(--ag2-sep-strong) !important;
+        background: none !important;
+        color: var(--ag2-l2);
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_text code {
+        padding: 1px 6px !important;
+        border: 0 !important;
+        border-radius: 6px !important;
+        background: var(--ag2-f4) !important;
+        font-size: 0.86em;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_text pre {
+        margin: 0.4em 0 0.9em !important;
+        padding: 12px 14px !important;
+        border: 0 !important;
+        border-radius: var(--ag2-r-row) !important;
+        background: rgba(0, 0, 0, 0.32) !important;
+        box-shadow: inset 0 0 0 0.5px var(--ag2-sep-strong);
+        overflow-x: auto;
+    }
+
+    /* the inline-code chip must not repeat inside <pre> (AG Dark §15l) */
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_text pre code {
+        padding: 0 !important;
+        border-radius: 0 !important;
+        background: none !important;
+        font-size: 12.5px !important;
+        line-height: 1.55 !important;
+        white-space: pre-wrap !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_text table {
+        margin: 0.4em 0 0.9em;
+        border-collapse: collapse;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_text :is(th, td) {
+        padding: 6px 12px !important;
+        border: 0 !important;
+        border-bottom: 0.5px solid var(--ag2-sep-strong) !important;
+        text-align: left;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_text th {
+        color: var(--ag2-l2);
+        font-weight: 600;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_text :is(ul, ol) {
+        margin: 0 0 0.8em !important;
+        padding-left: 1.4em !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_text hr {
+        height: 0.5px;
+        margin: 1em 0;
+        border: 0 !important;
+        background: var(--ag2-sep-strong);
+        opacity: 1;
+    }
+
+    /* Rendered cards (TavernHelper / 小白X iframes): card radius 16 (§5.3), no stray gap (AG Dark §17f) */
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_text .TH-render {
+        display: block !important;
+        width: 100% !important;
+        margin: 4px 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        background: none !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_text :is(.TH-render > iframe, iframe.xiaobaix-iframe) {
+        display: block !important;
+        width: 100% !important;
+        border: 0 !important;
+        border-radius: var(--ag2-r-card) !important;
+        background: transparent !important;
+    }
+
+    /* the duplicate 小白X wrapper when TavernHelper renders the same block (AG Dark §13) */
+    html body.ag2:not(#_):not(#__) .xiaobaix-iframe-wrapper:has(~ .TH-render),
+    html body.ag2:not(#_):not(#__) .TH-render > .xiaobaix-iframe-wrapper:has(~ iframe) {
+        display: none !important;
+    }
+
+    /* edit mode: ST puts a textarea into .mes_text */
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_text .edit_textarea {
+        width: 100%;
+        min-height: 3em;
+        padding: 10px 12px !important;
+        border: 0 !important;
+        border-radius: var(--ag2-r-row) !important;
+        background: var(--ag2-f4) !important;
+        box-shadow: inset 0 0 0 0.5px var(--ag2-sep-strong) !important;
+        color: var(--ag2-l1) !important;
+        font: inherit;
+        line-height: 1.7 !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_media_wrapper { grid-row: media; }
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_file_wrapper { grid-row: file; }
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_bias { grid-row: bias; }
+
+    /* --- action row: ‹ 2/3 ›  copy · edit · branch · more  ……  model · tokens · time --- */
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_buttons,
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_edit_buttons {
+        grid-row: acts;
+        grid-column: btns / gap;
+        justify-self: start;
+        align-self: center;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        gap: 2px;
+        margin: 6px 0 0 !important;
+        padding: 0 !important;
+        float: none !important;
+        overflow: visible !important;
+        font-size: 14px;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_buttons {
+        display: flex;
+        position: relative;
+        transition: opacity var(--ag2-dur) ease;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_buttons > * { order: 6; }
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_buttons > .mes_copy { order: 1; }
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_buttons > .mes_edit { order: 2; }
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_buttons > .mes_create_branch { order: 3; }
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_buttons > .extraMesButtonsHint { order: 4; }
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_buttons > .mes_bookmark { order: 5; }
+
+    /* 30px ghost icon buttons, l3 → l1 on hover (no blur: small control, §7) */
+    html body.ag2:not(#_):not(#__) #chat .mes :is(.mes_buttons, .extraMesButtons) > .mes_button,
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_buttons > .mes_btn {
+        align-items: center;
+        justify-content: center;
+        width: 30px !important;
+        height: 30px !important;
+        min-width: 30px;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 8px !important;
+        background: none !important;
+        box-shadow: none !important;
+        color: var(--ag2-l3) !important;
+        font-size: 14px !important;
+        opacity: 1 !important;
+        filter: none !important;
+        transition: background-color var(--ag2-dur) ease, color var(--ag2-dur) ease;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes :is(.mes_buttons, .extraMesButtons) > .mes_button:not(.mes_bookmark) {
+        display: inline-flex;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes:not([bookmark_link='']) .mes_buttons > .mes_bookmark {
+        display: inline-flex;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes :is(.mes_buttons, .extraMesButtons) > .mes_button:hover,
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_buttons > .mes_btn:hover {
+        background: var(--ag2-f4) !important;
+        color: var(--ag2-l1) !important;
+    }
+
+    /* “更多” = ST's own .extraMesButtons as a popover above the row. Solid fill: no
+       backdrop-filter on messages (§5.10, AG Dark §18a). z 10 keeps it above the
+       following messages (#chat is the stacking context). */
+    html body.ag2:not(.expandMessageActions):not(#_):not(#__) #chat .mes .mes_buttons > .extraMesButtons {
+        position: absolute !important;
+        left: 0;
+        bottom: calc(100% + 6px);
+        z-index: 10;
+        flex-wrap: wrap !important;
+        gap: 2px;
+        width: max-content;
+        max-width: 330px;
+        padding: 5px !important;
+        border-radius: 14px;
+        background: rgba(44, 44, 51, 0.97) !important;
+        box-shadow: var(--ag2-rim), var(--ag2-sh2) !important;
+        overflow: visible !important;
+    }
+
+    html body.ag2.expandMessageActions:not(#_):not(#__) #chat .mes .mes_buttons > .extraMesButtons {
+        display: flex !important;
+        order: 7;
+        gap: 2px;
+    }
+
+    /* swipe capsule ‹ 2/3 › — ST's own three nodes; last message only (ST's rule) */
+    html body.ag2:not(#_):not(#__) #chat .mes .swipe_left,
+    html body.ag2:not(#_):not(#__) #chat .mes .swipe_right,
+    html body.ag2:not(#_):not(#__) #chat .mes .swipes-counter {
+        grid-row: acts;
+        position: static !important;
+        z-index: auto !important;
+        align-self: center;
+        margin: 6px 0 0 !important;
+        transform: none !important;
+        filter: none !important;
+        color: var(--ag2-l2) !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .swipe_left { grid-column: sw; }
+    html body.ag2:not(#_):not(#__) #chat .mes .swipes-counter { grid-column: cnt; }
+    html body.ag2:not(#_):not(#__) #chat .mes .swipe_right { grid-column: swr; margin-right: 6px !important; }
+
+    /* display stays `flex` on the chevrons: ST's Ctrl+↑ checks it (RossAscends-mods) */
+    html body.ag2:not(#_):not(#__) #chat .mes .swipe_left,
+    html body.ag2:not(#_):not(#__) #chat .mes .swipe_right {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px !important;
+        height: 26px !important;
+        border-radius: 13px;
+        font-size: 11px !important;
+        opacity: 1;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .swipe_left:hover,
+    html body.ag2:not(#_):not(#__) #chat .mes .swipe_right:hover {
+        background: var(--ag2-f3);
+        color: var(--ag2-l1) !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .swipes-counter {
+        display: flex;
+        align-items: center;
+        min-width: 0 !important;
+        height: 26px !important;
+        padding: 0 3px !important;
+        font: 560 12px/1 var(--ag2-font) !important;
+        font-variant-numeric: tabular-nums;
+        opacity: 1;
+    }
+
+    /* swipe nodes of other messages take no room (ST only fades them out) */
+    html body.ag2:not(.swipeAllMessages):not(#_):not(#__) #chat .mes:not(.last_mes) :is(.swipe_left, .swipe_right, .swipes-counter),
+    html body.ag2:not(#_):not(#__) #chat .mes[is_user="true"] :is(.swipe_left, .swipe_right, .swipes-counter) {
+        display: none !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes > .swipeRightBlock::before {
+        content: "";
+        display: none;
+        grid-row: acts;
+        grid-column: sw / btns;
+        align-self: center;
+        height: 28px;
+        margin: 6px 6px 0 0;
+        border-radius: 14px;
+        background: var(--ag2-f4);
+        z-index: -1;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes.last_mes:not([is_user="true"]):has(> .swipeRightBlock > .swipes-counter:not([hidden]):not(:empty)) > .swipeRightBlock::before {
+        display: block;
+    }
+
+    /* meta (l4): model · tokens · time, right-aligned (§5.3) */
+    html body.ag2:not(#_):not(#__) #chat .mes::after {
+        content: none;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes[data-ag2-model]:not([is_user="true"])::after {
+        content: attr(data-ag2-model);
+        grid-row: acts;
+        grid-column: model;
+        align-self: center;
+        max-width: 220px;
+        margin: 6px 0 0 12px;
+        overflow: hidden;
+        color: var(--ag2-l4);
+        font-size: 11.5px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        transition: opacity var(--ag2-dur) ease;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .tokenCounterDisplay,
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_timer {
+        grid-row: acts;
+        align-self: center;
+        margin: 6px 0 0 10px !important;
+        padding: 0 !important;
+        color: var(--ag2-l4) !important;
+        font-size: 11.5px !important;
+        font-weight: 400 !important;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        opacity: 1 !important;
+        transition: opacity var(--ag2-dur) ease;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .tokenCounterDisplay { grid-column: tok; }
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_timer { grid-column: tim; }
+
+    html body.ag2:not(#_):not(#__) #chat .mes[is_user="true"] :is(.tokenCounterDisplay, .mes_timer) {
+        display: none !important;
+    }
+
+    /* Desktop: the action row shows on hover / focus; the last AI message keeps it (§5.3).
+       Opacity, not display: the row keeps its height, nothing jumps. */
+    html body.ag2:not(#_):not(#__) #chat .mes:not(:hover):not(:focus-within):not(.last_mes) :is(.mes_buttons, .tokenCounterDisplay, .mes_timer),
+    html body.ag2:not(#_):not(#__) #chat .mes:not(:hover):not(:focus-within):not(.last_mes)::after,
+    html body.ag2:not(#_):not(#__) #chat .mes.last_mes[is_user="true"]:not(:hover):not(:focus-within) .mes_buttons {
+        opacity: 0 !important;
+    }
+
+    /* --- user message: right-aligned grey bubble, radius 20, max 76% (§5.3) --- */
+    html body.ag2:not(#_):not(#__) #chat .mes[is_user="true"] .mesAvatarWrapper > .avatar,
+    html body.ag2:not(#_):not(#__) #chat .mes[is_user="true"] .ch_name > :first-child {
+        display: none !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes[is_user="true"] .mes_text {
+        justify-self: end;
+        max-width: 76%;
+        padding: 10px 16px !important;
+        border-radius: 20px;
+        background: rgba(62, 62, 70, 0.66);
+        box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.09);
+        color: var(--ag2-l1) !important;
+        font-size: 15.5px !important;
+        line-height: 1.72 !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes[is_user="true"] .mes_text:has(.edit_textarea) {
+        justify-self: stretch;
+        max-width: none;
+        padding: 0 !important;
+        background: none;
+        box-shadow: none;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes[is_user="true"] :is(.mes_buttons, .mes_edit_buttons) {
+        grid-column: in / pr;
+        justify-self: end;
+    }
+
+    /* edit-mode buttons: ST's menu_button glyphs as compact filled buttons */
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_edit_buttons > .menu_button {
+        align-items: center;
+        justify-content: center;
+        width: 30px !important;
+        height: 30px !important;
+        min-width: 30px;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 8px !important;
+        background: var(--ag2-f4) !important;
+        box-shadow: none !important;
+        color: var(--ag2-l2) !important;
+        font-size: 13px !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes .mes_edit_buttons > .menu_button:hover {
+        background: var(--ag2-f2) !important;
+        color: var(--ag2-l1) !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #chat .mes[is_system="true"] .mes_text {
+        color: var(--ag2-l2) !important;
+    }
+
+    html body.ag2.hideChatAvatars:not(#_):not(#__) #chat .mes .ch_name > :first-child {
+        padding-left: 0;
+    }
+}
+
+/* == 5.3b · Chat styles (bubble · document · echo · whisper · ripple · hush) == */
+/* chat_display 0 (no body class) is the reading style above. The other six only set
+   the card padding variables and paint the card / portrait pseudo-elements, so the
+   grid, the action row and the swipe capsule behave the same in all seven. User
+   messages keep the grey bubble (document style excepted). Portraits come from
+   --ap-mes-avatar, set per message by the extension's index.js (feature 1). */
+
+@media (min-width: 1001px) {
+    /* shared card: one solid surface per AI message (no blur on messages, §5.10) */
+    html body.ag2:is(.bubblechat, .ap-chat-echo, .ap-chat-whisper, .ap-chat-ripple, .ap-chat-hush):not(#_):not(#__) #chat .mes:not([is_user="true"]) {
+        --ag2-mes-pl: 18px;
+        --ag2-mes-pr: 18px;
+        --ag2-mes-pt: 14px;
+        --ag2-mes-pb: 8px;
+        margin-bottom: 14px !important;
+    }
+
+    html body.ag2:is(.bubblechat, .ap-chat-echo, .ap-chat-whisper, .ap-chat-ripple, .ap-chat-hush):not(#_):not(#__) #chat .mes:not([is_user="true"]) > .mes_block::before {
+        border-radius: 20px;
+        background: rgba(40, 40, 47, 0.62);
+        box-shadow: var(--ag2-rim);
+    }
+
+    /* consecutive cards stay separate cards (only the name line goes) */
+    html body.ag2:is(.bubblechat, .ap-chat-echo, .ap-chat-whisper, .ap-chat-ripple, .ap-chat-hush):not(#_):not(#__) #chat .mes:has(+ .mes.ag2-cont) {
+        margin-bottom: 10px !important;
+    }
+
+    /* 1 · 气泡 Bubble: avatar + name inside the card; the user bubble takes the accent */
+    html body.ag2.bubblechat:not(#_):not(#__) #chat .mes[is_user="true"] .mes_text {
+        background: color-mix(in srgb, var(--ag2-accent) 34%, rgba(40, 40, 47, 0.8));
+    }
+
+    /* 2 · 文档 Document: no avatars, no bubbles; speakers marked by name + a hairline */
+    html body.ag2.documentstyle:not(#_):not(#__) #chat .mes .mesAvatarWrapper > .avatar {
+        display: none !important;
+    }
+
+    html body.ag2.documentstyle:not(#_):not(#__) #chat .mes .ch_name > :first-child {
+        padding-left: 0;
+    }
+
+    html body.ag2.documentstyle:not(#_):not(#__) #chat .mes[is_user="true"]:not(.ag2-cont) .ch_name > :first-child {
+        display: flex !important;
+    }
+
+    html body.ag2.documentstyle:not(#_):not(#__) #chat .mes[is_user="true"] .mes_text {
+        justify-self: stretch;
+        max-width: none;
+        padding: 0 0 0 14px !important;
+        border-radius: 0;
+        background: none;
+        box-shadow: inset 2px 0 0 var(--ag2-accent);
+        color: var(--ag2-l2) !important;
+        font-size: var(--ag2-read-size) !important;
+        line-height: var(--ag2-read-lh) !important;
+    }
+
+    html body.ag2.documentstyle:not(#_):not(#__) #chat .mes[is_user="true"] :is(.mes_buttons, .mes_edit_buttons) {
+        justify-self: start;
+    }
+
+    html body.ag2.documentstyle:not(#_):not(#__) #chat .mes:not(.ag2-cont):not(.ag2-day) {
+        --ag2-mes-pt: 16px;
+    }
+
+    html body.ag2.documentstyle:not(#_):not(#__) #chat .mes:not(.ag2-cont):not(.ag2-day) > .mes_block::before {
+        border-top: 0.5px solid var(--ag2-sep);
+    }
+
+    /* 3 · 回声 Echo: a large portrait column fading into the card's right edge */
+    html body.ag2.ap-chat-echo:not(#_):not(#__) #chat .mes:not([is_user="true"]) {
+        --ag2-mes-pr: calc(min(20%, 170px) + 14px);
+    }
+
+    /* minimum card heights come from the text row: a spanning portrait with a fixed
+       height would spread its extra height over every auto row of the grid */
+    html body.ag2.ap-chat-echo:not(#_):not(#__) #chat .mes:not([is_user="true"]) .mes_text {
+        min-height: 100px;
+    }
+
+    html body.ag2.ap-chat-whisper:not(#_):not(#__) #chat .mes:not([is_user="true"]) .mes_text {
+        min-height: 48px;
+    }
+
+    html body.ag2.ap-chat-ripple:not(#_):not(#__) #chat .mes:not([is_user="true"]):not(.ag2-cont) .mes_text {
+        min-height: 64px;
+    }
+
+    html body.ag2:is(.ap-chat-echo, .ap-chat-whisper, .ap-chat-hush):not(#_):not(#__) #chat .mes .mesAvatarWrapper > .avatar {
+        display: none !important;
+    }
+
+    html body.ag2:is(.ap-chat-echo, .ap-chat-whisper, .ap-chat-hush):not(#_):not(#__) #chat .mes .ch_name > :first-child {
+        padding-left: 0;
+    }
+
+    html body.ag2.ap-chat-echo:not(#_):not(#__) #chat .mes:not([is_user="true"]) > .mes_block::after {
+        content: "";
+        grid-row: top / end;
+        grid-column: pr / end;
+        /* absolutely positioned in its grid area: never sizes the tracks */
+        position: absolute;
+        inset: 0;
+        border-radius: 0 20px 20px 0;
+        background: var(--ap-mes-avatar) center top / cover no-repeat;
+        -webkit-mask-image: linear-gradient(to left, #000 45%, transparent 100%);
+        mask-image: linear-gradient(to left, #000 45%, transparent 100%);
+        opacity: 0.72;
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    /* 4 · 低语 Whisper: the portrait dissolves into the card's top-right corner,
+       an accent tick on the outer edge */
+    html body.ag2.ap-chat-whisper:not(#_):not(#__) #chat .mes:not([is_user="true"]) > .mes_block::after {
+        content: "";
+        grid-row: top / end;
+        grid-column: gap / end;
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: min(46%, 340px);
+        height: 132px;
+        border-top-right-radius: 20px;
+        background: var(--ap-mes-avatar) center 22% / cover no-repeat;
+        -webkit-mask-image: linear-gradient(to left, #000 35%, transparent 100%), linear-gradient(to bottom, #000 45%, transparent 100%);
+        -webkit-mask-composite: source-in;
+        mask-image: linear-gradient(to left, #000 35%, transparent 100%), linear-gradient(to bottom, #000 45%, transparent 100%);
+        mask-composite: intersect;
+        opacity: 0.55;
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    html body.ag2.ap-chat-whisper:not(#_):not(#__) #chat .mes:not([is_user="true"]) > .mes_block::before {
+        background: linear-gradient(var(--ag2-l2), var(--ag2-l2)) right 0 top 54px / 3px 26px no-repeat, rgba(40, 40, 47, 0.62);
+    }
+
+    /* 5 · 涟漪 Ripple: a tall portrait card left of the message, sticky while reading */
+    html body.ag2.ap-chat-ripple:not(#_):not(#__) #chat .mes:not([is_user="true"]) {
+        --ag2-mes-ol: 108px;
+    }
+
+    html body.ag2.ap-chat-ripple:not(#_):not(#__) #chat .mes:not([is_user="true"]):not(.ag2-cont) .mesAvatarWrapper > .avatar {
+        grid-row: top / end;
+        grid-column: outer / card;
+        position: sticky;
+        top: 76px;
+        width: 96px !important;
+        height: 144px !important;
+        margin: 0 !important;
+        border-radius: 20px !important;
+    }
+
+    html body.ag2.ap-chat-ripple:not(#_):not(#__) #chat .mes .mesAvatarWrapper > .avatar img {
+        border-radius: 20px !important;
+    }
+
+    html body.ag2.ap-chat-ripple:not(#_):not(#__) #chat .mes:not([is_user="true"]) .ch_name > :first-child {
+        padding-left: 0;
+    }
+
+    /* 6 · 轻声 Hush: avatar-free cards with a quiet edge accent */
+    html body.ag2.ap-chat-hush:not(#_):not(#__) #chat .mes:not([is_user="true"]) {
+        --ag2-mes-pl: 22px;
+        --ag2-mes-pt: 16px;
+    }
+
+    html body.ag2.ap-chat-hush:not(#_):not(#__) #chat .mes:not([is_user="true"]) > .mes_block::before {
+        background: linear-gradient(var(--ag2-l3), var(--ag2-l3)) left 0 top 18px / 3px calc(100% - 36px) no-repeat, rgba(40, 40, 47, 0.5);
+    }
+
+    html body.ag2.ap-chat-hush:not(#_):not(#__) #chat .mes[is_user="true"] .mes_text {
+        box-shadow: inset -3px 0 0 var(--ag2-accent), inset 0 0.5px 0 rgba(255, 255, 255, 0.09);
+    }
+}
+
+/* == 5.4 · Input island (§5.4) == */
+/* ST's #form_sheld floats at the bottom of #sheld and the chat scrolls under it.
+   Inside: the QR capsule row, then #nonQRFormItems = the island:
+   [+] [textarea] [other extension buttons] [model] [send / stop].
+   §19a multi-line behaviour: the island grows with the textarea up to 40dvh, the
+   buttons stay on the bottom line. Desktop only (≤1000px keeps ST's composer, P5). */
+
+@media (min-width: 1001px) {
+    html body.ag2:not(#_):not(#__) #form_sheld {
+        position: absolute !important;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 31;
+        width: min(calc(100% - 48px), 760px) !important;
+        margin: 0 auto !important;
+        padding: 0 0 14px !important;
+        border: 0 !important;
+        background: none !important;
+        box-shadow: none !important;
+        white-space: normal;
+    }
+
+    html body.ag2:not(#_):not(#__) #send_form {
+        display: flex !important;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px 8px;
+        width: 100%;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        outline: 0 !important;
+        background: none !important;
+        box-shadow: none !important;
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+    }
+
+    /* QR capsules: one row, horizontal scroll, faded ends (§5.4). Small controls:
+       solid translucent fill, no blur (§7). */
+    html body.ag2:not(#_):not(#__) :is(#qr--bar, #qr-bar):not(:has(button, .qr--button)) {
+        display: none !important;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#qr--bar, #qr-bar) {
+        display: flex !important;
+        flex: 0 1 auto;
+        min-width: 0;
+        max-width: 100%;
+        margin: 0 !important;
+        padding: 0 2px !important;
+        border: 0 !important;
+        background: none !important;
+        box-shadow: none !important;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none;
+        -webkit-mask-image: linear-gradient(to right, transparent 0, #000 6px, #000 calc(100% - 18px), transparent 100%);
+        mask-image: linear-gradient(to right, transparent 0, #000 6px, #000 calc(100% - 18px), transparent 100%);
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#qr--bar, #qr-bar)::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* the QR extension writes flex-wrap:wrap inline */
+    html body.ag2:not(#_):not(#__) :is(#qr--bar, #qr-bar) .qr--buttons {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        justify-content: flex-start !important;
+        gap: 8px !important;
+        padding-right: 14px;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#qr--bar, #qr-bar) :is(.qr--button, .menu_button) {
+        display: inline-flex !important;
+        flex: none !important;
+        align-items: center;
+        gap: 6px;
+        height: 30px !important;
+        min-height: 30px;
+        margin: 0 !important;
+        padding: 0 13px !important;
+        border: 0 !important;
+        border-radius: 15px !important;
+        background: rgba(48, 48, 56, 0.78) !important;
+        box-shadow: var(--ag2-rim) !important;
+        color: var(--ag2-l1) !important;
+        font: 560 12.5px/1 var(--ag2-font) !important;
+        white-space: nowrap !important;
+        opacity: 1 !important;
+        filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+        transition: background-color var(--ag2-dur) ease;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#qr--bar, #qr-bar) :is(.qr--button, .menu_button):hover {
+        background: rgba(62, 62, 72, 0.86) !important;
+    }
+
+    /* ghost “+ 快速回复” after the capsules (only when there are capsules) */
+    html body.ag2:not(#_):not(#__) #ag2-qr-add {
+        display: none;
+        flex: none;
+        align-items: center;
+        gap: 5px;
+        height: 30px;
+        margin: 0;
+        padding: 0 10px;
+        border: 0;
+        border-radius: 15px;
+        background: none;
+        color: var(--ag2-l3);
+        font: 520 12.5px/1 var(--ag2-font);
+        white-space: nowrap;
+        cursor: pointer;
+    }
+
+    html body.ag2:not(#_):not(#__) #send_form:has(:is(#qr--bar, #qr-bar) :is(button, .qr--button)) #ag2-qr-add {
+        display: inline-flex;
+    }
+
+    html body.ag2:not(#_):not(#__) #ag2-qr-add:hover {
+        background: var(--ag2-f4);
+        color: var(--ag2-l1);
+    }
+
+    html body.ag2:not(#_):not(#__) #send_form #file_form {
+        width: 100%;
+    }
+
+    /* the island: 760 wide, 54 high at one line, floating glass (one of the five blur
+       layers, §7) */
+    html body.ag2:not(#_):not(#__) #send_form #nonQRFormItems {
+        display: flex !important;
+        align-items: flex-end !important;
+        gap: 4px !important;
+        width: 100%;
+        min-height: 54px !important;
+        padding: 7px !important;
+        border: 0 !important;
+        /* §19a: radius = half the one-line height → a capsule at one line, a rounded
+           rectangle (not an ellipse) once it grows */
+        border-radius: 27px !important;
+        background: var(--ag2-mat-float) !important;
+        -webkit-backdrop-filter: var(--ag2-blur-float) !important;
+        backdrop-filter: var(--ag2-blur-float) !important;
+        box-shadow: var(--ag2-rim), var(--ag2-sh2) !important;
+        font-size: 15px;
+        transition: box-shadow var(--ag2-dur) ease;
+    }
+
+    html body.ag2:not(#_):not(#__) #send_form.ag2-multi #nonQRFormItems {
+        border-radius: 24px !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #send_form:focus-within #nonQRFormItems {
+        box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.09), var(--ag2-sh2) !important;
+    }
+
+    /* §19a: the textarea grows (ST's field-sizing / inline height untouched), capped
+       at 40dvh, then scrolls inside. ST's 3px top border is its slash-command progress
+       bar; it stays, only transparent. */
+    html body.ag2:not(#_):not(#__) #send_form #send_textarea {
+        align-self: stretch;
+        min-height: 40px !important;
+        max-height: 40vh !important;
+        max-height: 40dvh !important;
+        margin: 0 !important;
+        padding: 6px 8px 9px !important;
+        border-right: 0 !important;
+        border-bottom: 0 !important;
+        border-left: 0 !important;
+        border-top-color: transparent;
+        background: none !important;
+        box-shadow: none !important;
+        color: var(--ag2-l1) !important;
+        font: 400 15px/22px var(--ag2-font) !important;
+        letter-spacing: 0;
+        caret-color: var(--ag2-accent);
+        resize: none !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #send_form #send_textarea::placeholder {
+        color: var(--ag2-l3) !important;
+        text-align: left !important;
+    }
+
+    /* not connected: “未连接 API — 点此连接” (composer.js), in red */
+    html body.ag2:not(#_):not(#__) #send_form.no-connection #send_textarea::placeholder {
+        color: var(--ag2-red) !important;
+    }
+
+    /* button groups sit on the bottom line (§19a) */
+    html body.ag2:not(#_):not(#__) #send_form :is(#leftSendForm, #rightSendForm) {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        align-self: flex-end !important;
+        align-items: center !important;
+        gap: 2px !important;
+        min-height: 40px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* ☰ and the wand are replaced by the + menu; they stay in the DOM (§5.4) */
+    html body.ag2:not(#_):not(#__) #options_button,
+    html body.ag2:not(#_):not(#__) #extensionsMenuButton {
+        display: none !important;
+    }
+
+    /* other extensions' buttons in the island: 32px ghost icons (display stays ST's) */
+    html body.ag2:not(#_):not(#__) #leftSendForm > :not(#ag2-plus),
+    html body.ag2:not(#_):not(#__) #rightSendForm > :not(#ag2-model):not(#send_but):not(#mes_stop) {
+        align-items: center;
+        justify-content: center;
+        width: 32px !important;
+        height: 32px !important;
+        min-width: 32px !important;
+        min-height: 32px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 16px !important;
+        background: none !important;
+        box-shadow: none !important;
+        color: var(--ag2-l2) !important;
+        font-size: 15px !important;
+        opacity: 1 !important;
+        filter: none !important;
+        transition: background-color var(--ag2-dur) ease, color var(--ag2-dur) ease;
+    }
+
+    html body.ag2:not(#_):not(#__) #leftSendForm > :not(#ag2-plus):hover,
+    html body.ag2:not(#_):not(#__) #rightSendForm > :not(#ag2-model):not(#send_but):not(#mes_stop):hover {
+        background: var(--ag2-f4) !important;
+        color: var(--ag2-l1) !important;
+    }
+
+    /* keyboard focus ring (§8): 3px accent, only for :focus-visible */
+    html body.ag2:not(#_):not(#__) :is(#ag2-plus, #ag2-model, #ag2-qr-add):focus {
+        outline: none;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#ag2-plus, #ag2-model, #ag2-qr-add):focus-visible {
+        outline: 3px solid var(--ag2-accent);
+        outline-offset: 1px;
+    }
+
+    /* + (40 circle) → × while its menu is open */
+    html body.ag2:not(#_):not(#__) #ag2-plus {
+        display: inline-flex;
+        flex: none;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 20px;
+        background: var(--ag2-f4);
+        color: var(--ag2-l1);
+        cursor: pointer;
+        transition: background-color var(--ag2-dur) ease;
+    }
+
+    html body.ag2:not(#_):not(#__) #ag2-plus:hover { background: var(--ag2-f3); }
+    html body.ag2:not(#_):not(#__) #ag2-plus.ag2-open { background: rgba(255, 255, 255, 0.16); }
+    html body.ag2:not(#_):not(#__) #ag2-plus .ag2-x-i,
+    html body.ag2:not(#_):not(#__) #ag2-plus.ag2-open .ag2-plus-i { display: none; }
+    html body.ag2:not(#_):not(#__) #ag2-plus.ag2-open .ag2-x-i { display: block; }
+
+    /* model capsule: ghost pill, model name (ellipsis), red dot when not connected */
+    html body.ag2:not(#_):not(#__) #ag2-model {
+        display: inline-flex;
+        flex: 0 1 auto;
+        order: 1;
+        align-items: center;
+        gap: 5px;
+        min-width: 0;
+        max-width: 240px;
+        height: 32px;
+        margin: 0 2px 0 0;
+        padding: 0 9px 0 11px;
+        border: 0;
+        border-radius: 16px;
+        background: none;
+        color: var(--ag2-l2);
+        font: 520 12.5px/1 var(--ag2-font);
+        white-space: nowrap;
+        cursor: pointer;
+        transition: background-color var(--ag2-dur) ease, color var(--ag2-dur) ease;
+    }
+
+    html body.ag2:not(#_):not(#__) #ag2-model:hover,
+    html body.ag2:not(#_):not(#__) #ag2-model.ag2-open {
+        background: var(--ag2-f4);
+        color: var(--ag2-l1);
+    }
+
+    html body.ag2:not(#_):not(#__) #ag2-model .ag2-model-name {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    html body.ag2:not(#_):not(#__) #ag2-model :is(.ag2-model-zap, .ag2-model-chev) {
+        color: var(--ag2-l3);
+    }
+
+    html body.ag2:not(#_):not(#__) #ag2-model .ag2-model-dot {
+        display: none;
+        flex: none;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--ag2-red);
+    }
+
+    html body.ag2:not(#_):not(#__) #ag2-model.ag2-off .ag2-model-dot { display: block; }
+    html body.ag2:not(#_):not(#__) #ag2-model.ag2-off .ag2-model-zap { display: none; }
+
+    /* send (40 circle): grey while empty; accent + a soft accent shadow with text.
+       display is left to ST (displayNone / data-generating). */
+    html body.ag2:not(#_):not(#__) #send_form #send_but {
+        order: 2;
+        align-items: center;
+        justify-content: center;
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 20px !important;
+        background: var(--ag2-f3) !important;
+        box-shadow: none !important;
+        color: var(--ag2-l3) !important;
+        font-size: 17px !important;
+        opacity: 1 !important;
+        filter: none !important;
+        transition: background-color var(--ag2-dur) ease, color var(--ag2-dur) ease, box-shadow var(--ag2-dur) ease;
+    }
+
+    /* paper plane → arrow-up (Font Awesome glyph) */
+    html body.ag2:not(#_):not(#__) #send_form #send_but::before {
+        content: "\f062";
+    }
+
+    html body.ag2:not(#_):not(#__) #send_form.ag2-has-text #send_but {
+        background: var(--ag2-accent) !important;
+        box-shadow: 0 2px 10px color-mix(in srgb, var(--ag2-accent) 38%, transparent), inset 0 0.5px 0 rgba(255, 255, 255, 0.3) !important;
+        color: #fff !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #send_form.ag2-has-text #send_but:hover {
+        background: var(--ag2-accent-hover) !important;
+    }
+
+    /* stop (ST shows it while generating): the same circle, light, square glyph */
+    html body.ag2:not(#_):not(#__) #send_form #mes_stop {
+        order: 2;
+        align-items: center;
+        justify-content: center;
+        place-self: auto;
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0;
+        border-radius: 20px;
+        background: var(--ag2-l1);
+        color: #1c1c1e;
+        opacity: 1 !important;
+        cursor: pointer;
+    }
+
+    html body.ag2:not(#_):not(#__) #send_form #mes_stop > i {
+        color: inherit;
+        font-size: 13px;
+    }
+
+    html body.ag2:not(#_):not(#__) #send_form #mes_stop > i::before {
+        content: "\f04d";
+    }
+
+    /* the “jump to latest” pill sits above the island + QR row (§5.3, §17g) */
+    html body.ag2:not(#_):not(#__) #ap-jump-latest {
+        bottom: calc(100% + 6px);
+    }
+}
+
+@media (max-width: 1000px) {
+    /* phones keep ST's composer (☰ and the wand) until P5 */
+    html body.ag2:not(#_):not(#__) :is(#ag2-plus, #ag2-model, #ag2-qr-add) {
+        display: none !important;
+    }
+}
+
+/* == 5.4c · + menu · model list · 扩展工具 (§5.4, §5.8, §9.2 #6) == */
+
+html body.ag2 #ag2-shell .ag2-menu-plus {
+    min-width: 236px;
+}
+
+html body.ag2 #ag2-shell .ag2-menu-item .ag2-menu-sub {
+    margin-left: auto;
+    color: var(--ag2-l3);
+}
+
+html body.ag2 #ag2-shell .ag2-menu-item.ag2-sub-open {
+    background: var(--ag2-f3);
+}
+
+html body.ag2 #ag2-shell .ag2-menu-models {
+    max-width: 340px;
+    max-height: min(60vh, 480px);
+    overflow-y: auto;
+}
+
+/* ST's own #extensionsMenu, shown as the submenu right of the + menu while
+   body.ag2-wand-open. ST positions it with Popper (inline inset / transform) and
+   toggles it with fadeIn / fadeOut (inline display); these !important rules win only
+   while the class is set. Nothing is cloned or moved. */
+html body.ag2.ag2-wand-open:not(#_):not(#__) #extensionsMenu {
+    display: flex !important;
+    flex-direction: column;
+    position: fixed !important;
+    inset: auto auto var(--ag2-wand-bottom, 80px) var(--ag2-wand-left, 320px) !important;
+    z-index: 3004 !important;
+    min-width: 236px;
+    max-width: 320px;
+    max-height: calc(100dvh - 20px);
+    margin: 0 !important;
+    padding: 5px !important;
+    border: 0 !important;
+    border-radius: 14px !important;
+    background: var(--ag2-mat-menu) !important;
+    -webkit-backdrop-filter: var(--ag2-blur-menu) !important;
+    backdrop-filter: var(--ag2-blur-menu) !important;
+    box-shadow: var(--ag2-rim), var(--ag2-sh3) !important;
+    transform: none !important;
+    opacity: 1 !important;
+    overflow-y: auto;
+    animation: ag2-pop var(--ag2-dur) var(--ag2-ease);
+}
+
+html body.ag2.ag2-wand-open:not(#_):not(#__) #extensionsMenu .list-group-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 32px;
+    margin: 0 !important;
+    padding: 0 10px !important;
+    border: 0 !important;
+    border-radius: 9px !important;
+    background: none !important;
+    color: var(--ag2-l1) !important;
+    font-size: var(--ag2-fs-sub) !important;
+    white-space: nowrap;
+    opacity: 1 !important;
+    cursor: pointer;
+}
+
+html body.ag2.ag2-wand-open:not(#_):not(#__) #extensionsMenu .list-group-item:hover {
+    background: var(--ag2-accent) !important;
+    color: #fff !important;
+}
+
+html body.ag2.ag2-wand-open:not(#_):not(#__) #extensionsMenu .list-group-item :is(.extensionsMenuExtensionButton, .fa-solid, .fa-regular) {
+    width: 16px;
+    color: var(--ag2-l2);
+    font-size: 13px;
+    text-align: center;
+}
+
+html body.ag2.ag2-wand-open:not(#_):not(#__) #extensionsMenu .list-group-item:hover :is(.extensionsMenuExtensionButton, .fa-solid, .fa-regular) {
+    color: #fff;
+}
+
+/* == 13 · Ported fixes (apple-theme.css §15m, §19b, §17a) == */
 /* Under AG2 ST's own panels still render with the theme JSON's blur strength and
    none of AG Dark's fixes; these two keep the §4.6 regression at zero until the
    P2 settings window restyles the panels. */
@@ -1227,6 +2604,14 @@ html body.ag2:not(#_):not(#__) .api_button {
 
 html body.ag2:not(#_):not(#__) .extensions_url_block {
     flex: 0 0 auto !important;
+}
+
+/* AG Dark §17a · Stable viewport: 小白X's closed quick-launcher is parked below the
+   fold; <html> is the fixed containing block (translateZ), so it made the root ~230px
+   scrollable and any scrollIntoView() (a click on a control) pushed the whole UI up.
+   Layout containment keeps the root exactly one viewport tall. */
+html:has(> body.ag2:not(#_):not(#__)) {
+    contain: layout;
 }
 
 /* == 14 · Accessibility (reduced motion) == */
