@@ -131,7 +131,7 @@ export const settingsModule = () => setMod;
 export async function openSettings(page = null, opt = {}) {
     if (!isDesktop()) return toggleDrawer(SET_PANELS[page] || 'user-settings-block', true);
     if (!setMod) {
-        setLoading ||= import('./settings.js?v=202611091000');
+        setLoading ||= import('./settings.js?v=202611091045');
         try { setMod = await setLoading; } finally { setLoading = null; }
     }
     if (!document.body.classList.contains('ag2')) return false; // shell torn down meanwhile

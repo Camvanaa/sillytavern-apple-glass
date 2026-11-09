@@ -14,9 +14,9 @@
 // Every action is a click on ST's own control (`#option_*`, `#attachFile`, the model
 // <select>), as ST's core does it.
 
-import { icon } from './icons.js?v=202611091000';
-import { openMenu, closeMenu } from './menu.js?v=202611091000';
-import { ctx, h, guard, clickSt, toggleDrawer, openSettings, busy, onlineStatus } from './util.js?v=202611091000';
+import { icon } from './icons.js?v=202611091045';
+import { openMenu, closeMenu } from './menu.js?v=202611091045';
+import { ctx, h, guard, clickSt, toggleDrawer, openSettings, busy, onlineStatus } from './util.js?v=202611091045';
 import { showBookmarksButtons } from '../../../../bookmarks.js';
 
 const NO_CONN_TEXT = '未连接 API — 点此连接';
@@ -76,8 +76,9 @@ export function mount() {
     savedNoConn = ta.getAttribute('no_connection_text');
     ta.setAttribute('no_connection_text', NO_CONN_TEXT);
     if (form.classList.contains('no-connection')) ta.setAttribute('placeholder', NO_CONN_TEXT);
-    on(ta, 'click', () => {
-        if (form.classList.contains('no-connection') && !ta.value) openSettings('api');
+    // isTrusted: ST itself fires a synthetic click on the box after every chat load
+    on(ta, 'click', e => {
+        if (e.isTrusted && form.classList.contains('no-connection') && !ta.value) openSettings('api');
     });
 
     // Island height → --ag2-dock-h: the chat's bottom padding follows a growing island,

@@ -13,10 +13,10 @@
 // Switching uses doNavbarIconClick (util.toggleDrawer) — ST closes the previous unpinned
 // drawer itself; pinned leftovers are closed here. Closing the window closes the drawer.
 
-import { ctx, h, guard, toggleDrawer, SET_PANELS, pageOfPanel } from './util.js?v=202611091000';
-import { icon } from './icons.js?v=202611091000';
-import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=202611091000';
-import { isMenuOpen } from './menu.js?v=202611091000';
+import { ctx, h, guard, toggleDrawer, SET_PANELS, pageOfPanel } from './util.js?v=202611091045';
+import { icon } from './icons.js?v=202611091045';
+import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=202611091045';
+import { isMenuOpen } from './menu.js?v=202611091045';
 
 const PAGES = [
     { id: 'api', name: '连接', icon: 'plug', tile: 'green', group: 0, lead: '选择 API 来源，填写地址、密钥和模型。' },
@@ -135,7 +135,7 @@ let results = [];
 
 const loadSearch = async () => {
     if (!searchMod) {
-        searchMod = await import('./search.js?v=202611091000');
+        searchMod = await import('./search.js?v=202611091045');
         searchMod.init(PAGES.map(({ id, name, lead }) => ({ id, name, lead })));
     }
     return searchMod;
