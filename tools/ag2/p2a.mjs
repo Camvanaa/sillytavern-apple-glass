@@ -347,8 +347,51 @@ async function look(T) {
     return out;
 }
 
+// ---------------------------------------------------------------- themes: switch away from inside 通用 and back
+async function themes(T) {
+    const { page } = await enter(T);
+    const out = {};
+    await page.click('#ag2-sidebar [data-act="settings"]');
+    await waitIdle(T);
+    await clickNav(page, 'look');
+    await waitIdle(T, 600);
+    await page.click('#ag2-settings .ag2-sw[data-accent="purple"]');
+    await page.selectOption('#ag2-meta', 'hide');
+    await clickNav(page, 'user');
+    await waitIdle(T, 900);
+    await page.evaluate(() => { $('#themes').val('Apple Glass Dark').trigger('change'); });
+    await T.sleep(2500);
+    out.dark = await page.evaluate(() => {
+        const u = document.getElementById('user-settings-block');
+        const q = u.getBoundingClientRect();
+        return {
+            bodyAg2: [...document.body.classList].filter(c => c === 'ag2' || c.startsWith('ag2-')),
+            dataAttrs: Object.keys(document.body.dataset).filter(k => k.startsWith('ag2')),
+            inlineVars: [...document.body.style].filter(p => p.startsWith('--ag2')),
+            nodes: [...document.querySelectorAll('[id^="ag2-"], [class*="ag2-"]')].map(e => e.id || e.className).slice(0, 5),
+            userDrawerOpen: u.classList.contains('openDrawer'), userDrawerRect: [q.x, q.y, q.width, q.height].map(Math.round),
+            userDrawerPos: getComputedStyle(u).position,
+        };
+    });
+    out.dark.scan = await T.scan(page, ['#user-settings-block']);
+    await T.shot(page, 'theme-dark-from-window-1440');
+    await page.evaluate(() => { $('#themes').val('Apple Glass 2').trigger('change'); });
+    await T.sleep(3500);
+    const st = await state(page);
+    out.ag2Again = {
+        windowAdopted: st.open && st.page === 'user' && st.panels[0] === '#user-settings-block', panelInWin: inside(st.panel, st.win),
+        ...(await page.evaluate(() => ({ accent: document.body.dataset.ag2Accent, meta: document.body.dataset.ag2Meta }))),
+    };
+    await T.shot(page, 'theme-ag2-adopt-1440');
+    await page.keyboard.press('Escape');
+    await waitIdle(T);
+    out.ag2Again.closed = !(await state(page)).open;
+    out.errors = T.errors(page);
+    return out;
+}
+
 export default async function (T) {
-    const parts = { shots, func, esc, look };
+    const parts = { shots, func, esc, look, themes };
     if (!parts[part]) throw new Error('unknown part ' + part);
     const r = await parts[part](T);
     await T.save(part, r);
