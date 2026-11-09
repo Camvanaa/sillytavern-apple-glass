@@ -13,10 +13,10 @@
 // Switching uses doNavbarIconClick (util.toggleDrawer) — ST closes the previous unpinned
 // drawer itself; pinned leftovers are closed here. Closing the window closes the drawer.
 
-import { ctx, h, guard, toggleDrawer, SET_PANELS, pageOfPanel } from './util.js?v=202611091515';
-import { icon } from './icons.js?v=202611091515';
-import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=202611091515';
-import { isMenuOpen } from './menu.js?v=202611091515';
+import { ctx, h, guard, toggleDrawer, SET_PANELS, pageOfPanel } from './util.js?v=202611091749';
+import { icon } from './icons.js?v=202611091749';
+import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=202611091749';
+import { isMenuOpen } from './menu.js?v=202611091749';
 
 const PAGES = [
     { id: 'api', name: '连接', icon: 'plug', tile: 'green', group: 0, lead: '选择 API 来源，填写地址、密钥和模型。' },
@@ -135,7 +135,7 @@ let results = [];
 
 const loadSearch = async () => {
     if (!searchMod) {
-        searchMod = await import('./search.js?v=202611091515');
+        searchMod = await import('./search.js?v=202611091749');
         searchMod.init(PAGES.map(({ id, name, lead }) => ({ id, name, lead })));
     }
     return searchMod;
@@ -226,6 +226,23 @@ export async function searchAndReveal(q, i = 0) {
 export async function searchIndex(q) {
     const mod = await loadSearch();
     return mod.query(q).map(r => ({ page: r.page, group: r.group || '', label: r.label, kind: r.kind }));
+}
+
+// ---- P4 command palette: same index, same reveal (DESIGN §5.7 “与设置窗口共用同一份索引”)
+/** Page meta for result rows (name, tile colour, icon). */
+export const pageMeta = id => PAGE[id] ? { id, name: PAGE[id].name, icon: PAGE[id].icon, tile: PAGE[id].tile } : null;
+/** Raw results (with element refs) for the palette; `fresh` drops the index first. */
+export async function searchItems(q, max = 12, { fresh = false } = {}) {
+    const mod = await loadSearch();
+    if (fresh) mod.reset();
+    return mod.query(q, max);
+}
+/** Opens the window on the result's page, then scrolls to / flashes the item. */
+export async function revealItem(r) {
+    const mod = await loadSearch();
+    await open(r.page);
+    if (!isOpenNow) return null;
+    return mod.reveal(r, page => go(page), root.querySelector('.ag2-set-body'));
 }
 
 // ------------------------------------------------------------------ sliders: accent fill

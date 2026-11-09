@@ -1,14 +1,15 @@
 // Apple Glass 2 shell — sidebar (DESIGN §5.1, §3; §9.2 #5).
-// Header · search (placeholder until the P4 palette) · segments 对话/角色/群组 ·
+// Header · search (opens the ⌘K command palette, P4) · segments 对话/角色/群组 ·
 // list · footer (connection, persona, settings).
 
-import { icon } from './icons.js?v=202611091515';
-import { openMenu } from './menu.js?v=202611091515';
-import { local, isPinned, setPinned, renamePin, pinList } from './store.js?v=202611091515';
+import { icon } from './icons.js?v=202611091749';
+import { openMenu } from './menu.js?v=202611091749';
+import { local, isPinned, setPinned, renamePin, pinList } from './store.js?v=202611091749';
 import {
     ctx, h, toast, guard, fmtTime, ageDays, summary, stem, thumb, charIndex, toggleDrawer, clickSt,
     openSettings, openEntry, openCharacter, openGroup, renameEntry, deleteEntry, getCurrentChatId, personaAvatar, onlineStatus, isDesktop, setInspector,
-} from './util.js?v=202611091515';
+    openPalette, modKeyLabel, modCombo,
+} from './util.js?v=202611091749';
 
 const SEGMENTS = [['chats', '对话'], ['chars', '角色'], ['groups', '群组']];
 let root = null;
@@ -25,12 +26,12 @@ export function mount(shell, api) {
     root.setAttribute('aria-label', '对话与角色');
     root.innerHTML = `
         <div class="ag2-side-head">
-            <button type="button" class="ag2-ib" data-act="collapse" aria-label="收起侧栏" title="收起侧栏">${icon('panel-left', 18)}</button>
+            <button type="button" class="ag2-ib" data-act="collapse" aria-label="收起侧栏" title="收起侧栏（${modCombo('\\')}）">${icon('panel-left', 18)}</button>
             <div class="ag2-side-title">SillyTavern</div>
             <button type="button" class="ag2-ib" data-act="new" aria-label="新建" title="新建" aria-haspopup="menu">${icon('square-pen', 18)}</button>
         </div>
-        <button type="button" class="ag2-search" data-act="search" aria-label="搜索对话、角色、命令">
-            ${icon('search', 15)}<span class="ag2-search-ph">搜索对话、角色、命令</span><kbd>⌘K</kbd>
+        <button type="button" class="ag2-search" data-act="search" aria-label="搜索对话、角色、命令" aria-haspopup="dialog" aria-keyshortcuts="${modKeyLabel() === '⌘' ? 'Meta+K' : 'Control+K'}">
+            ${icon('search', 15)}<span class="ag2-search-ph">搜索对话、角色、命令</span><kbd>${modKeyLabel()}K</kbd>
         </button>
         <div class="ag2-seg" role="tablist" aria-label="侧栏分段">
             ${SEGMENTS.map(([k, t]) => `<button type="button" role="tab" data-seg="${k}">${t}</button>`).join('')}
@@ -55,7 +56,7 @@ export function mount(shell, api) {
         const act = b.dataset.act;
         if (act === 'collapse') api.setCollapsed(true);
         else if (act === 'new') newMenu(b);
-        else if (act === 'search') toast('info', '命令面板（⌘K）将在后续版本接入');
+        else if (act === 'search') openPalette();             // ⌘K palette (§5.7)
         else if (act === 'conn') openSettings('api');          // 设置 › 连接
         else if (act === 'persona') openSettings('persona');   // 设置 › 人设
         else if (act === 'settings') openSettings(null);       // last page (default 外观)

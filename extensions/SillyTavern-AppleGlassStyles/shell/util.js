@@ -8,7 +8,7 @@ import {
     is_send_press, isChatSaving, getThumbnailUrl, user_avatar, online_status,
 } from '../../../../../script.js';
 import { openGroupById, openGroupChat, deleteGroupChatByName, is_group_generating } from '../../../../group-chats.js';
-import { local } from './store.js?v=202611091515';
+import { local } from './store.js?v=202611091749';
 
 export { doNavbarIconClick, getCurrentChatId, newAssistantChat };
 
@@ -124,6 +124,14 @@ let setMod = null;
 let setLoading = null;
 /** The settings module once it has been loaded (it is never loaded at boot). */
 export const settingsModule = () => setMod;
+/** Imports settings.js (once) without opening the window — the palette searches its index. */
+export async function loadSettings() {
+    if (!setMod) {
+        setLoading ||= import('./settings.js?v=202611091749');
+        try { setMod = await setLoading; } finally { setLoading = null; }
+    }
+    return setMod;
+}
 
 /**
  * Opens the settings window on `page` (null → the open ST panel / last page). The window
@@ -131,13 +139,15 @@ export const settingsModule = () => setMod;
  */
 export async function openSettings(page = null, opt = {}) {
     if (!isDesktop()) return toggleDrawer(SET_PANELS[page] || 'user-settings-block', true);
-    if (!setMod) {
-        setLoading ||= import('./settings.js?v=202611091515');
-        try { setMod = await setLoading; } finally { setLoading = null; }
-    }
+    await loadSettings();
     if (!document.body.classList.contains('ag2')) return false; // shell torn down meanwhile
     return setMod.open(page, opt);
 }
+
+/** Shell-level API set by index.js (sidebar collapse); used by keys.js and the palette. */
+let shellApi = null;
+export const setShellApi = a => { shellApi = a; };
+export const getShellApi = () => shellApi;
 
 // ---------------------------------------------------------------- inspector (§5.6, §9.2 #3)
 // The inspector IS ST's #right-nav-panel (never moved). Open/close goes through ST's own
@@ -151,7 +161,7 @@ let inspLoading = null;
 export const inspectorModule = () => inspMod;
 export async function loadInspector() {
     if (!inspMod) {
-        inspLoading ||= import('./inspector.js?v=202611091515');
+        inspLoading ||= import('./inspector.js?v=202611091749');
         try { inspMod = await inspLoading; } finally { inspLoading = null; }
     }
     if (document.body.classList.contains('ag2')) inspMod.mount();
@@ -179,6 +189,34 @@ export async function setInspector(want, { persist = true } = {}) {
     await toggleDrawer(INSP_ID, want);
     if (!want) restoreInspectorPin();
     return true;
+}
+
+// ---------------------------------------------------------------- command palette (§5.7)
+/** macOS / iOS: ⌘ is the shortcut modifier; elsewhere Ctrl (and the hint reads “Ctrl K”). */
+export const isMac = () => /Mac|iPhone|iPad|iPod/i.test(navigator.userAgentData?.platform || navigator.platform || navigator.userAgent || '');
+export const modKeyLabel = () => (isMac() ? '⌘' : 'Ctrl ');
+/** “⌘.” / “Ctrl+.” for titles and hints. */
+export const modCombo = k => (isMac() ? '⌘' : 'Ctrl+') + k;
+let palMod = null;
+let palLoading = null;
+export const paletteModule = () => palMod;
+/** Opens the ⌘K palette; palette.js is imported on first use only (not at cold start). */
+export async function openPalette(opt = {}) {
+    if (!palMod) {
+        palLoading ||= import('./palette.js?v=202611091749');
+        try { palMod = await palLoading; } finally { palLoading = null; }
+    }
+    if (!document.body.classList.contains('ag2')) return false; // shell torn down meanwhile
+    return palMod.open(opt);
+}
+
+/** ST layers that own Esc while they are up (popups, message editor, select2 …). */
+export function stLayerUp() {
+    const vis = sel => { try { return $(sel).is(':visible'); } catch { return false; } };
+    return [...document.querySelectorAll('dialog[open]')].some(d => d.id !== 'ag2-palette')
+        || !!document.querySelector('.select2-container--open')
+        || vis('#shadow_popup') || vis('#dialogue_popup') || vis('#character_popup')
+        || vis('#select_chat_popup') || vis('#curEditTextarea') || vis('#dialogue_del_mes_cancel');
 }
 
 export function clickSt(selector) {

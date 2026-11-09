@@ -1,10 +1,10 @@
 // Apple Glass 2 shell — title capsule, tool capsule, welcome page (DESIGN §5.2, §5.10).
 
-import { icon } from './icons.js?v=202611091515';
-import { openMenu } from './menu.js?v=202611091515';
-import { ctx, h, guard, thumb, fmtTime, clickSt, openEntry, openSettings, newAssistantChat, setInspector } from './util.js?v=202611091515';
+import { icon } from './icons.js?v=202611091749';
+import { openMenu } from './menu.js?v=202611091749';
+import { ctx, h, guard, thumb, fmtTime, clickSt, openEntry, openSettings, newAssistantChat, setInspector, modCombo } from './util.js?v=202611091749';
 import { showBookmarksButtons } from '../../../../bookmarks.js';
-import { getRecent, isLoaded, openRightMenu, row, rowKeys } from './sidebar.js?v=202611091515';
+import { getRecent, isLoaded, openRightMenu, row, rowKeys } from './sidebar.js?v=202611091749';
 
 let title = null, tools = null, welcome = null;
 let generating = false;
@@ -14,7 +14,7 @@ export function mount(shell, api) {
     title = guard(h('div', 'ag2-cap ag2-glass-float ag2-title-cap'));
     title.id = 'ag2-title';
     title.innerHTML = `
-        <button type="button" class="ag2-ib ag2-expand" data-act="expand" aria-label="展开侧栏" title="展开侧栏">${icon('panel-left', 18)}</button>
+        <button type="button" class="ag2-ib ag2-expand" data-act="expand" aria-label="展开侧栏" title="展开侧栏（${modCombo('\\')}）">${icon('panel-left', 18)}</button>
         <div class="ag2-title-btn" role="button" tabindex="0" data-act="title" aria-haspopup="menu" aria-label="对话菜单">
             <span class="ag2-title-av"></span>
             <span class="ag2-title-text"><span class="ag2-title-name"></span><span class="ag2-title-sub"></span></span>
@@ -34,7 +34,7 @@ export function mount(shell, api) {
         <button type="button" class="ag2-tool" data-act="wi" title="世界书">${icon('book-open', 15)}<span>世界书</span><i class="ag2-badge"></i></button>
         <button type="button" class="ag2-tool" data-act="an" title="作者注释">${icon('notebook-pen', 15)}<span>作者注释</span><i class="ag2-badge"></i></button>
         <span class="ag2-cap-sep"></span>
-        <button type="button" class="ag2-ib ag2-insp-toggle" data-act="insp" aria-label="检视器" aria-pressed="false" title="检视器">${icon('panel-right', 18)}</button>`;
+        <button type="button" class="ag2-ib ag2-insp-toggle" data-act="insp" aria-label="检视器" aria-pressed="false" title="检视器（${modCombo('.')}）">${icon('panel-right', 18)}</button>`;
     tools.addEventListener('click', e => {
         const b = e.target.closest('[data-act]');
         if (!b) return;

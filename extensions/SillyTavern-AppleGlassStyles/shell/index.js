@@ -7,15 +7,16 @@
 // class and listener it added and reloads the current chat.
 // Any exception during enable → automatic teardown + one toastr.
 
-export const BUILD = '202611091515';
+export const BUILD = '202611091749';
 
-import { local, importStPinsOnce, applyAppearance, clearAppearance } from './store.js?v=202611091515';
-import { ctx, h, toggleDrawer, SET_PANELS, settingsModule, openSettings, isDesktop, INSP_ID, inspectorModule, loadInspector, setInspector } from './util.js?v=202611091515';
-import { closeMenu } from './menu.js?v=202611091515';
-import * as sidebar from './sidebar.js?v=202611091515';
-import * as chrome from './chrome.js?v=202611091515';
-import * as reading from './reading.js?v=202611091515';
-import * as composer from './composer.js?v=202611091515';
+import { local, importStPinsOnce, applyAppearance, clearAppearance } from './store.js?v=202611091749';
+import { ctx, h, toggleDrawer, SET_PANELS, settingsModule, openSettings, isDesktop, INSP_ID, inspectorModule, loadInspector, setInspector, setShellApi, paletteModule } from './util.js?v=202611091749';
+import { closeMenu } from './menu.js?v=202611091749';
+import * as sidebar from './sidebar.js?v=202611091749';
+import * as chrome from './chrome.js?v=202611091749';
+import * as reading from './reading.js?v=202611091749';
+import * as composer from './composer.js?v=202611091749';
+import * as keys from './keys.js?v=202611091749';
 
 const BODY_CLASSES = ['ag2', 'ag2-welcome', 'ag2-side-collapsed', 'ag2-ready', 'ag2-wand-open', 'ag2-set-open', 'ag2-insp-open'];
 let on = false;
@@ -65,10 +66,11 @@ function fail(e) {
 }
 
 const api = {
-    setCollapsed(v) {
+    /** focus: move focus to the counterpart button (clicks); the ⌘\ shortcut keeps it. */
+    setCollapsed(v, { focus = true } = {}) {
         document.body.classList.toggle('ag2-side-collapsed', !!v);
         local.set('sidebar', v ? 'collapsed' : 'open');
-        (v ? document.querySelector('#ag2-title .ag2-expand') : document.querySelector('#ag2-sidebar [data-act="collapse"]'))?.focus?.({ preventScroll: true });
+        if (focus) (v ? document.querySelector('#ag2-title .ag2-expand') : document.querySelector('#ag2-sidebar [data-act="collapse"]'))?.focus?.({ preventScroll: true });
     },
 };
 
@@ -91,6 +93,8 @@ export function enable({ appReady = false } = {}) {
         shell.id = 'ag2-shell';
         shell.dataset.build = BUILD;
         document.body.append(shell);
+        setShellApi(api);
+        keys.mount(); // ⌘K / ⌘\ / ⌘. / Esc layers (§8); the palette module loads on first use
         sidebar.mount(shell, api);
         chrome.mount(shell, api);
         composer.mount();
@@ -255,6 +259,9 @@ export function disable({ reload = true } = {}) {
     timers = [];
     if (decorateRaf) cancelAnimationFrame(decorateRaf);
     decorateRaf = 0;
+    try { keys.unmount(); } catch { /* */ }
+    try { paletteModule()?.unmount(); } catch { /* */ }
+    setShellApi(null);
     try { closeMenu(); } catch { /* */ }
     try { settingsModule()?.unmount(); } catch { /* */ }
     try { inspectorModule()?.unmount(); } catch { /* */ }

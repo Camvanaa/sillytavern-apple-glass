@@ -2796,16 +2796,16 @@ html body.ag2:not(#_):not(#__) #ag2-settings .ag2-tile {
     box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.25);
 }
 
-html body.ag2:not(#_):not(#__) #ag2-settings .ag2-tile svg { stroke-width: 2; }
-html body.ag2 #ag2-settings .ag2-tile-blue { background: linear-gradient(180deg, #3d9bff, #0a6fe0); }
-html body.ag2 #ag2-settings .ag2-tile-purple { background: linear-gradient(180deg, #c97bf5, #9b3fd6); }
-html body.ag2 #ag2-settings .ag2-tile-orange { background: linear-gradient(180deg, #ffb340, #f08400); }
-html body.ag2 #ag2-settings .ag2-tile-green { background: linear-gradient(180deg, #4cdc72, #22a845); }
-html body.ag2 #ag2-settings .ag2-tile-pink { background: linear-gradient(180deg, #ff6482, #e0274d); }
-html body.ag2 #ag2-settings .ag2-tile-teal { background: linear-gradient(180deg, #5ad4ea, #1fa3bd); }
-html body.ag2 #ag2-settings .ag2-tile-indigo { background: linear-gradient(180deg, #7d7bf0, #4644c9); }
-html body.ag2 #ag2-settings .ag2-tile-gray { background: linear-gradient(180deg, #a1a1a8, #6d6d73); }
-html body.ag2 #ag2-settings .ag2-tile-red { background: linear-gradient(180deg, #ff6b62, #e0352b); }
+html body.ag2:not(#_):not(#__) :is(#ag2-settings, #ag2-palette) .ag2-tile svg { stroke-width: 2; }
+html body.ag2 :is(#ag2-settings, #ag2-palette) .ag2-tile-blue { background: linear-gradient(180deg, #3d9bff, #0a6fe0); }
+html body.ag2 :is(#ag2-settings, #ag2-palette) .ag2-tile-purple { background: linear-gradient(180deg, #c97bf5, #9b3fd6); }
+html body.ag2 :is(#ag2-settings, #ag2-palette) .ag2-tile-orange { background: linear-gradient(180deg, #ffb340, #f08400); }
+html body.ag2 :is(#ag2-settings, #ag2-palette) .ag2-tile-green { background: linear-gradient(180deg, #4cdc72, #22a845); }
+html body.ag2 :is(#ag2-settings, #ag2-palette) .ag2-tile-pink { background: linear-gradient(180deg, #ff6482, #e0274d); }
+html body.ag2 :is(#ag2-settings, #ag2-palette) .ag2-tile-teal { background: linear-gradient(180deg, #5ad4ea, #1fa3bd); }
+html body.ag2 :is(#ag2-settings, #ag2-palette) .ag2-tile-indigo { background: linear-gradient(180deg, #7d7bf0, #4644c9); }
+html body.ag2 :is(#ag2-settings, #ag2-palette) .ag2-tile-gray { background: linear-gradient(180deg, #a1a1a8, #6d6d73); }
+html body.ag2 :is(#ag2-settings, #ag2-palette) .ag2-tile-red { background: linear-gradient(180deg, #ff6b62, #e0352b); }
 
 /* --- page: head (title 21/720 + lead 13/l3) + body (shell pages only) --- */
 html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-page {
@@ -5022,6 +5022,247 @@ html body.ag2.ag2-insp-open {
     html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel .group_pagination {
         font-size: 12px !important;
     }
+}
+
+/* == 5.7 · Command palette (§5.7, design 04b) == */
+/* Native <dialog id="ag2-palette"> opened with showModal(): it lives in the top layer, so no
+   z-index is needed and it sits above ST's z-3005 panels and old-style popups (§9.2 #10).
+   Material = window material (one blur layer; the backdrop dims without blur). */
+
+html body.ag2:not(#_):not(#__) #ag2-palette {
+    position: fixed;
+    inset: clamp(56px, 13vh, 120px) 0 auto 0;
+    display: none;
+    flex-direction: column;
+    width: min(640px, calc(100vw - 24px));
+    max-width: none;
+    max-height: min(560px, calc(100dvh - clamp(56px, 13vh, 120px) - 24px));
+    margin: 0 auto;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    border-radius: var(--ag2-r-panel);
+    background: var(--ag2-mat-window);
+    -webkit-backdrop-filter: var(--ag2-blur-window);
+    backdrop-filter: var(--ag2-blur-window);
+    box-shadow: var(--ag2-rim), var(--ag2-sh3);
+    color: var(--ag2-l1);
+    font: var(--ag2-fs-body) / 1.4 var(--ag2-font);
+    animation: ag2-pop var(--ag2-dur) var(--ag2-ease);
+}
+
+html body.ag2:not(#_):not(#__) #ag2-palette[open] {
+    display: flex;
+}
+
+/* dim only: a second full-screen blur would exceed the §7 budget */
+html body.ag2 #ag2-palette::backdrop {
+    background: rgba(0, 0, 0, 0.32);
+}
+
+/* --- field row: icon · input · esc --- */
+html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-field {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 10px;
+    height: 54px;
+    padding: 0 16px 0 18px;
+    border-bottom: 0.5px solid var(--ag2-sep);
+    color: var(--ag2-l3);
+}
+
+/* ST styles every input (font, colour) and AG2 resets text_pole: undo both here */
+html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0 !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    color: var(--ag2-l1) !important;
+    font: 400 18px/1.2 var(--ag2-font) !important;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-input::placeholder {
+    color: var(--ag2-l3);
+}
+
+/* ST's global kbd is a light keycap; the palette's are dark chips (as in the sidebar) */
+html body.ag2:not(#_):not(#__) #ag2-palette kbd {
+    display: inline-block;
+    min-width: 18px;
+    margin: 0 2px 0 0;
+    padding: 1px 5px;
+    border: 0;
+    border-radius: 5px;
+    background: var(--ag2-f4);
+    box-shadow: inset 0 0 0 0.5px var(--ag2-sep-strong);
+    color: var(--ag2-l2);
+    font: 600 11px/16px var(--ag2-font);
+    text-align: center;
+}
+
+/* --- results --- */
+html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 4px 8px 8px;
+    overflow: hidden auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-head {
+    padding: 12px 12px 5px;
+    color: var(--ag2-l3);
+    font-size: var(--ag2-fs-section);
+    font-weight: 620;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-row {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-height: 40px;
+    padding: 5px 10px;
+    border-radius: var(--ag2-r-row);
+    cursor: pointer;
+    user-select: none;
+}
+
+/* selected row: whole row in the accent colour (§5.7) */
+html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-row.ag2-sel {
+    background: var(--ag2-accent);
+    color: #fff;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-tile,
+html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-av {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    color: #fff;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-tile {
+    box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.25);
+}
+
+html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-tile svg {
+    stroke-width: 2;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-av {
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--ag2-f3);
+}
+
+html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-txt {
+    display: flex;
+    flex: 1;
+    align-items: baseline;
+    gap: 9px;
+    min-width: 0;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-title {
+    flex: none;
+    max-width: 62%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-sub {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--ag2-l3);
+    font-size: var(--ag2-fs-foot);
+}
+
+/* matched characters: bold + underlined (§5.7) */
+html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-m {
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 2.5px;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-hint {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    color: var(--ag2-l3);
+}
+
+/* ↵ glyph only on the selected row */
+html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-enter {
+    display: none;
+    flex: none;
+    place-items: center;
+    width: 22px;
+    height: 18px;
+    border-radius: 5px;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+}
+
+html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-row.ag2-sel .ag2-pal-enter {
+    display: grid;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-row.ag2-sel :is(.ag2-pal-sub, .ag2-pal-hint) {
+    color: rgba(255, 255, 255, 0.78);
+}
+
+html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-row.ag2-sel kbd {
+    background: rgba(255, 255, 255, 0.18);
+    box-shadow: none;
+    color: #fff;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-empty {
+    padding: 28px 12px;
+    color: var(--ag2-l3);
+    text-align: center;
+}
+
+/* --- footer: key hints · scope --- */
+html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-foot {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 14px;
+    height: 38px;
+    padding: 0 16px;
+    border-top: 0.5px solid var(--ag2-sep);
+    color: var(--ag2-l3);
+    font-size: var(--ag2-fs-foot);
+    white-space: nowrap;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-scope {
+    margin-left: auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* narrow screens: the footer keeps the key hints only */
+@media (max-width: 560px) {
+    html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-scope { display: none; }
+    html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-title { max-width: 100%; }
+    html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-sub { display: none; }
 }
 
 /* == 13 · Ported fixes (apple-theme.css §15m, §19b, §17a) == */
