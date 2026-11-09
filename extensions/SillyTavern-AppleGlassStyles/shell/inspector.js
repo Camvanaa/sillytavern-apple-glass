@@ -14,11 +14,11 @@
 // group_edit of the open group. Anything else → ask ST to re-select (its own
 // #rm_button_selected_ch) and show a neutral placeholder meanwhile.
 
-import { icon } from './icons.js?v=202611091859';
-import { openMenu, closeMenu } from './menu.js?v=202611091859';
-import { local } from './store.js?v=202611091859';
-import { ctx, h, guard, clickSt, isDesktop, INSP_ID, setInspector, restoreInspectorPin, getCurrentChatId, summary, toDate } from './util.js?v=202611091859';
-import { guarded } from './index.js?v=202611091859';
+import { icon } from './icons.js?v=202611092036';
+import { openMenu, closeMenu } from './menu.js?v=202611092036';
+import { local } from './store.js?v=202611092036';
+import { ctx, h, guard, clickSt, isDesktop, INSP_ID, setInspector, restoreInspectorPin, getCurrentChatId, summary, toDate } from './util.js?v=202611092036';
+import { guarded } from './index.js?v=202611092036';
 import { openGroupId } from '../../../../group-chats.js';
 
 let panel = null;
@@ -185,7 +185,8 @@ export function unmount() {
 /** Follows ST's `.openDrawer` on the panel (called by index.js's drawer observer too). */
 export function sync() {
     if (!mounted) return;
-    const open = panel.classList.contains('openDrawer') && isDesktop();
+    // both layouts: desktop column / floating panel, phone full-screen sheet (§5.9)
+    const open = panel.classList.contains('openDrawer');
     document.body.classList.toggle('ag2-insp-open', open);
     if (open) panel.classList.add('pinnedOpen');
     const t = document.querySelector('#ag2-tools [data-act="insp"]');
@@ -325,7 +326,7 @@ function renderChat(c) {
 }
 
 // ------------------------------------------------------------------ actions
-function setSeg(s) {
+export function setSeg(s) {
     seg = s === 'chat' ? 'chat' : 'main';
     local.set('inspSeg', seg);
     render();

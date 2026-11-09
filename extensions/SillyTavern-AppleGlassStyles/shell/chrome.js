@@ -1,10 +1,10 @@
 // Apple Glass 2 shell — title capsule, tool capsule, welcome page (DESIGN §5.2, §5.10).
 
-import { icon } from './icons.js?v=202611091859';
-import { openMenu } from './menu.js?v=202611091859';
-import { ctx, h, guard, thumb, fmtTime, clickSt, openEntry, openSettings, newAssistantChat, setInspector, modCombo } from './util.js?v=202611091859';
+import { icon } from './icons.js?v=202611092036';
+import { openMenu } from './menu.js?v=202611092036';
+import { ctx, h, guard, thumb, fmtTime, clickSt, openEntry, openSettings, newAssistantChat, setInspector, modCombo, isPhone } from './util.js?v=202611092036';
 import { showBookmarksButtons } from '../../../../bookmarks.js';
-import { getRecent, isLoaded, openRightMenu, row, rowKeys } from './sidebar.js?v=202611091859';
+import { getRecent, isLoaded, openRightMenu, row, rowKeys } from './sidebar.js?v=202611092036';
 
 let title = null, tools = null, welcome = null;
 let generating = false;
@@ -24,6 +24,7 @@ export function mount(shell, api) {
         const b = e.target.closest('[data-act]');
         if (!b) return;
         if (b.dataset.act === 'expand') api.setCollapsed(false);
+        else if (isPhone()) setInspector(true); // phones: the title opens 角色资料 (§5.9)
         else titleMenu(b);
     });
 
@@ -87,6 +88,11 @@ export function setGenerating(on) {
 const stShown = id => { const el = document.getElementById(id); return !!el && el.style.display !== 'none' && !el.classList.contains('displayNone'); };
 
 function titleMenu(anchor) {
+    openMenu(anchor, chatMenuItems());
+}
+
+/** The title menu's items (desktop title capsule; the phone ⋯ menu reuses them, §5.9). */
+export function chatMenuItems() {
     const c = ctx();
     const inChat = c.characterId !== undefined || !!c.groupId;
     // Checkpoint / back to main / convert to group follow ST's own rules (bookmarks.js §9.2 #6).
@@ -94,7 +100,7 @@ function titleMenu(anchor) {
     const bm = inChat && stShown('option_new_bookmark');
     const back = inChat && stShown('option_back_to_main');
     const conv = inChat && !c.groupId && stShown('option_convert_to_group');
-    openMenu(anchor, [
+    return [
         { id: 'select', label: '切换聊天文件…', icon: 'history', disabled: !inChat, onSelect: () => clickSt('#option_select_chat') },
         { id: 'new', label: '新对话', icon: 'message-square-text', disabled: !inChat, onSelect: () => clickSt('#option_start_new_chat') },
         bm && { id: 'checkpoint', label: '创建检查点', icon: 'flag', onSelect: () => clickSt('#option_new_bookmark') },
@@ -102,7 +108,7 @@ function titleMenu(anchor) {
         conv && { id: 'group', label: '转为群聊', icon: 'users', onSelect: () => clickSt('#option_convert_to_group') },
         { separator: true },
         { id: 'close', label: '关闭对话', icon: 'x', onSelect: () => clickSt('#option_close_chat') },
-    ]);
+    ];
 }
 
 function charWorld(c) {

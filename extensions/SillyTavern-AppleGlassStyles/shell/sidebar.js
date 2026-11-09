@@ -2,14 +2,14 @@
 // Header · search (opens the ⌘K command palette, P4) · segments 对话/角色/群组 ·
 // list · footer (connection, persona, settings).
 
-import { icon } from './icons.js?v=202611091859';
-import { openMenu } from './menu.js?v=202611091859';
-import { local, isPinned, setPinned, renamePin, pinList } from './store.js?v=202611091859';
+import { icon } from './icons.js?v=202611092036';
+import { openMenu } from './menu.js?v=202611092036';
+import { local, isPinned, setPinned, renamePin, pinList } from './store.js?v=202611092036';
 import {
     ctx, h, toast, guard, fmtTime, ageDays, summary, stem, thumb, charIndex, toggleDrawer, clickSt,
     openSettings, openEntry, openCharacter, openGroup, renameEntry, deleteEntry, getCurrentChatId, personaAvatar, onlineStatus, isDesktop, setInspector,
     openPalette, modKeyLabel, modCombo,
-} from './util.js?v=202611091859';
+} from './util.js?v=202611092036';
 
 const SEGMENTS = [['chats', '对话'], ['chars', '角色'], ['groups', '群组']];
 let root = null;
@@ -65,6 +65,7 @@ export function mount(shell, api) {
     });
     root.querySelector('.ag2-side-list').addEventListener('click', onListClick);
     root.querySelector('.ag2-side-list').addEventListener('contextmenu', onListContext);
+    longPress(root.querySelector('.ag2-side-list'));
     rowKeys(root.querySelector('.ag2-side-list'));
 
     setSegment(local.get('seg', 'chats'), true);
@@ -78,11 +79,11 @@ export function unmount() {
     loaded = false;
 }
 
-function segment() {
+export function segment() {
     return root?.dataset.segment || 'chats';
 }
 
-function setSegment(seg, silent) {
+export function setSegment(seg, silent) {
     if (!SEGMENTS.some(([k]) => k === seg)) seg = 'chats';
     root.dataset.segment = seg;
     for (const b of root.querySelectorAll('[data-seg]')) {
@@ -108,8 +109,7 @@ function newMenu(anchor) {
 
 /** Character create / group create live in ST's right panel (the P3 inspector); open it first. */
 export async function openRightMenu(buttonSel) {
-    if (isDesktop()) await setInspector(true);
-    else await toggleDrawer('right-nav-panel', true);
+    await setInspector(true); // desktop panel / phone sheet (§5.9)
     clickSt(buttonSel);
 }
 
@@ -337,13 +337,57 @@ async function onListClick(ev) {
     }
 }
 
+/**
+ * Touch long-press = the context menu (§5.9). iOS Safari never fires `contextmenu` for a long
+ * press; Android Chrome does, so whichever comes first wins and the other is ignored. The
+ * click that follows the release is swallowed (it would open the chat under the menu).
+ */
+let pressAt = 0;
+function longPress(list) {
+    let timer = 0, start = null, fired = false;
+    const cancel = () => { clearTimeout(timer); timer = 0; start = null; };
+    list.addEventListener('pointerdown', e => {
+        if (e.pointerType !== 'touch') return;
+        const row = e.target.closest('.ag2-chat-row');
+        if (!row) return;
+        fired = false;
+        start = { x: e.clientX, y: e.clientY };
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            timer = 0;
+            if (Date.now() - pressAt < 800) return; // the native contextmenu already opened it
+            fired = true;
+            pressAt = Date.now();
+            showRowMenu(row, start);
+        }, 480);
+    });
+    list.addEventListener('pointermove', e => {
+        if (start && Math.hypot(e.clientX - start.x, e.clientY - start.y) > 10) cancel();
+    });
+    for (const t of ['pointerup', 'pointercancel', 'scroll']) list.addEventListener(t, cancel, { passive: true });
+    list.addEventListener('click', e => {
+        if (!fired) return;
+        fired = false;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+    }, true);
+}
+
 function onListContext(ev) {
     const row = ev.target.closest('.ag2-chat-row');
     if (!row) return;
     ev.preventDefault();
+    if (ev.pointerType === 'touch') { // Android's long-press contextmenu
+        if (Date.now() - pressAt < 800) return; // the touch long-press already opened it
+        pressAt = Date.now();
+    }
+    showRowMenu(row, ev.clientX || ev.clientY ? { x: ev.clientX, y: ev.clientY } : null);
+}
+
+function showRowMenu(row, point) {
     const e = recent[Number(row.dataset.idx)];
     if (!e) return;
-    const at = ev.clientX || ev.clientY ? { x: ev.clientX, y: ev.clientY } : row;
+    const at = point || row;
     openMenu(at, [
         { id: 'pin', label: e.pinned ? '取消置顶' : '置顶', icon: 'pin', onSelect: () => { setPinned(e, !e.pinned); e.pinned = !e.pinned; render(); } },
         { id: 'rename', label: '重命名…', icon: 'pencil', onSelect: () => rename(e) },

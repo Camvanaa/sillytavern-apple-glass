@@ -12,11 +12,17 @@
 // State follows ST: the current page is whichever of the eight drawers has .openDrawer.
 // Switching uses doNavbarIconClick (util.toggleDrawer) — ST closes the previous unpinned
 // drawer itself; pinned leftovers are closed here. Closing the window closes the drawer.
+//
+// Phones (≤1000px, §5.9): the same frame is a bottom sheet (.ag2-set-phone) with two levels —
+// root[data-level=list]: iOS-style list (title 设置 · 完成, search, persona row, groups);
+// root[data-level=page]: one page pushed over it, head “‹ 设置” + title; an ST drawer fills
+// the sheet below the head (same CSS variables as the window). Drag the grabber / head down
+// to dismiss.
 
-import { ctx, h, guard, toggleDrawer, SET_PANELS, pageOfPanel } from './util.js?v=202611091859';
-import { icon } from './icons.js?v=202611091859';
-import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=202611091859';
-import { isMenuOpen } from './menu.js?v=202611091859';
+import { ctx, h, guard, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar } from './util.js?v=202611092036';
+import { icon } from './icons.js?v=202611092036';
+import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=202611092036';
+import { isMenuOpen } from './menu.js?v=202611092036';
 
 const PAGES = [
     { id: 'api', name: '连接', icon: 'plug', tile: 'green', group: 0, lead: '选择 API 来源，填写地址、密钥和模型。' },
@@ -48,6 +54,7 @@ let queue = Promise.resolve();
 let closeTimer = 0;
 let opener = null;
 let version = '';
+let phoneMode = false; // the sheet form, fixed for one open (a width change closes it)
 const stEvents = [];
 
 export const isOpen = () => isOpenNow;
@@ -78,13 +85,19 @@ function build() {
             </button>`).join('') + '</div>';
     }
     root.innerHTML = `
+        <div class="ag2-set-grab" aria-hidden="true"></div>
         <nav class="ag2-set-nav" aria-label="设置分类">
+            <div class="ag2-set-phead"><span class="ag2-set-ptitle">设置</span><button type="button" class="ag2-set-done">完成</button></div>
             <label class="ag2-set-search">${icon('search', 15)}<input type="search" placeholder="搜索设置" aria-label="搜索设置" aria-controls="ag2-set-results" autocomplete="off" spellcheck="false"></label>
             <div class="ag2-set-results" id="ag2-set-results" role="list" aria-label="搜索结果" hidden></div>
+            <button type="button" class="ag2-set-me" data-page="persona" aria-label="人设">
+                <img class="ag2-av" alt="" draggable="false"><span class="ag2-set-me-t"><span class="ag2-set-me-name"></span><span class="ag2-set-me-sub">当前人设</span></span>${icon('chevron-right', 16, 'ag2-set-chev')}
+            </button>
             ${groups}
         </nav>
         <div class="ag2-set-page">
             <header class="ag2-set-head">
+                <button type="button" class="ag2-set-back" aria-label="返回设置">${icon('chevron-left', 22)}<span>设置</span></button>
                 <div class="ag2-set-titles"><h1 id="ag2-set-title"></h1><p class="ag2-set-lead"></p></div>
                 <button type="button" class="ag2-set-close" aria-label="关闭设置" title="关闭（Esc）">${icon('x', 17)}</button>
                 <nav class="ag2-anchors" aria-label="页内跳转" hidden></nav>
@@ -97,6 +110,9 @@ function build() {
     });
     root.querySelector('.ag2-set-nav').addEventListener('keydown', onNavKey);
     root.querySelector('.ag2-set-close').addEventListener('click', () => close());
+    root.querySelector('.ag2-set-done').addEventListener('click', () => close());
+    root.querySelector('.ag2-set-back').addEventListener('click', () => list({ focus: true }));
+    for (const sel of ['.ag2-set-grab', '.ag2-set-phead', '.ag2-set-head']) dragDismiss(root.querySelector(sel));
     // Cross-page search (P2b): search.js + its index load on the first keystroke.
     const q = root.querySelector('.ag2-set-search input');
     q.addEventListener('input', e => onSearch(e.target.value));
@@ -135,7 +151,7 @@ let results = [];
 
 const loadSearch = async () => {
     if (!searchMod) {
-        searchMod = await import('./search.js?v=202611091859');
+        searchMod = await import('./search.js?v=202611092036');
         searchMod.init(PAGES.map(({ id, name, lead }) => ({ id, name, lead })));
     }
     return searchMod;
@@ -409,6 +425,11 @@ function updateNavStatus() {
     if (ev) { ev.textContent = ext ? String(ext) : ''; ev.classList.toggle('ag2-set-badge', !!ext); }
     set('about', version);
     if (!version) fetchVersion();
+    if (phoneMode) { // persona row (phone list, design 05)
+        const me = root.querySelector('.ag2-set-me');
+        me.querySelector('img').src = thumb('persona', personaAvatar());
+        me.querySelector('.ag2-set-me-name').textContent = ctx().name1 || '人设';
+    }
 }
 
 async function fetchVersion() {
@@ -431,13 +452,18 @@ async function fetchVersion() {
  */
 export function open(page = null) {
     if (!root) build();
+    const phone = isOpenNow ? phoneMode : isPhone();
     if (!PAGE[page]) {
         const adopt = openPanels();
-        page = adopt.length ? pageOfPanel(adopt[adopt.length - 1]) : local.get('setPage', 'look');
-        if (!PAGE[page]) page = 'look';
+        // phones open on the list level unless a drawer is being adopted
+        page = adopt.length ? pageOfPanel(adopt[adopt.length - 1]) : (phone ? null : local.get('setPage', 'look'));
+        if (!PAGE[page] && !phone) page = 'look';
     }
     if (!isOpenNow) {
         isOpenNow = true;
+        phoneMode = phone;
+        root.classList.toggle('ag2-set-phone', phone);
+        root.dataset.level = 'list';
         opener = document.activeElement instanceof HTMLElement && !root.contains(document.activeElement) ? document.activeElement : null;
         document.body.classList.add('ag2-set-open');
         dim.hidden = false;
@@ -448,7 +474,61 @@ export function open(page = null) {
         document.addEventListener('change', onPanelInput, true);
         updateNavStatus();
     }
+    if (!PAGE[page]) return list({ focus: true });
     return go(page, { focus: true });
+}
+
+/** Phone sheet: back to the list level (closes the page's ST drawer). Serialised like go(). */
+export function list(opt = {}) {
+    queue = queue.then(() => listNow(opt)).catch(e => console.error('[AG2] settings list failed', e));
+    return queue;
+}
+
+async function listNow({ focus = false } = {}) {
+    if (!isOpenNow) return;
+    const was = cur;
+    clearTimeout(closeTimer);
+    switching++;
+    try {
+        root.dataset.level = 'list';
+        searchMod?.clearHit();
+        detachSpy();
+        delete document.body.dataset.ag2Anchors;
+        for (const id of openPanels()) await toggleDrawer(id, false);
+        renderBody(null);
+        cur = null;
+        delete document.body.dataset.ag2Set;
+        root.classList.remove('ag2-set-st');
+        for (const b of root.querySelectorAll('.ag2-set-item')) { b.classList.remove('ag2-on'); b.removeAttribute('aria-current'); }
+    } finally {
+        switching--;
+    }
+    if (focus) (root.querySelector(`.ag2-set-nav [data-page="${was}"]`) || root.querySelector('.ag2-set-done'))?.focus({ preventScroll: true });
+}
+
+/** Phone sheet: drag the grabber / a head down to dismiss (both sheet and drawer follow). */
+function dragDismiss(handle) {
+    handle?.addEventListener('pointerdown', e => {
+        if (!phoneMode || e.button > 0 || e.target.closest('button, input, a, select, textarea')) return;
+        const y0 = e.clientY;
+        const t0 = performance.now();
+        let dy = 0;
+        const style = document.body.style;
+        document.body.classList.add('ag2-sheet-drag');
+        const move = ev => { dy = Math.max(0, ev.clientY - y0); style.setProperty('--ag2-sheet-dy', dy + 'px'); };
+        const up = () => {
+            window.removeEventListener('pointermove', move);
+            window.removeEventListener('pointerup', up);
+            window.removeEventListener('pointercancel', up);
+            document.body.classList.remove('ag2-sheet-drag');
+            style.removeProperty('--ag2-sheet-dy');
+            const v = dy / Math.max(1, performance.now() - t0); // px/ms
+            if (dy > 120 || (dy > 40 && v > 0.6)) close();
+        };
+        window.addEventListener('pointermove', move);
+        window.addEventListener('pointerup', up);
+        window.addEventListener('pointercancel', up);
+    });
 }
 
 /** Serialised: ST's drawer switch waits animation_duration, so clicks queue up instead of racing. */
@@ -463,6 +543,7 @@ async function goNow(page, { focus = false } = {}) {
     clearTimeout(closeTimer);
     switching++;
     try {
+        if (phoneMode) root.dataset.level = 'page'; // pushed over the list (§5.9)
         setCurrent(page);
         searchMod?.clearHit();
         if (p.panel) {
@@ -479,7 +560,7 @@ async function goNow(page, { focus = false } = {}) {
     } finally {
         switching--;
     }
-    if (focus) root.querySelector(`.ag2-set-item[data-page="${page}"]`)?.focus({ preventScroll: true });
+    if (focus) root.querySelector(phoneMode ? '.ag2-set-back' : `.ag2-set-item[data-page="${page}"]`)?.focus({ preventScroll: true });
 }
 
 function setCurrent(page) {
@@ -512,7 +593,9 @@ export function sync(id, opened) {
     if (!PAGE[cur]?.panel || id !== PAGE[cur].panel) return;
     clearTimeout(closeTimer);
     closeTimer = setTimeout(() => {
-        if (isOpenNow && !switching && PAGE[cur]?.panel && !openPanels().length) close();
+        if (isOpenNow && !switching && PAGE[cur]?.panel && !openPanels().length) {
+            if (phoneMode) list(); else close(); // phones: back to the sheet's list
+        }
     }, 450);
 }
 
@@ -531,10 +614,11 @@ export async function close() {
     // CSS still positions them, so nothing flashes at ST's default drawer spot.
     const ids = openPanels();
     const pending = ids.map(id => toggleDrawer(id, false));
-    document.body.classList.remove('ag2-set-open');
+    document.body.classList.remove('ag2-set-open', 'ag2-sheet-drag');
     delete document.body.dataset.ag2Set;
     dim.hidden = true;
     root.hidden = true;
+    root.dataset.level = 'list';
     clearSearch();
     await Promise.all(pending);
     if (opener?.isConnected) opener.focus({ preventScroll: true });
@@ -555,7 +639,8 @@ export function unmount() {
     delete document.body.dataset.ag2Anchors;
     try { const { eventSource } = ctx(); for (const [t, fn] of stEvents) eventSource.removeListener(t, fn); } catch { /* */ }
     stEvents.length = 0;
-    document.body.classList.remove('ag2-set-open');
+    document.body.classList.remove('ag2-set-open', 'ag2-sheet-drag');
+    document.body.style.removeProperty('--ag2-sheet-dy');
     delete document.body.dataset.ag2Set;
     dim?.remove();
     root?.remove();
@@ -564,8 +649,8 @@ export function unmount() {
 }
 
 function onResize() {
-    // Narrow viewport = ST's mobile layout (P5): the window does not apply there.
-    if (isOpenNow && !window.matchMedia('(min-width: 1001px)').matches) close();
+    // Crossing 1000/1001 swaps window ⇄ sheet: close rather than morph (§4).
+    if (isOpenNow && isPhone() !== phoneMode) close();
 }
 
 // ------------------------------------------------------------------ Esc layers
@@ -593,6 +678,7 @@ function onKey(e) {
         a.blur();
         return;
     }
+    if (phoneMode && root.dataset.level === 'page') { list({ focus: true }); return; }
     close();
 }
 

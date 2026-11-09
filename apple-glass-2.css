@@ -223,8 +223,8 @@ html body.ag2 .timestamp {
 }
 
 /* == 2 · Layout (§4) == */
-/* Desktop only (≥1001px). ≤1000px keeps ST's native mobile layout until the P5
-   phone shell; the shell frame is hidden there. */
+/* Both layouts. Phones (≤1000px, body.ag2-phone — width only, §4) re-place #sheld, the
+   capsules and the composer in §5.9; the rules here are the shared base. */
 
 html body.ag2 {
     /* #sheld sits between the sidebar and the (optional, P3) inspector */
@@ -240,13 +240,7 @@ html body.ag2.ag2-side-collapsed {
     --ag2-sheld-left: var(--ag2-inset);
 }
 
-@media (max-width: 1000px) {
-    html body.ag2:not(#_):not(#__) #ag2-shell {
-        display: none !important;
-    }
-}
-
-@media (min-width: 1001px) {
+@media screen { /* desktop + phone since P5 */
     /* Old top bar: background strip goes; the icon holder must stay a z-3005
        stacking context (no display:none / transform / filter — §9.2 #1/#2), so its
        toggles are only made invisible and the strip click-through. Drawers inside
@@ -1203,7 +1197,7 @@ html body.ag2.immersive-mode:not(#_):not(#__) #ap-jump-latest {
 }
 
 /* == 5.3 · Reading area (§5.3) == */
-/* Desktop (≥1001px) only; ≤1000px keeps ST's native message layout until P5.
+/* Both layouts since P5 (§5.9 adjusts gutters on phones).
    Every message keeps ST's DOM. The layout is a CSS grid on .mes: the wrappers
    .mesAvatarWrapper / .mes_block / .ch_name / .swipeRightBlock become display:contents,
    so their children (avatar, name line, reasoning, text, buttons, swipe chevrons and
@@ -1219,7 +1213,7 @@ html body.ag2.immersive-mode:not(#_):not(#__) #ap-jump-latest {
    Rows:    day | top pad | head | reasoning | text | media | file | bias | actions | bottom pad
    The chat styles (§5.3b) only change the pad variables, the card and the portrait. */
 
-@media (min-width: 1001px) {
+@media screen { /* desktop + phone since P5 (§5.9 overrides the geometry) */
     html body.ag2:not(#_):not(#__) {
         /* the composer floats over the chat from P1b on (§4: bottom fade 140px) */
         --ag2-fade-bottom: 140px;
@@ -1923,7 +1917,7 @@ html body.ag2.immersive-mode:not(#_):not(#__) #ap-jump-latest {
    messages keep the grey bubble (document style excepted). Portraits come from
    --ap-mes-avatar, set per message by the extension's index.js (feature 1). */
 
-@media (min-width: 1001px) {
+@media screen { /* desktop + phone since P5 (§5.9 overrides the geometry) */
     /* shared card: one solid surface per AI message (no blur on messages, §5.10) */
     html body.ag2:is(.bubblechat, .ap-chat-echo, .ap-chat-whisper, .ap-chat-ripple, .ap-chat-hush):not(#_):not(#__) #chat .mes:not([is_user="true"]) {
         --ag2-mes-pl: 18px;
@@ -2099,9 +2093,9 @@ html body.ag2.immersive-mode:not(#_):not(#__) #ap-jump-latest {
    Inside: the QR capsule row, then #nonQRFormItems = the island:
    [+] [textarea] [other extension buttons] [model] [send / stop].
    §19a multi-line behaviour: the island grows with the textarea up to 40dvh, the
-   buttons stay on the bottom line. Desktop only (≤1000px keeps ST's composer, P5). */
+   buttons stay on the bottom line. Both layouts since P5; §5.9 re-places it on phones. */
 
-@media (min-width: 1001px) {
+@media screen { /* desktop + phone since P5 (§5.9 overrides the geometry) */
     html body.ag2:not(#_):not(#__) #form_sheld {
         position: absolute !important;
         left: 0;
@@ -2491,11 +2485,9 @@ html body.ag2.immersive-mode:not(#_):not(#__) #ap-jump-latest {
     }
 }
 
-@media (max-width: 1000px) {
-    /* phones keep ST's composer (☰ and the wand) until P5 */
-    html body.ag2:not(#_):not(#__) :is(#ag2-plus, #ag2-model, #ag2-qr-add) {
-        display: none !important;
-    }
+/* phones (§5.9, design 05): + · field · send; the model capsule stays on desktop only */
+html body.ag2.ag2-phone:not(#_):not(#__) #ag2-model {
+    display: none !important;
 }
 
 /* == 5.4c · + menu · model list · 扩展工具 (§5.4, §5.8, §9.2 #6) == */
@@ -2590,7 +2582,7 @@ html body.ag2[data-ag2-accent="green"] { --ag2-accent: var(--ag2-green); }
 html body.ag2[data-ag2-accent="teal"] { --ag2-accent: var(--ag2-teal); }
 html body.ag2[data-ag2-accent="graphite"] { --ag2-accent: var(--ag2-graphite); }
 
-@media (min-width: 1001px) {
+@media screen { /* desktop + phone since P5 (§5.9 overrides the geometry) */
     /* 消息信息 · 常显: model / tokens / time stay visible on every AI message (the action
        buttons keep their hover rule from §5.3) */
     html body.ag2[data-ag2-meta="always"]:not(#_):not(#__) #chat .mes:not(:hover):not(:focus-within):not(.last_mes) :is(.tokenCounterDisplay, .mes_timer),
@@ -2891,7 +2883,7 @@ html body.ag2:not(#_):not(#__) #ag2-settings.ag2-set-st .ag2-set-body {
 }
 
 /* --- ST drawers inside the window (rule 1: CSS only, nodes untouched) --- */
-@media (min-width: 1001px) {
+@media screen { /* desktop + phone since P5 (§5.9 overrides the geometry) */
     html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block).openDrawer {
         position: fixed !important;
         inset: auto !important;
@@ -3328,10 +3320,10 @@ html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-close:focus-visible {
 
 /* == 5.5b · ST controls inside the settings window (§5.5 table) == */
 /* CSS only, nothing rewritten. Scope: the eight ST drawers while they sit in the window
-   (desktop, body.ag2-set-open). Phones keep ST's own drawers until P5.
+   (body.ag2-set-open; the phone sheet too since P5).
    Display is never forced with !important here: ST hides controls of other API sources
    with inline display:none / .displayNone, and those must stay hidden (scan “unhid”). */
-@media (min-width: 1001px) {
+@media screen { /* desktop + phone since P5 (§5.9 overrides the geometry) */
     /* base text inside the panels */
     html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) {
         color: var(--ag2-l1) !important;
@@ -3807,7 +3799,7 @@ html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-close:focus-visible {
 
 /* 扩展 › 扩展 API row: ST's status text box is as tall as the 36px switch row but keeps
    its text at the top; centre both on one line */
-@media (min-width: 1001px) {
+@media screen { /* desktop + phone since P5 (§5.9 overrides the geometry) */
     html body.ag2.ag2-set-open:not(#_):not(#__) #rm_extensions_block .flex-container:has(> #extensions_status) {
         align-items: center;
     }
@@ -3993,7 +3985,7 @@ html body.ag2.reduced-motion:not(#_):not(#__):not(#___) .ag2-hit {
 /* == 5.5d · 通用: items with no effect under the AG2 layout (greyed + note) == */
 /* 页面宽度 (chat_width: AG2 sizes the reading column from 外观 › 行宽) and 可移动 UI
    (the shell places every panel itself). ST keeps the values; other themes still use them. */
-@media (min-width: 1001px) {
+@media screen { /* desktop + phone since P5 (§5.9 overrides the geometry) */
     html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block :is(div:has(> #chat_width_slider), div:has(> #movingUIModeCheckBlock), #MovingUI-presets-block) {
         position: relative;
     }
@@ -4031,8 +4023,8 @@ html body.ag2.reduced-motion:not(#_):not(#__):not(#___) .ag2-hit {
    chooses which block shows. inspector.js writes panel[data-ag2-insp] =
    char | group | chat | create | group_create | empty | pending after checking that ST's
    editor belongs to the open chat — the form shows only for "char" / "group" (never a
-   stale editor: ST autosaves whatever #avatar_url_pole points to). Desktop only; phones
-   keep ST's drawer until P5. */
+   stale editor: ST autosaves whatever #avatar_url_pole points to). Phones (§5.9): the same
+   panel as a full-screen sheet. */
 
 html body.ag2.ag2-insp-open {
     /* what the floating inspector covers at medium widths (title capsule room) */
@@ -4047,7 +4039,7 @@ html body.ag2.ag2-insp-open {
     }
 }
 
-@media (min-width: 1001px) {
+@media screen { /* desktop + phone since P5 (§5.9 overrides the geometry) */
     html body.ag2:not(#_):not(#__) #sheld {
         transition: left var(--ag2-dur-panel) var(--ag2-ease-sheet), right var(--ag2-dur-panel) var(--ag2-ease-sheet);
     }
@@ -4731,7 +4723,7 @@ html body.ag2.ag2-insp-open {
    inside, the avatar + action buttons lead, the strategy selects follow as a 2-column
    grid, members are compact rows. Display of individual controls is never forced: ST
    toggles some (join prefix/suffix, restore avatar, submit) with inline display. */
-@media (min-width: 1001px) {
+@media screen { /* desktop + phone since P5 (§5.9 overrides the geometry) */
     html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #rm_group_chats_block {
         color: var(--ag2-l1);
         font-size: var(--ag2-fs-sub);
@@ -5263,6 +5255,694 @@ html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-scope {
     html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-scope { display: none; }
     html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-title { max-width: 100%; }
     html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-sub { display: none; }
+}
+
+/* == 5.9 · Phone (§5.9, §4, §9.2 #11; design 05) == */
+/* body.ag2-phone = width ≤1000px (index.js matchMedia, the same query as these blocks), never
+   the UA. Every rule sits in the media query AND under .ag2-phone, so 1000 / 1001 can never
+   mix the two layouts. ST's mobile-styles.css (and its iOS-only @supports block, which
+   Chromium cannot emulate) write many plain and some !important rules for this width; the
+   overrides below carry !important and the :not(#_):not(#__) weight.
+   Pages (body[data-ag2-ph], shell/phone.js): list = #ag2-sidebar as a full-screen 大标题 list
+   + tab bar; chat = #sheld + capsules ‹ · title · ⋯. All of them live in #ag2-shell, outside
+   #sheld (a horizontal swipe inside #sheld swipes the last reply). Settings = bottom sheet
+   (#ag2-settings.ag2-set-phone), inspector = full-screen sheet. Keyboard: --ag2-vvh/--ag2-vvt
+   from visualViewport. Blur budget (§7): chat page 4 (three capsules + composer), list 1
+   (tab bar; the list itself is opaque). */
+
+@media (max-width: 1000px) {
+    /* (the ID weight also beats §5.5c's [data-ag2-anchors] head height) */
+    html body.ag2.ag2-phone:not(#_):not(#__) {
+        --ag2-safe-t: env(safe-area-inset-top, 0px);
+        --ag2-safe-b: env(safe-area-inset-bottom, 0px);
+        --ag2-safe-l: env(safe-area-inset-left, 0px);
+        --ag2-safe-r: env(safe-area-inset-right, 0px);
+        /* visible height: the visual viewport (keyboard aware) once phone.js has run */
+        --ag2-ph-h: var(--ag2-vvh, 100dvh);
+        --ag2-ph-cap-top: calc(var(--ag2-safe-t) + 6px);
+        /* composer / tab bar distance from the bottom edge: the home indicator, or 8px
+           while the keyboard covers it (body.ag2-kb) */
+        --ag2-ph-bottom: max(var(--ag2-safe-b), 10px);
+        --ag2-ph-bg: linear-gradient(180deg, rgb(24, 24, 29), rgb(12, 12, 15) 70%);
+        --ag2-sheld-left: 0px;
+        --ag2-sheld-right: 0px;
+        --ag2-fade-top: calc(var(--ag2-safe-t) + 56px);
+        /* settings sheet: the window variables of §5.5 describe the sheet, so the ST drawer
+           rule positions the open drawer under the sheet head unchanged */
+        --ag2-sheet-top: calc(var(--ag2-safe-t) + 10px);
+        --ag2-win-x: 0px;
+        --ag2-win-w: 100vw;
+        --ag2-win-y: calc(var(--ag2-sheet-top) + var(--ag2-sheet-dy, 0px));
+        --ag2-win-h: calc(var(--ag2-ph-h) - var(--ag2-sheet-top));
+        --ag2-set-nav: 0px;
+        --ag2-set-head: 56px;
+    }
+
+    html body.ag2.ag2-phone.ag2-kb:not(#_):not(#__) {
+        --ag2-ph-bottom: 8px;
+    }
+
+    /* <html> is the containing block of every fixed element (ST: translateZ(0)), and with
+       ST's phone `body { position: fixed }` it has no in-flow content → 0px tall. Give it
+       the viewport height so inset / bottom-anchored layers (#ag2-shell, the sheet dim,
+       the tab bar) measure from the screen, as on desktop. */
+    html:has(> body.ag2.ag2-phone:not(#_):not(#__)) {
+        height: 100%;
+    }
+
+    /* --- chat page: #sheld fills the visual viewport (follows the iOS keyboard) --- */
+    html body.ag2.ag2-phone:not(#_):not(#__) #sheld {
+        top: var(--ag2-vvt, 0px) !important;
+        bottom: auto !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100vw !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        height: var(--ag2-ph-h) !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        transition: none;
+    }
+
+    /* list page (or nothing open): the chat stays laid out but leaves the a11y tree and
+       the blur count once the list has slid over it */
+    html body.ag2.ag2-phone:is([data-ag2-ph="list"], .ag2-welcome):not(#_):not(#__) #sheld {
+        visibility: hidden !important;
+        transition: visibility 0s linear var(--ag2-dur-panel);
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #chat {
+        padding-top: calc(var(--ag2-safe-t) + 62px) !important;
+        padding-left: max(14px, var(--ag2-safe-l)) !important;
+        padding-right: max(14px, var(--ag2-safe-r)) !important;
+        padding-bottom: calc(var(--ag2-dock-h, 112px) + 12px) !important;
+        border: 0 !important;
+    }
+
+    /* meta line: on a 360px column the model name shrinks (ellipsis) instead of pushing
+       the meta over the action buttons (小白X adds one there) */
+    html body.ag2.ag2-phone:not(#_):not(#__) #chat .mes {
+        grid-template-columns:
+            [outer] var(--ag2-mes-ol) [card] var(--ag2-mes-pl)
+            [in sw] auto [cnt] auto [swr] auto [btns] auto [gap] minmax(0, 1fr)
+            [model] minmax(0, auto) [tok] auto [tim] auto [pr] var(--ag2-mes-pr) [end];
+    }
+
+    /* the buttons keep their 30px: otherwise the row's min-content shrinks them and the
+       meta column paints over the last one */
+    html body.ag2.ag2-phone:not(#_):not(#__) #chat .mes .mes_buttons > * {
+        flex-shrink: 0;
+    }
+
+    /* composer: full width minus 10px gutters, above the home indicator / keyboard */
+    html body.ag2.ag2-phone:not(#_):not(#__) #form_sheld {
+        width: calc(100% - 20px - var(--ag2-safe-l) - var(--ag2-safe-r)) !important;
+        padding: 0 0 var(--ag2-ph-bottom) !important;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #send_form #nonQRFormItems {
+        min-height: 56px !important;
+        padding: 6px !important;
+        border-radius: 28px !important;
+    }
+
+    /* touch targets ≥44pt (§5.9) */
+    html body.ag2.ag2-phone:not(#_):not(#__) :is(#ag2-plus, #send_form #send_but, #send_form #mes_stop) {
+        width: 44px !important;
+        min-width: 44px !important;
+        height: 44px !important;
+        border-radius: 22px !important;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #send_form :is(#leftSendForm, #rightSendForm) {
+        min-height: 44px !important;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #leftSendForm > :not(#ag2-plus),
+    html body.ag2.ag2-phone:not(#_):not(#__) #rightSendForm > :not(#ag2-model):not(#send_but):not(#mes_stop) {
+        width: 44px !important;
+        min-width: 44px !important;
+        height: 44px !important;
+        border-radius: 22px !important;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #send_form #send_textarea {
+        font-size: 16px !important; /* <16px makes iOS zoom the page on focus */
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) :is(#qr--bar, #qr-bar) :is(.qr--button, .menu_button) {
+        min-height: 36px !important;
+    }
+
+    /* “+ 快速回复” stays a desktop affordance (design 05 shows the QR row only) */
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-qr-add {
+        display: none !important;
+    }
+
+    /* --- capsules: ‹ back · title · ⋯ (design 05 left) --- */
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-shell .ag2-cap {
+        top: var(--ag2-ph-cap-top);
+        transition: none;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-shell .ag2-ph-round {
+        display: inline-flex;
+        justify-content: center;
+        width: 44px;
+        padding: 0;
+        color: var(--ag2-l1);
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-ph-back {
+        left: calc(10px + var(--ag2-safe-l));
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-ph-more {
+        right: calc(10px + var(--ag2-safe-r));
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-title {
+        left: 50%;
+        max-width: calc(100vw - 128px - var(--ag2-safe-l) - var(--ag2-safe-r));
+        padding: 0 14px 0 6px;
+        transform: translateX(-50%);
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-title :is(.ag2-expand, .ag2-chev) {
+        display: none !important;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-title .ag2-title-av {
+        width: 30px;
+        height: 30px;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) :is(#ag2-tools, #ag2-welcome) {
+        display: none !important;
+    }
+
+    html body.ag2.ag2-phone:is([data-ag2-ph="list"], .ag2-welcome):not(#_):not(#__) :is(#ag2-title, #ag2-ph-back, #ag2-ph-more, #ap-jump-latest) {
+        display: none !important;
+    }
+
+    /* --- list page: the sidebar, full screen, opaque (no blur layer) --- */
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-sidebar {
+        inset: 0;
+        width: auto;
+        padding: var(--ag2-safe-t) var(--ag2-safe-r) 0 var(--ag2-safe-l);
+        border-radius: 0;
+        background: var(--ag2-ph-bg);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+        box-shadow: none;
+        opacity: 1;
+        transform: none;
+        visibility: visible;
+        transition: transform var(--ag2-dur-panel) var(--ag2-ease-sheet), opacity var(--ag2-dur-panel) ease, visibility 0s;
+    }
+
+    /* push to the chat: the list slides away left and fades (iOS pop reversed) */
+    html body.ag2.ag2-phone[data-ag2-ph="chat"]:not(.ag2-welcome):not(#_):not(#__) #ag2-sidebar {
+        opacity: 0;
+        transform: translateX(-30%);
+        visibility: hidden;
+        pointer-events: none;
+        transition: transform var(--ag2-dur-panel) var(--ag2-ease-sheet), opacity var(--ag2-dur-panel) ease, visibility 0s linear var(--ag2-dur-panel);
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-sidebar .ag2-side-head {
+        justify-content: flex-end;
+        height: 50px;
+        padding: 6px 10px 0;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-sidebar :is([data-act="collapse"], .ag2-side-title, .ag2-side-foot) {
+        display: none !important;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-shell .ag2-ib {
+        width: 44px;
+        height: 44px;
+        border-radius: 22px;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-sidebar .ag2-ph-big {
+        flex: none;
+        margin: 0 20px 10px;
+        padding: 0;
+        color: var(--ag2-l1);
+        font-family: var(--ag2-font);
+        font-size: 32px;
+        font-weight: 760;
+        line-height: 40px;
+        letter-spacing: -0.02em;
+        text-align: left;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-sidebar .ag2-search {
+        height: 40px;
+        margin: 0 16px 10px;
+        border-radius: 12px;
+        font-size: 16px;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-sidebar .ag2-search kbd {
+        display: none;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-sidebar .ag2-seg {
+        height: 44px;
+        margin: 0 16px 6px;
+        padding: 3px;
+        border-radius: 12px;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-shell .ag2-seg > button {
+        min-height: 38px;
+        border-radius: 9px;
+        font-size: 14px;
+    }
+
+    /* the list scrolls above the tab bar */
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-sidebar .ag2-side-list {
+        padding: 0 8px calc(var(--ag2-ph-bottom) + 84px);
+        overscroll-behavior: contain;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-sidebar .ag2-sec {
+        padding: 14px 12px 6px;
+        font-size: 13px;
+    }
+
+    /* rows: 66 high (§5.9), 50px avatars, no hover state on touch */
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-shell .ag2-row {
+        min-height: 66px;
+        gap: 12px;
+        padding: 8px 12px;
+        -webkit-touch-callout: none; /* long-press = our context menu, not iOS's callout */
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-shell .ag2-row:hover:not(.ag2-on) {
+        background: none;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-shell .ag2-row:active {
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-shell .ag2-row > .ag2-av {
+        width: 50px;
+        height: 50px;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-shell .ag2-row-name {
+        font-size: 16px;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-shell .ag2-row-sub {
+        font-size: 14px;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-shell .ag2-row-time {
+        font-size: 12.5px;
+    }
+
+    /* --- tab bar: 对话 · 角色 · 世界书 · 设置 (list page only) --- */
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-tabbar {
+        position: absolute;
+        left: calc(12px + var(--ag2-safe-l));
+        right: calc(12px + var(--ag2-safe-r));
+        bottom: var(--ag2-ph-bottom);
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 4px;
+        height: 64px;
+        padding: 6px;
+        box-sizing: border-box;
+        border-radius: 32px;
+        background: var(--ag2-mat-float);
+        -webkit-backdrop-filter: var(--ag2-blur-float);
+        backdrop-filter: var(--ag2-blur-float);
+        box-shadow: var(--ag2-rim), var(--ag2-sh2);
+    }
+
+    html body.ag2.ag2-phone[data-ag2-ph="chat"]:not(.ag2-welcome):not(#_):not(#__) #ag2-tabbar {
+        display: none;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-tabbar > button {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        min-width: 0;
+        height: 52px;
+        padding: 0;
+        border-radius: 26px;
+        color: var(--ag2-l2);
+        font-size: 10.5px;
+        font-weight: 620;
+        line-height: 1;
+        transition: background-color var(--ag2-dur) ease, color var(--ag2-dur) ease;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-tabbar > button.ag2-on {
+        background: rgba(255, 255, 255, 0.10);
+        color: var(--ag2-accent);
+    }
+
+    /* --- inspector = full-screen sheet (title / ⋯ › 角色资料) --- */
+    html body.ag2.ag2-phone.ag2-insp-open:not(#_):not(#__) #right-nav-panel.openDrawer {
+        top: calc(var(--ag2-safe-t) + 8px) !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100vw !important;
+        height: auto !important;
+        padding: 0 var(--ag2-safe-r) var(--ag2-safe-b) var(--ag2-safe-l) !important;
+        border-radius: var(--ag2-r-window) var(--ag2-r-window) 0 0 !important;
+        background: var(--ag2-mat-window) !important;
+        -webkit-backdrop-filter: var(--ag2-blur-window) !important;
+        backdrop-filter: var(--ag2-blur-window) !important;
+        box-shadow: var(--ag2-rim), var(--ag2-sh3) !important;
+        animation: ag2-sheet-up var(--ag2-dur-panel) var(--ag2-ease-sheet);
+    }
+
+    html body.ag2.ag2-phone.ag2-insp-open:not(#_):not(#__) #right-nav-panel .ag2-insp-ib {
+        width: 44px;
+        height: 44px;
+    }
+
+    @keyframes ag2-sheet-up {
+        from { transform: translateY(100%); }
+        to { transform: none; }
+    }
+
+    @keyframes ag2-push-in {
+        from { opacity: 0; transform: translateX(24%); }
+        to { opacity: 1; transform: none; }
+    }
+
+    /* --- settings = bottom sheet with a grabber, list → page (design 05 right) --- */
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings.ag2-set-phone {
+        left: 0;
+        top: var(--ag2-win-y);
+        grid-template-columns: minmax(0, 1fr);
+        width: 100vw;
+        height: var(--ag2-win-h);
+        border-radius: var(--ag2-r-window) var(--ag2-r-window) 0 0;
+        /* nearly opaque: the list's controls must not read through the sheet */
+        background: rgba(28, 28, 33, 0.94);
+        animation: ag2-sheet-up var(--ag2-dur-panel) var(--ag2-ease-sheet);
+    }
+
+    html body.ag2.ag2-phone.ag2-sheet-drag:not(#_):not(#__) :is(#ag2-settings, .drawer-content.openDrawer) {
+        transition: none !important;
+        animation: none !important;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings.ag2-set-phone[data-level="list"] .ag2-set-page,
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings.ag2-set-phone[data-level="page"] .ag2-set-nav {
+        display: none;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings.ag2-set-phone[data-level="page"] .ag2-set-page {
+        animation: ag2-push-in var(--ag2-dur-panel) var(--ag2-ease-sheet);
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings.ag2-set-phone .ag2-set-grab {
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 50%;
+        z-index: 2;
+        width: 120px;
+        height: 18px;
+        transform: translateX(-50%);
+        touch-action: none;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings.ag2-set-phone .ag2-set-grab::before {
+        content: "";
+        position: absolute;
+        top: 6px;
+        left: 42px;
+        width: 36px;
+        height: 5px;
+        border-radius: 3px;
+        background: rgba(255, 255, 255, 0.28);
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings.ag2-set-phone .ag2-set-nav {
+        padding: 0 16px calc(24px + var(--ag2-safe-b));
+        border-right: 0;
+        background: none;
+        overscroll-behavior: contain;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings.ag2-set-phone .ag2-set-phead {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        display: grid;
+        flex: none;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        height: 56px;
+        margin: 0 -16px 4px;
+        padding: 0 8px;
+        touch-action: none;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings .ag2-set-ptitle {
+        grid-column: 2;
+        color: var(--ag2-l1);
+        font-size: 17px;
+        font-weight: 650;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings .ag2-set-done {
+        grid-column: 3;
+        justify-self: end;
+        min-width: 44px;
+        height: 44px;
+        padding: 0 10px;
+        border: 0;
+        background: none;
+        color: var(--ag2-accent);
+        font-size: 17px;
+        font-weight: 650;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings.ag2-set-phone .ag2-set-search {
+        flex: none;
+        height: 40px;
+        margin-bottom: 16px;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings.ag2-set-phone .ag2-set-search input {
+        font-size: 16px; /* no iOS focus zoom */
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings.ag2-set-phone .ag2-set-me {
+        display: flex;
+        flex: none;
+        align-items: center;
+        gap: 12px;
+        min-height: 66px;
+        margin: 0 0 18px;
+        padding: 8px 14px;
+        border: 0;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--ag2-l1);
+        text-align: left;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings .ag2-set-me .ag2-av {
+        width: 46px;
+        height: 46px;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings .ag2-set-me-t {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings .ag2-set-me-name {
+        overflow: hidden;
+        font-size: 16px;
+        font-weight: 620;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings .ag2-set-me-sub {
+        color: var(--ag2-l3);
+        font-size: 12.5px;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings .ag2-set-chev {
+        color: var(--ag2-l4);
+    }
+
+    /* iOS grouped list: each group one card, 48px rows, hairlines between rows */
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings.ag2-set-phone .ag2-set-grp {
+        flex: none;
+        margin: 0 0 18px;
+        padding: 0;
+        border: 0;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.06);
+        overflow: hidden;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings.ag2-set-phone .ag2-set-grp + .ag2-set-grp {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: 0;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings.ag2-set-phone .ag2-set-grp-end {
+        margin-top: 0 !important;
+        padding-top: 0;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings.ag2-set-phone .ag2-set-item {
+        min-height: 48px;
+        gap: 12px;
+        padding: 0 12px 0 14px;
+        border-radius: 0;
+        background: none;
+        font-size: 16px;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings.ag2-set-phone .ag2-set-item + .ag2-set-item {
+        /* hairline from the text edge (iOS inset separator) */
+        background-image: linear-gradient(var(--ag2-sep), var(--ag2-sep));
+        background-size: calc(100% - 56px) 0.5px;
+        background-position: 56px 0;
+        background-repeat: no-repeat;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings.ag2-set-phone .ag2-set-item::after {
+        content: "";
+        flex: none;
+        width: 8px;
+        height: 8px;
+        margin: 0 4px 0 2px;
+        border-top: 2px solid var(--ag2-l4);
+        border-right: 2px solid var(--ag2-l4);
+        transform: rotate(45deg);
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings.ag2-set-phone .ag2-tile {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+    }
+
+    /* page level: head = ‹ 设置 · title (centred); no lead line, no ×, no anchors */
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings.ag2-set-phone .ag2-set-head {
+        position: relative;
+        align-items: center;
+        height: var(--ag2-set-head);
+        padding: 0 8px;
+        touch-action: none;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings.ag2-set-phone .ag2-set-back {
+        position: relative;
+        z-index: 1;
+        display: inline-flex;
+        align-items: center;
+        gap: 0;
+        height: 44px;
+        padding: 0 10px 0 2px;
+        border: 0;
+        background: none;
+        color: var(--ag2-accent);
+        font-size: 17px;
+        font-weight: 500;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings.ag2-set-phone .ag2-set-titles {
+        position: absolute;
+        inset: 0 96px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings.ag2-set-phone .ag2-set-head h1 {
+        overflow: hidden;
+        font-size: 17px;
+        font-weight: 650;
+        line-height: 22px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings.ag2-set-phone :is(.ag2-set-lead, .ag2-set-close, .ag2-anchors) {
+        display: none !important;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings.ag2-set-phone .ag2-set-body {
+        padding: 0 16px calc(24px + var(--ag2-safe-b));
+    }
+
+    /* the open ST drawer fills the sheet under the head (rule 1: CSS only) */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block).openDrawer {
+        padding: 0 calc(16px + var(--ag2-safe-r)) calc(24px + var(--ag2-safe-b)) calc(16px + var(--ag2-safe-l)) !important;
+        border-radius: 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel.openDrawer {
+        padding-right: 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel.openDrawer > .scrollableInner {
+        padding: 0 calc(16px + var(--ag2-safe-r)) calc(24px + var(--ag2-safe-b)) 0 !important;
+    }
+
+    /* --- command palette: top sheet, clear of the notch and the keyboard --- */
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-palette {
+        inset: calc(var(--ag2-safe-t) + var(--ag2-vvt, 0px) + 8px) 0 auto 0;
+        width: calc(100vw - 16px);
+        max-height: calc(var(--ag2-ph-h) - var(--ag2-safe-t) - 16px);
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-palette .ag2-pal-input {
+        font-size: 17px;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-palette .ag2-pal-row {
+        min-height: 48px;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-palette :is(.ag2-pal-foot, .ag2-pal-enter, kbd) {
+        display: none;
+    }
+}
+
+/* phone-only shell nodes never show on the desktop layout (and the reverse) */
+html body.ag2:not(.ag2-phone):not(#_):not(#__) .ag2-ph-x,
+html body.ag2:not(#_):not(#__) #ag2-settings:not(.ag2-set-phone) :is(.ag2-set-grab, .ag2-set-phead, .ag2-set-me, .ag2-set-back) {
+    display: none !important;
+}
+
+@media (min-width: 1001px) {
+    html body.ag2:not(#_):not(#__) .ag2-ph-x {
+        display: none !important;
+    }
 }
 
 /* == 13 · Ported fixes (apple-theme.css §15m, §19b, §17a) == */

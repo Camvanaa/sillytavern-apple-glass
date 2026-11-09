@@ -7,18 +7,18 @@
 // class and listener it added and reloads the current chat.
 // Any exception during enable → automatic teardown + one toastr.
 
-export const BUILD = '202611091859';
+export const BUILD = '202611092036';
 
-import { local, importStPinsOnce, applyAppearance, clearAppearance } from './store.js?v=202611091859';
-import { ctx, h, toggleDrawer, SET_PANELS, settingsModule, openSettings, isDesktop, INSP_ID, inspectorModule, loadInspector, setInspector, setShellApi, paletteModule } from './util.js?v=202611091859';
-import { closeMenu } from './menu.js?v=202611091859';
-import * as sidebar from './sidebar.js?v=202611091859';
-import * as chrome from './chrome.js?v=202611091859';
-import * as reading from './reading.js?v=202611091859';
-import * as composer from './composer.js?v=202611091859';
-import * as keys from './keys.js?v=202611091859';
+import { local, importStPinsOnce, applyAppearance, clearAppearance } from './store.js?v=202611092036';
+import { ctx, h, toggleDrawer, SET_PANELS, settingsModule, openSettings, isDesktop, INSP_ID, inspectorModule, loadInspector, setInspector, setShellApi, paletteModule, PHONE_MQ, loadPhone, phoneModule } from './util.js?v=202611092036';
+import { closeMenu } from './menu.js?v=202611092036';
+import * as sidebar from './sidebar.js?v=202611092036';
+import * as chrome from './chrome.js?v=202611092036';
+import * as reading from './reading.js?v=202611092036';
+import * as composer from './composer.js?v=202611092036';
+import * as keys from './keys.js?v=202611092036';
 
-const BODY_CLASSES = ['ag2', 'ag2-welcome', 'ag2-side-collapsed', 'ag2-ready', 'ag2-wand-open', 'ag2-set-open', 'ag2-insp-open'];
+const BODY_CLASSES = ['ag2', 'ag2-welcome', 'ag2-side-collapsed', 'ag2-ready', 'ag2-wand-open', 'ag2-set-open', 'ag2-insp-open', 'ag2-phone', 'ag2-kb'];
 let on = false;
 let lateEnable = false;
 let shell = null;
@@ -26,6 +26,7 @@ let listeners = [];
 let observers = [];
 let timers = [];
 let failed = false;
+let phoneMq = null;
 
 export const isOn = () => on;
 
@@ -106,6 +107,12 @@ export function enable({ appReady = false } = {}) {
         }
         reading.decorate();
         updateWelcome();
+        // Phone layout (§5.9): width only. body.ag2-phone is set synchronously (the CSS needs
+        // nothing else to lay the page out under the splash); phone.js (tab bar, back / ⋯,
+        // keyboard) is imported only at phone widths.
+        phoneMq = window.matchMedia(PHONE_MQ);
+        phoneMq.addEventListener('change', onPhoneMq);
+        onPhoneMq();
 
         const { eventTypes: E } = ctx();
         const refreshRecent = debounced(() => sidebar.refresh(), 250);
@@ -147,6 +154,14 @@ export function enable({ appReady = false } = {}) {
     }
 }
 
+/** Desktop ⇄ phone (rotation, window resize): phone.js mounts / unmounts its own nodes. */
+const onPhoneMq = safe(() => {
+    const phone = !!phoneMq?.matches;
+    document.body.classList.toggle('ag2-phone', phone);
+    if (phone) return loadPhone().then(m => { if (on && phoneMq?.matches) m.mount(shell, api); });
+    phoneModule()?.unmount();
+});
+
 let decorateRaf = 0;
 function decorateSoon() {
     if (decorateRaf || !on) return;
@@ -185,7 +200,7 @@ async function alignPanels() {
     let adopt = false;
     const wantInsp = isDesktop() && local.get('inspector') === 'open';
     for (const el of document.querySelectorAll('.drawer-content.openDrawer')) {
-        if (lateEnable && setIds.includes(el.id) && isDesktop()) { adopt = true; continue; }
+        if (lateEnable && setIds.includes(el.id)) { adopt = true; continue; }
         if (el.id === INSP_ID && wantInsp) continue;
         if (el.id) await toggleDrawer(el.id, false);
     }
@@ -211,7 +226,7 @@ function watchPanels() {
             if (open === /\bopenDrawer\b/.test(r.oldValue || '')) continue;
             const m = settingsModule();
             if (m?.isOpen()) m.sync(el.id, open);
-            else if (open && isDesktop()) openSettings(null);
+            else if (open) openSettings(null); // desktop window / phone sheet (§5.9)
         }
     }));
     for (const id of Object.values(SET_PANELS)) {
@@ -226,7 +241,7 @@ function watchPanels() {
         const mi = new MutationObserver(safe(recs => {
             const open = insp.classList.contains('openDrawer');
             if (!recs.some(r => /\bopenDrawer\b/.test(r.oldValue || '') !== open)) return;
-            if (open && isDesktop()) loadInspector().then(m => m?.sync()).catch(fail);
+            if (open) loadInspector().then(m => m?.sync()).catch(fail);
             else inspectorModule()?.sync();
         }));
         mi.observe(insp, { attributes: true, attributeFilter: ['class'], attributeOldValue: true });
@@ -259,6 +274,9 @@ export function disable({ reload = true } = {}) {
     timers = [];
     if (decorateRaf) cancelAnimationFrame(decorateRaf);
     decorateRaf = 0;
+    phoneMq?.removeEventListener('change', onPhoneMq);
+    phoneMq = null;
+    try { phoneModule()?.unmount(); } catch { /* */ }
     try { keys.unmount(); } catch { /* */ }
     try { paletteModule()?.unmount(); } catch { /* */ }
     setShellApi(null);

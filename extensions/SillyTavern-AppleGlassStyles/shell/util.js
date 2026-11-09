@@ -8,7 +8,7 @@ import {
     is_send_press, isChatSaving, getThumbnailUrl, user_avatar, online_status,
 } from '../../../../../script.js';
 import { openGroupById, openGroupChat, deleteGroupChatByName, is_group_generating } from '../../../../group-chats.js';
-import { local } from './store.js?v=202611091859';
+import { local } from './store.js?v=202611092036';
 
 export { doNavbarIconClick, getCurrentChatId, newAssistantChat };
 
@@ -117,8 +117,23 @@ export const SET_PANELS = {
     user: 'user-settings-block', ext: 'rm_extensions_block',
 };
 export const pageOfPanel = id => Object.keys(SET_PANELS).find(k => SET_PANELS[k] === id) || null;
-/** The desktop layout (and so the settings window) applies at ≥1001px; phones keep ST drawers until P5. */
+/** The desktop layout (and so the settings window) applies at ≥1001px. */
 export const isDesktop = () => window.matchMedia('(min-width: 1001px)').matches;
+/** Phone layout (§5.9, §4): width only (≤1000px, ST's mobile-styles breakpoint), never the UA. */
+export const PHONE_MQ = '(max-width: 1000px)';
+export const isPhone = () => window.matchMedia(PHONE_MQ).matches;
+
+let phoneMod = null;
+let phoneLoading = null;
+/** phone.js once loaded — it is only imported at phone widths (never on desktop). */
+export const phoneModule = () => phoneMod;
+export async function loadPhone() {
+    if (!phoneMod) {
+        phoneLoading ||= import('./phone.js?v=202611092036');
+        try { phoneMod = await phoneLoading; } finally { phoneLoading = null; }
+    }
+    return phoneMod;
+}
 
 let setMod = null;
 let setLoading = null;
@@ -127,7 +142,7 @@ export const settingsModule = () => setMod;
 /** Imports settings.js (once) without opening the window — the palette searches its index. */
 export async function loadSettings() {
     if (!setMod) {
-        setLoading ||= import('./settings.js?v=202611091859');
+        setLoading ||= import('./settings.js?v=202611092036');
         try { setMod = await setLoading; } finally { setLoading = null; }
     }
     return setMod;
@@ -135,10 +150,10 @@ export async function loadSettings() {
 
 /**
  * Opens the settings window on `page` (null → the open ST panel / last page). The window
- * module is imported on first use only, so it costs nothing at cold start.
+ * module is imported on first use only, so it costs nothing at cold start. On phones the
+ * same module draws the bottom sheet (§5.9): page null → the sheet's list level.
  */
 export async function openSettings(page = null, opt = {}) {
-    if (!isDesktop()) return toggleDrawer(SET_PANELS[page] || 'user-settings-block', true);
     await loadSettings();
     if (!document.body.classList.contains('ag2')) return false; // shell torn down meanwhile
     return setMod.open(page, opt);
@@ -161,7 +176,7 @@ let inspLoading = null;
 export const inspectorModule = () => inspMod;
 export async function loadInspector() {
     if (!inspMod) {
-        inspLoading ||= import('./inspector.js?v=202611091859');
+        inspLoading ||= import('./inspector.js?v=202611092036');
         try { inspMod = await inspLoading; } finally { inspLoading = null; }
     }
     if (document.body.classList.contains('ag2')) inspMod.mount();
@@ -177,15 +192,18 @@ export function restoreInspectorPin() {
     p.classList.toggle('pinnedOpen', locked);
 }
 
-/** Opens / closes / toggles (want undefined) the inspector. persist → `ag2.inspector`. */
+/**
+ * Opens / closes / toggles (want undefined) the inspector. persist → `ag2.inspector`, desktop
+ * only: on phones the inspector is a transient full-screen sheet (§5.9).
+ */
 export async function setInspector(want, { persist = true } = {}) {
     const p = document.getElementById(INSP_ID);
     if (!p) return false;
-    if (isDesktop()) await loadInspector();
+    await loadInspector();
     if (!document.body.classList.contains('ag2')) return false; // shell torn down meanwhile
     if (want === undefined) want = !p.classList.contains('openDrawer');
-    if (persist) local.set('inspector', want ? 'open' : 'closed');
-    if (want && isDesktop()) p.classList.add('pinnedOpen');
+    if (persist && isDesktop()) local.set('inspector', want ? 'open' : 'closed');
+    if (want) p.classList.add('pinnedOpen');
     await toggleDrawer(INSP_ID, want);
     if (!want) restoreInspectorPin();
     return true;
@@ -203,7 +221,7 @@ export const paletteModule = () => palMod;
 /** Opens the ⌘K palette; palette.js is imported on first use only (not at cold start). */
 export async function openPalette(opt = {}) {
     if (!palMod) {
-        palLoading ||= import('./palette.js?v=202611091859');
+        palLoading ||= import('./palette.js?v=202611092036');
         try { palMod = await palLoading; } finally { palLoading = null; }
     }
     if (!document.body.classList.contains('ag2')) return false; // shell torn down meanwhile

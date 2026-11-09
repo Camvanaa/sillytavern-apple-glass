@@ -10,14 +10,14 @@
 // Matching: substring first (prefix / word start rank higher), then in-order subsequence;
 // matched characters are bold + underlined. Every action goes through ST's own entry points.
 
-import { icon } from './icons.js?v=202611091859';
+import { icon } from './icons.js?v=202611092036';
 import { world_names, selected_world_info, METADATA_KEY } from '../../../../world-info.js';
 import {
     ctx, h, guard, toast, thumb, fmtTime, summary, stem, clickSt, openEntry, openCharacter, openGroup,
     openSettings, loadSettings, setInspector, isInspectorOpen, isDesktop, modKeyLabel, modCombo, getShellApi,
-} from './util.js?v=202611091859';
-import { getRecent, openRightMenu } from './sidebar.js?v=202611091859';
-import { closeMenu } from './menu.js?v=202611091859';
+} from './util.js?v=202611092036';
+import { getRecent, openRightMenu } from './sidebar.js?v=202611092036';
+import { closeMenu } from './menu.js?v=202611092036';
 
 const GROUPS = {
     recent: { name: '最近对话', max: 5 },
@@ -188,11 +188,14 @@ function actionItems() {
     } else {
         add('新对话（助手）', 'message-square-text', 'blue', () => clickSt('#option_start_new_chat'), { kw: 'new chat 新聊天 新对话', common: true });
     }
-    add(collapsed ? '显示侧栏' : '隐藏侧栏', 'panel-left', 'gray', () => getShellApi()?.setCollapsed(!collapsed),
-        { kw: 'sidebar 侧栏 切换', hint: modCombo('\\'), common: true });
     if (isDesktop()) {
+        add(collapsed ? '显示侧栏' : '隐藏侧栏', 'panel-left', 'gray', () => getShellApi()?.setCollapsed(!collapsed),
+            { kw: 'sidebar 侧栏 切换', hint: modCombo('\\'), common: true });
         add(insp ? '隐藏检视器' : '显示检视器', 'panel-right', 'gray', () => setInspector(!insp),
             { kw: 'inspector 检视器 角色卡 切换', hint: modCombo('.'), common: true });
+    } else if (chat) {
+        // phones (§5.9): no sidebar to collapse; the inspector is the 角色资料 sheet
+        add('角色资料', 'contact', 'gray', () => setInspector(true), { kw: 'inspector 检视器 角色卡 资料', common: true });
     }
     add('新建角色', 'user-plus', 'green', () => openRightMenu('#rm_button_create'), { kw: 'create character 角色卡' });
     add('导入角色卡', 'file-input', 'green', () => clickSt('#character_import_button'), { kw: 'import character' });
@@ -346,7 +349,7 @@ async function refresh() {
                 group: 'set', title: r.label, idx: f?.idx || [], score: (f ? f.score : 2.5) + BIAS.set,
                 sub: [p?.name, r.group && r.group !== p?.name ? r.group : ''].filter(Boolean).join(' › '),
                 lead: p ? `<span class="ag2-pal-tile ag2-tile-${p.tile}">${icon(p.icon, 14)}</span>` : '',
-                run: () => (isDesktop() ? m.revealItem(r) : openSettings(r.page)),
+                run: () => m.revealItem(r), // window on desktop, sheet on phones (§5.9)
             };
         });
         if (!rows.length) return;
