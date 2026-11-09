@@ -557,8 +557,53 @@ async function themes(T) {
     return out;
 }
 
+// ------------------------------------------------------------------ slash-command run: ST's ▶ ❚❚ ■ in the island
+async function script(T) {
+    const out = {};
+    const { page } = await enter(T);
+    await page.fill('#send_textarea', '/delay 3000');
+    await page.click('#send_but');
+    await T.sleep(700);
+    out.running = await page.evaluate(rs => {
+        const f = eval(rs);
+        return { executing: document.getElementById('form_sheld').classList.contains('isExecutingCommandsFromChatInput'),
+            buttons: [...document.querySelectorAll('#rightSendForm .stscript_btn')].filter(b => getComputedStyle(b).display !== 'none').map(b => b.id + '@' + f(b.getBoundingClientRect())),
+            sendHidden: getComputedStyle(document.getElementById('send_but')).visibility };
+    }, R);
+    await T.shot(page, `script-running-${T.cfg.w}`);
+    await page.click('#stscript_stop').catch(e => { out.stopClick = String(e.message).split('\n')[0]; });
+    await T.sleep(800);
+    out.after800 = await page.evaluate(() => document.getElementById('form_sheld').classList.contains('isExecutingCommandsFromChatInput'));
+    await T.sleep(2500);
+    out.after = await page.evaluate(() => ({ executing: document.getElementById('form_sheld').classList.contains('isExecutingCommandsFromChatInput'), send: getComputedStyle(document.getElementById('send_but')).visibility }));
+    out.errors = T.errors(page);
+    return out;
+}
+
+// ------------------------------------------------------------------ jump-to-latest pill sits above island + QR row
+async function jump(T) {
+    const out = {};
+    const { page } = await enter(T);
+    await page.evaluate(() => { const c = document.getElementById('chat'); c.scrollTop = 0; c.dispatchEvent(new Event('scroll')); });
+    await T.sleep(900);
+    out.up = await page.evaluate(rs => {
+        const f = eval(rs), j = document.getElementById('ap-jump-latest'), q = document.getElementById('qr--bar'), s = document.getElementById('send_form');
+        const jr = j?.getBoundingClientRect(), qr = q?.getBoundingClientRect(), sr = s.getBoundingClientRect();
+        return { exists: !!j, visible: !!j && j.classList.contains('is-visible') && getComputedStyle(j).opacity !== '0',
+            pill: jr && f(jr), qr: qr && f(qr), island: f(sr),
+            aboveIsland: !!jr && jr.bottom <= sr.top, aboveQr: !!jr && (!qr || !qr.height || jr.bottom <= qr.top + 1),
+            hasBlur: !!j && getComputedStyle(j).backdropFilter !== 'none' };
+    }, R);
+    await T.shot(page, `jump-${T.cfg.w}`);
+    await page.click('#ap-jump-latest').catch(e => { out.clickErr = String(e.message).split('\n')[0]; });
+    await T.sleep(3000);
+    out.after = await page.evaluate(() => { const c = document.getElementById('chat'); return { atBottom: c.scrollHeight - c.scrollTop - c.clientHeight < 40, gap: Math.round(c.scrollHeight - c.scrollTop - c.clientHeight), top: Math.round(c.scrollTop), hidden: !document.getElementById('ap-jump-latest')?.classList.contains('is-visible'), scrollY: window.scrollY }; });
+    out.errors = T.errors(page);
+    return out;
+}
+
 export default async function (T) {
-    const parts = { shots, gen, stream, model, offline, plus, multiline, styles, hover, themes };
+    const parts = { shots, gen, stream, model, offline, plus, multiline, styles, hover, themes, script, jump };
     const want = String(T.cfg.part || 'shots').split(',');
     const out = {};
     for (const p of want) {
