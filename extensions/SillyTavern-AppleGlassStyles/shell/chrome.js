@@ -1,9 +1,9 @@
 // Apple Glass 2 shell — title capsule, tool capsule, welcome page (DESIGN §5.2, §5.10).
 
-import { icon } from './icons.js?v=202611090053';
-import { openMenu } from './menu.js?v=202611090053';
-import { ctx, h, toast, guard, thumb, fmtTime, toggleDrawer, clickSt, openEntry, newAssistantChat } from './util.js?v=202611090053';
-import { getRecent, isLoaded, openRightMenu, row, rowKeys } from './sidebar.js?v=202611090053';
+import { icon } from './icons.js?v=202611090410';
+import { openMenu } from './menu.js?v=202611090410';
+import { ctx, h, toast, guard, thumb, fmtTime, toggleDrawer, clickSt, openEntry, openSettings, newAssistantChat } from './util.js?v=202611090410';
+import { getRecent, isLoaded, openRightMenu, row, rowKeys } from './sidebar.js?v=202611090410';
 
 let title = null, tools = null, welcome = null;
 let generating = false;
@@ -37,7 +37,7 @@ export function mount(shell, api) {
     tools.addEventListener('click', e => {
         const b = e.target.closest('[data-act]');
         if (!b) return;
-        if (b.dataset.act === 'wi') toggleDrawer('WorldInfo');
+        if (b.dataset.act === 'wi') openSettings('wi');
         else if (b.dataset.act === 'an') clickSt('#option_toggle_AN');
         else if (b.dataset.act === 'insp') toast('info', '检视器将在后续版本接入');
     });

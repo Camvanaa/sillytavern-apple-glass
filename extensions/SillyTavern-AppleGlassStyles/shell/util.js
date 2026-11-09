@@ -108,6 +108,36 @@ export async function toggleDrawer(contentId, want) {
     return true;
 }
 
+// ---------------------------------------------------------------- settings window (§5.5)
+/** Settings page → the ST drawer it shows (nodes never move; CSS places them, §9.2 #1). */
+export const SET_PANELS = {
+    api: 'rm_api_block', ai: 'left-nav-panel', fmt: 'AdvancedFormatting',
+    wi: 'WorldInfo', persona: 'PersonaManagement', bg: 'Backgrounds',
+    user: 'user-settings-block', ext: 'rm_extensions_block',
+};
+export const pageOfPanel = id => Object.keys(SET_PANELS).find(k => SET_PANELS[k] === id) || null;
+/** The desktop layout (and so the settings window) applies at ≥1001px; phones keep ST drawers until P5. */
+export const isDesktop = () => window.matchMedia('(min-width: 1001px)').matches;
+
+let setMod = null;
+let setLoading = null;
+/** The settings module once it has been loaded (it is never loaded at boot). */
+export const settingsModule = () => setMod;
+
+/**
+ * Opens the settings window on `page` (null → the open ST panel / last page). The window
+ * module is imported on first use only, so it costs nothing at cold start.
+ */
+export async function openSettings(page = null, opt = {}) {
+    if (!isDesktop()) return toggleDrawer(SET_PANELS[page] || 'user-settings-block', true);
+    if (!setMod) {
+        setLoading ||= import('./settings.js?v=202611090410');
+        try { setMod = await setLoading; } finally { setLoading = null; }
+    }
+    if (!document.body.classList.contains('ag2')) return false; // shell torn down meanwhile
+    return setMod.open(page, opt);
+}
+
 export function clickSt(selector) {
     const el = document.querySelector(selector);
     if (!el) return false;

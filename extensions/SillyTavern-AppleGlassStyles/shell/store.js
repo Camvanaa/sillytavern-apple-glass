@@ -36,6 +36,62 @@ export function saveAccount() {
     ctx().saveSettingsDebounced();
 }
 
+// ---------------------------------------------------------------- appearance (§5.5)
+// Shell-owned reading settings. Applied at enable as body attributes + inline variables
+// (cheap: no module load); the appearance page itself lives in settings.js (lazy).
+export const ACCENTS = [
+    { id: 'blue', name: '蓝色', color: '#0a84ff' },
+    { id: 'purple', name: '紫色', color: '#bf5af2' },
+    { id: 'pink', name: '粉色', color: '#ff375f' },
+    { id: 'orange', name: '橙色', color: '#ff9f0a' },
+    { id: 'green', name: '绿色', color: '#30d158' },
+    { id: 'teal', name: '青色', color: '#40c8e0' },
+    { id: 'graphite', name: '石墨', color: '#8e8e93' },
+];
+export const READ_SIZE = { min: 14, max: 20, step: 1, def: 16 };
+export const READ_WIDTH = { min: 560, max: 960, step: 20, def: 720 };
+export const META = ['always', 'hover', 'hide'];
+
+const clampNum = (v, r) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? Math.min(r.max, Math.max(r.min, Math.round(n))) : r.def;
+};
+
+export function appearance() {
+    const s = ctx().extensionSettings?.appleGlass2 || {};
+    return {
+        accent: ACCENTS.some(a => a.id === s.accent) ? s.accent : 'blue',
+        readSize: clampNum(s.readSize, READ_SIZE),
+        readWidth: clampNum(s.readWidth, READ_WIDTH),
+        meta: META.includes(s.meta) ? s.meta : 'hover',
+    };
+}
+
+export function applyAppearance() {
+    const a = appearance();
+    const b = document.body;
+    b.dataset.ag2Accent = a.accent;
+    b.dataset.ag2Meta = a.meta;
+    b.style.setProperty('--ag2-read-size', a.readSize + 'px');
+    b.style.setProperty('--ag2-read-width', a.readWidth + 'px');
+    return a;
+}
+
+export function clearAppearance() {
+    const b = document.body;
+    delete b.dataset.ag2Accent;
+    delete b.dataset.ag2Meta;
+    delete b.dataset.ag2Set;
+    b.style.removeProperty('--ag2-read-size');
+    b.style.removeProperty('--ag2-read-width');
+}
+
+export function setAppearance(key, value) {
+    account()[key] = value;
+    saveAccount();
+    return applyAppearance();
+}
+
 // ---------------------------------------------------------------- pins
 // Key rule is the same as ST's PinnedChatsManager.getKey (welcome-screen.js), so
 // pins imported from ST keep their identity: `group_<id>` | `char_<avatar>` + `_<file_name>`.

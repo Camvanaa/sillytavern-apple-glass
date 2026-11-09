@@ -2579,6 +2579,741 @@ html body.ag2.ag2-wand-open:not(#_):not(#__) #extensionsMenu .list-group-item:ho
     color: #fff;
 }
 
+/* == 5.5a · Appearance variables (accent, meta) == */
+/* Shell settings land on <body> as data attributes (store.applyAppearance). The accent swaps
+   ONE variable; hover / soft derive from it in §0 because they are declared on the same
+   element. Reading size / width arrive as inline --ag2-read-size / --ag2-read-width. */
+html body.ag2[data-ag2-accent="purple"] { --ag2-accent: var(--ag2-purple); }
+html body.ag2[data-ag2-accent="pink"] { --ag2-accent: var(--ag2-pink); }
+html body.ag2[data-ag2-accent="orange"] { --ag2-accent: var(--ag2-orange); }
+html body.ag2[data-ag2-accent="green"] { --ag2-accent: var(--ag2-green); }
+html body.ag2[data-ag2-accent="teal"] { --ag2-accent: var(--ag2-teal); }
+html body.ag2[data-ag2-accent="graphite"] { --ag2-accent: var(--ag2-graphite); }
+
+@media (min-width: 1001px) {
+    /* 消息信息 · 常显: model / tokens / time stay visible on every AI message (the action
+       buttons keep their hover rule from §5.3) */
+    html body.ag2[data-ag2-meta="always"]:not(#_):not(#__) #chat .mes:not(:hover):not(:focus-within):not(.last_mes) :is(.tokenCounterDisplay, .mes_timer),
+    html body.ag2[data-ag2-meta="always"]:not(#_):not(#__) #chat .mes:not(:hover):not(:focus-within):not(.last_mes)::after {
+        opacity: 1 !important;
+    }
+
+    /* 消息信息 · 隐藏 */
+    html body.ag2[data-ag2-meta="hide"]:not(#_):not(#__) #chat .mes :is(.tokenCounterDisplay, .mes_timer) {
+        display: none !important;
+    }
+
+    html body.ag2[data-ag2-meta="hide"]:not(#_):not(#__) #chat .mes[data-ag2-model]::after {
+        content: none !important;
+    }
+}
+
+/* == 5.5 · Settings window (§5.5, §9.2 #1/#2) == */
+/* Frame (#ag2-set-dim 3001, #ag2-settings 3002) is a body child built on first open by
+   shell/settings.js. The eight ST drawers never move: while body.ag2-set-open, the open
+   one becomes a fixed box over the window's content area. They live in
+   #top-settings-holder (z 3005), so they paint above the frame without any z juggling. */
+
+html body.ag2 {
+    --ag2-win-w: min(1080px, calc(100vw - 64px));
+    --ag2-win-h: min(742px, calc(100vh - 48px));
+    --ag2-win-x: calc((100vw - var(--ag2-win-w)) / 2);
+    --ag2-win-y: calc((100vh - var(--ag2-win-h)) / 2);
+    --ag2-set-nav: 252px;
+    --ag2-set-head: 86px;
+}
+
+html body.ag2:not(#_):not(#__) :is(#ag2-set-dim, #ag2-settings)[hidden] {
+    display: none !important;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-set-dim {
+    position: fixed;
+    inset: 0;
+    z-index: var(--ag2-z-window-backdrop);
+    background: rgba(0, 0, 0, 0.44);
+    animation: ag2-set-fade var(--ag2-dur) ease;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings {
+    position: fixed;
+    left: var(--ag2-win-x);
+    top: var(--ag2-win-y);
+    z-index: var(--ag2-z-window);
+    display: grid;
+    grid-template-columns: var(--ag2-set-nav) minmax(0, 1fr);
+    width: var(--ag2-win-w);
+    height: var(--ag2-win-h);
+    overflow: hidden;
+    border-radius: var(--ag2-r-window);
+    background: var(--ag2-mat-window);
+    -webkit-backdrop-filter: var(--ag2-blur-window);
+    backdrop-filter: var(--ag2-blur-window);
+    box-shadow: var(--ag2-rim), var(--ag2-sh3);
+    color: var(--ag2-l1);
+    font-family: var(--ag2-font);
+    font-size: var(--ag2-fs-body);
+    animation: ag2-set-in var(--ag2-dur-panel) var(--ag2-ease-sheet);
+}
+
+@keyframes ag2-set-fade { from { opacity: 0; } }
+@keyframes ag2-set-in { from { opacity: 0; transform: scale(0.985); } }
+
+/* --- nav (252px): search, tiles, 关于 pinned to the bottom --- */
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-nav {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: 12px 10px;
+    overflow-y: auto;
+    border-right: 0.5px solid var(--ag2-sep);
+    background: rgba(255, 255, 255, 0.025);
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-search {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    height: 32px;
+    margin: 4px 2px 12px;
+    padding: 0 10px;
+    border-radius: var(--ag2-r-ctl);
+    background: var(--ag2-f3);
+    color: var(--ag2-l3);
+    cursor: text;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-search input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    background: none;
+    box-shadow: none;
+    color: var(--ag2-l1);
+    font: inherit;
+    font-size: var(--ag2-fs-sub);
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-search input::placeholder {
+    color: var(--ag2-l3);
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-grp + .ag2-set-grp {
+    margin-top: 12px;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-grp-end {
+    margin-top: auto !important;
+    padding-top: 12px;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-grp[hidden],
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-item[hidden] {
+    display: none;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    height: 34px;
+    margin: 0;
+    padding: 0 8px;
+    border: 0;
+    border-radius: var(--ag2-r-ctl);
+    background: none;
+    color: var(--ag2-l1);
+    font: inherit;
+    font-size: var(--ag2-fs-sub);
+    font-weight: 520;
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color var(--ag2-dur) ease;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-item:hover {
+    background: var(--ag2-f4);
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-item.ag2-on {
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.08);
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-item:focus-visible {
+    outline: 2px solid var(--ag2-accent);
+    outline-offset: -2px;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-item-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* row-end status (“New API”, extension count, version) */
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-item-v {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 96px;
+    margin-left: auto;
+    overflow: hidden;
+    color: var(--ag2-l3);
+    font-size: 12px;
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+    text-overflow: ellipsis;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-item-v.ag2-set-badge {
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: var(--ag2-f3);
+    color: var(--ag2-l2);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 18px;
+    text-align: center;
+}
+
+/* iOS-settings colour tiles (24px, radius 7) */
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-tile {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    color: #fff;
+    box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.25);
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-tile svg { stroke-width: 2; }
+html body.ag2 #ag2-settings .ag2-tile-blue { background: linear-gradient(180deg, #3d9bff, #0a6fe0); }
+html body.ag2 #ag2-settings .ag2-tile-purple { background: linear-gradient(180deg, #c97bf5, #9b3fd6); }
+html body.ag2 #ag2-settings .ag2-tile-orange { background: linear-gradient(180deg, #ffb340, #f08400); }
+html body.ag2 #ag2-settings .ag2-tile-green { background: linear-gradient(180deg, #4cdc72, #22a845); }
+html body.ag2 #ag2-settings .ag2-tile-pink { background: linear-gradient(180deg, #ff6482, #e0274d); }
+html body.ag2 #ag2-settings .ag2-tile-teal { background: linear-gradient(180deg, #5ad4ea, #1fa3bd); }
+html body.ag2 #ag2-settings .ag2-tile-indigo { background: linear-gradient(180deg, #7d7bf0, #4644c9); }
+html body.ag2 #ag2-settings .ag2-tile-gray { background: linear-gradient(180deg, #a1a1a8, #6d6d73); }
+html body.ag2 #ag2-settings .ag2-tile-red { background: linear-gradient(180deg, #ff6b62, #e0352b); }
+
+/* --- page: head (title 21/720 + lead 13/l3) + body (shell pages only) --- */
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-page {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-head {
+    display: flex;
+    flex: none;
+    align-items: flex-start;
+    gap: 10px;
+    height: var(--ag2-set-head);
+    padding: 16px 16px 0 28px;
+    box-sizing: border-box;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-titles {
+    flex: 1;
+    min-width: 0;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-head h1 {
+    margin: 0;
+    padding: 0;
+    color: var(--ag2-l1);
+    font-family: var(--ag2-font);
+    font-size: var(--ag2-fs-title);
+    font-weight: 720;
+    line-height: 30px;
+    letter-spacing: -0.02em;
+    text-align: left;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-lead {
+    margin: 4px 0 0;
+    overflow: hidden;
+    color: var(--ag2-l3);
+    font-size: 13px;
+    line-height: 1.55;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-close {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    color: var(--ag2-l2);
+    cursor: pointer;
+    transition: background-color var(--ag2-dur) ease;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-close:hover {
+    background: var(--ag2-f4);
+    color: var(--ag2-l1);
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-body {
+    flex: 1;
+    min-height: 0;
+    padding: 0 28px 24px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    outline: 0;
+}
+
+/* ST page: its drawer covers the body area */
+html body.ag2:not(#_):not(#__) #ag2-settings.ag2-set-st .ag2-set-body {
+    visibility: hidden;
+}
+
+/* --- ST drawers inside the window (rule 1: CSS only, nodes untouched) --- */
+@media (min-width: 1001px) {
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block).openDrawer {
+        position: fixed !important;
+        inset: auto !important;
+        top: calc(var(--ag2-win-y) + var(--ag2-set-head)) !important;
+        left: calc(var(--ag2-win-x) + var(--ag2-set-nav)) !important;
+        z-index: 1 !important;
+        box-sizing: border-box !important;
+        width: calc(var(--ag2-win-w) - var(--ag2-set-nav)) !important;
+        height: calc(var(--ag2-win-h) - var(--ag2-set-head)) !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        margin: 0 !important;
+        padding: 0 18px 24px 28px !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        border: 0 !important;
+        border-radius: 0 0 var(--ag2-r-window) 0 !important;
+        background: transparent !important;
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+        box-shadow: none !important;
+        transform: none !important;
+        /* ST animates height from 0 (@starting-style); inside the window the page simply
+           fades with the frame */
+        transition: none !important;
+        animation: ag2-set-fade var(--ag2-dur) ease !important;
+        pointer-events: auto !important;
+    }
+
+    /* 生成参数 is a flex column whose .scrollableInner scrolls; keep that, fill the box */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel.openDrawer {
+        display: flex !important;
+        flex-direction: column !important;
+        padding-right: 0 !important;
+        overflow-y: hidden !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel.openDrawer > .scrollableInner {
+        flex: 1 1 auto !important;
+        height: auto !important;
+        min-height: 0 !important;
+        padding: 0 18px 0 0 !important;
+        overflow-y: auto !important;
+    }
+
+    /* Inspector (ST right panel) hides while the window is up (§9.2 #2) */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #right-nav-panel {
+        visibility: hidden !important;
+    }
+}
+
+/* --- shell page controls (外观 / 关于) --- */
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-gtitle {
+    margin: 18px 4px 7px;
+    color: var(--ag2-l3);
+    font-size: 12px;
+    font-weight: 640;
+    letter-spacing: 0.02em;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-body > .ag2-set-gtitle:first-child {
+    margin-top: 4px;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-group {
+    border-radius: 14px;
+    background: var(--ag2-f5);
+    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.065);
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 48px;
+    padding: 7px 14px;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-row + .ag2-set-row::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 14px;
+    height: 0.5px;
+    background: var(--ag2-sep);
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-lab {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    color: var(--ag2-l1);
+    font-size: var(--ag2-fs-sub);
+    font-weight: 500;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-lab small {
+    display: block;
+    margin-top: 2px;
+    color: var(--ag2-l3);
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.45;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-val {
+    color: var(--ag2-l2);
+    font-size: var(--ag2-fs-sub);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-note {
+    margin: 12px 4px 0;
+    color: var(--ag2-l3);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* 聊天样式 thumbnails: 7 across */
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-styles {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 10px;
+    padding: 14px;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-sty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ag2-l2);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 520;
+    cursor: pointer;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-sty[aria-checked="true"] {
+    color: var(--ag2-l1);
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-sty-th {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    box-sizing: border-box;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    padding: 7px;
+    overflow: hidden;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.28);
+    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.1);
+    transition: box-shadow var(--ag2-dur) ease;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-sty:hover .ag2-sty-th {
+    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.24);
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-sty[aria-checked="true"] .ag2-sty-th {
+    box-shadow: 0 0 0 2px var(--ag2-accent), inset 0 0 0 0.5px rgba(255, 255, 255, 0.1);
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-sty:focus-visible {
+    outline: 0;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-sty:focus-visible .ag2-sty-th {
+    box-shadow: 0 0 0 2px var(--ag2-accent-hover);
+}
+
+html body.ag2 #ag2-settings .ag2-sty-th i { display: block; font-style: normal; }
+html body.ag2 #ag2-settings .ag2-sty-th .ag2-ln { flex: none; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.28); }
+html body.ag2 #ag2-settings .ag2-sty-th .ag2-ln.ag2-s { width: 60%; }
+html body.ag2 #ag2-settings .ag2-sty-th .ag2-th-ava { width: 9px; height: 9px; border-radius: 50%; background: rgba(255, 255, 255, 0.45); }
+html body.ag2 #ag2-settings .ag2-sty-th .ag2-th-ub { align-self: flex-end; width: 55%; height: 9px; margin-top: auto; border-radius: 5px; background: rgba(120, 120, 135, 0.55); }
+html body.ag2 #ag2-settings .ag2-sty-th .ag2-th-bb { position: relative; display: flex; flex-direction: column; gap: 3px; padding: 4px; border-radius: 5px; background: rgba(255, 255, 255, 0.1); }
+html body.ag2 #ag2-settings .ag2-sty-th .ag2-th-dot::after { content: ""; position: absolute; top: 3px; right: 3px; width: 10px; height: 10px; border-radius: 50%; background: rgba(255, 255, 255, 0.35); }
+html body.ag2 #ag2-settings .ag2-sty-th .ag2-th-edge { border-left: 2px solid var(--ag2-accent); }
+html body.ag2 #ag2-settings .ag2-sty-th .ag2-th-row { display: flex; flex: 1; gap: 5px; }
+html body.ag2 #ag2-settings .ag2-sty-th .ag2-th-side { width: 30%; border-radius: 4px; background: rgba(255, 255, 255, 0.22); }
+html body.ag2 #ag2-settings .ag2-sty-th .ag2-th-short { width: 26%; height: 70%; }
+html body.ag2 #ag2-settings .ag2-sty-th .ag2-th-col { display: flex; flex: 1; flex-direction: column; gap: 4px; }
+
+/* 强调色 swatches (22px, ring on the chosen one) */
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-swatches {
+    display: flex;
+    flex: none;
+    gap: 10px;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-sw {
+    position: relative;
+    width: 22px;
+    height: 22px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--sw);
+    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.25);
+    cursor: pointer;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-sw[aria-checked="true"]::after,
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-sw:focus-visible::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.85);
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-sw:focus-visible {
+    outline: 0;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-wallthumb {
+    flex: none;
+    width: 96px;
+    height: 60px;
+    border-radius: 9px;
+    background: var(--ag2-f4) center / cover no-repeat;
+    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.18);
+}
+
+/* secondary capsule button (no blur: small control) */
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-btn {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    height: 30px;
+    margin: 0;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 15px;
+    background: var(--ag2-f3);
+    box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.07);
+    color: var(--ag2-l1);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 560;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-btn:hover {
+    background: var(--ag2-f2);
+}
+
+/* slider: 230px track, accent fill up to --ag2-pct, white 20px knob */
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-range {
+    flex: none;
+    width: 230px;
+    height: 20px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-range::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(to right, var(--ag2-accent) var(--ag2-pct, 50%), var(--ag2-f2) var(--ag2-pct, 50%));
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-range::-moz-range-track {
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(to right, var(--ag2-accent) var(--ag2-pct, 50%), var(--ag2-f2) var(--ag2-pct, 50%));
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-range::-webkit-slider-thumb {
+    width: 20px;
+    height: 20px;
+    margin-top: -8px;
+    border: 0;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-range::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border: 0;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-range:focus-visible {
+    outline: 2px solid var(--ag2-accent);
+    outline-offset: 2px;
+    border-radius: 10px;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-num {
+    display: grid;
+    flex: none;
+    place-items: center;
+    min-width: 52px;
+    height: 26px;
+    border-radius: 7px;
+    background: var(--ag2-f4);
+    color: var(--ag2-l2);
+    font-size: 12.5px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* select: 30px, fill f3, custom chevron */
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-select-wrap {
+    position: relative;
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    color: var(--ag2-l3);
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-select-wrap svg {
+    position: absolute;
+    right: 9px;
+    pointer-events: none;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-select {
+    width: auto;
+    min-width: 0;
+    height: 30px;
+    margin: 0;
+    padding: 0 28px 0 11px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--ag2-f3);
+    box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.05);
+    color: var(--ag2-l1);
+    font: inherit;
+    font-size: 13px;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-select option {
+    background: var(--ag2-solid-menu);
+    color: var(--ag2-l1);
+}
+
+/* iOS switch 42×26, on = green */
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-switch {
+    position: relative;
+    flex: none;
+    width: 42px;
+    height: 26px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 13px;
+    background: var(--ag2-f2);
+    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: background-color var(--ag2-dur) ease;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-switch::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3), 0 0 0 0.5px rgba(0, 0, 0, 0.04);
+    transition: transform var(--ag2-dur) var(--ag2-ease);
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-switch[aria-checked="true"] {
+    background: var(--ag2-green);
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-switch[aria-checked="true"]::after {
+    transform: translateX(16px);
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-switch:disabled {
+    cursor: default;
+    opacity: 0.5;
+}
+
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-switch:focus-visible,
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-select:focus-visible,
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-btn:focus-visible,
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-close:focus-visible {
+    outline: 2px solid var(--ag2-accent);
+    outline-offset: 2px;
+}
+
+/* narrower windows (1280 and below): the slider row stacks less wide */
+@media (max-width: 1240px) {
+    html body.ag2:not(#_):not(#__) #ag2-settings .ag2-range {
+        width: 180px;
+    }
+}
+
 /* == 13 · Ported fixes (apple-theme.css §15m, §19b, §17a) == */
 /* Under AG2 ST's own panels still render with the theme JSON's blur strength and
    none of AG Dark's fixes; these two keep the §4.6 regression at zero until the

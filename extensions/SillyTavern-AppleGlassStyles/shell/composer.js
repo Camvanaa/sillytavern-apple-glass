@@ -14,9 +14,9 @@
 // Every action is a click on ST's own control (`#option_*`, `#attachFile`, the model
 // <select>), as ST's core does it.
 
-import { icon } from './icons.js?v=202611090053';
-import { openMenu, closeMenu } from './menu.js?v=202611090053';
-import { ctx, h, guard, clickSt, toggleDrawer, busy, onlineStatus } from './util.js?v=202611090053';
+import { icon } from './icons.js?v=202611090410';
+import { openMenu, closeMenu } from './menu.js?v=202611090410';
+import { ctx, h, guard, clickSt, toggleDrawer, openSettings, busy, onlineStatus } from './util.js?v=202611090410';
 import { showBookmarksButtons } from '../../../../bookmarks.js';
 
 const NO_CONN_TEXT = '未连接 API — 点此连接';
@@ -77,7 +77,7 @@ export function mount() {
     ta.setAttribute('no_connection_text', NO_CONN_TEXT);
     if (form.classList.contains('no-connection')) ta.setAttribute('placeholder', NO_CONN_TEXT);
     on(ta, 'click', () => {
-        if (form.classList.contains('no-connection') && !ta.value) toggleDrawer('rm_api_block', true);
+        if (form.classList.contains('no-connection') && !ta.value) openSettings('api');
     });
 
     // Island height → --ag2-dock-h: the chat's bottom padding follows a growing island,
@@ -265,7 +265,7 @@ function modelMenu() {
         items.push({ id: 'cur', label: cur || model.querySelector('.ag2-model-name').textContent, icon: 'check', disabled: true });
     }
     items.push({ separator: true });
-    items.push({ id: 'conn', label: '连接设置…', icon: 'plug', onSelect: () => toggleDrawer('rm_api_block', true) });
+    items.push({ id: 'conn', label: '连接设置…', icon: 'plug', onSelect: () => openSettings('api') });
     model.classList.add('ag2-open');
     openMenu(model, items, {
         id: 'ag2-model-menu', className: 'ag2-menu-models', align: 'end', focusFirst: false,
@@ -276,7 +276,7 @@ function modelMenu() {
 // ------------------------------------------------------------------ QR ghost
 
 async function openQrSettings() {
-    await toggleDrawer('rm_extensions_block', true);
+    await openSettings('ext');
     setTimeout(() => {
         const t = document.getElementById('qr--settings') || document.getElementById('qr_container');
         const head = t?.closest('.inline-drawer')?.querySelector('.inline-drawer-toggle');

@@ -7,18 +7,19 @@
 // class and listener it added and reloads the current chat.
 // Any exception during enable → automatic teardown + one toastr.
 
-export const BUILD = '202611090053';
+export const BUILD = '202611090410';
 
-import { local, importStPinsOnce } from './store.js?v=202611090053';
-import { ctx, h, toggleDrawer } from './util.js?v=202611090053';
-import { closeMenu } from './menu.js?v=202611090053';
-import * as sidebar from './sidebar.js?v=202611090053';
-import * as chrome from './chrome.js?v=202611090053';
-import * as reading from './reading.js?v=202611090053';
-import * as composer from './composer.js?v=202611090053';
+import { local, importStPinsOnce, applyAppearance, clearAppearance } from './store.js?v=202611090410';
+import { ctx, h, toggleDrawer, SET_PANELS, settingsModule, openSettings, isDesktop } from './util.js?v=202611090410';
+import { closeMenu } from './menu.js?v=202611090410';
+import * as sidebar from './sidebar.js?v=202611090410';
+import * as chrome from './chrome.js?v=202611090410';
+import * as reading from './reading.js?v=202611090410';
+import * as composer from './composer.js?v=202611090410';
 
-const BODY_CLASSES = ['ag2', 'ag2-welcome', 'ag2-side-collapsed', 'ag2-ready', 'ag2-wand-open'];
+const BODY_CLASSES = ['ag2', 'ag2-welcome', 'ag2-side-collapsed', 'ag2-ready', 'ag2-wand-open', 'ag2-set-open'];
 let on = false;
+let lateEnable = false;
 let shell = null;
 let listeners = [];
 let observers = [];
@@ -79,7 +80,9 @@ export function enable({ appReady = false } = {}) {
     readyHint = !!appReady;
     on = true;
     try {
+        lateEnable = appIsReady(); // theme switched mid-session (not a cold start)
         document.body.classList.add('ag2');
+        applyAppearance(); // accent / reading size / width / meta (§5.5): attributes only
         if (local.get('sidebar') === 'collapsed') document.body.classList.add('ag2-side-collapsed');
         shell = h('div');
         shell.id = 'ag2-shell';
@@ -151,6 +154,7 @@ async function onReady() {
     readyRun = Date.now();
     document.body.classList.add('ag2-ready');
     await importStPinsOnce();
+    applyAppearance();
     sidebar.updateFooter();
     chrome.updateTitle();
     composer.updateModel();
@@ -164,11 +168,45 @@ async function onReady() {
 /**
  * Startup alignment (§9.2 #4): close every panel ST opened by itself. The inspector
  * (ST's right panel) stays closed until P3 wires `ag2.inspector`. Storage untouched.
+ * After a mid-session theme switch the user is working in a drawer (通用 › 主题): the
+ * settings window adopts it instead. Then the drawer observer starts.
  */
 async function alignPanels() {
+    const setIds = Object.values(SET_PANELS);
+    let adopt = false;
     for (const el of document.querySelectorAll('.drawer-content.openDrawer')) {
+        if (lateEnable && setIds.includes(el.id) && isDesktop()) { adopt = true; continue; }
         if (el.id) await toggleDrawer(el.id, false);
     }
+    if (adopt) await openSettings(null);
+    watchPanels();
+}
+
+/**
+ * The settings window follows `.openDrawer` (§9.2 #1). A settings drawer opened by any path
+ * (ST code, slash commands, a leftover entry point) on desktop opens the window on its page;
+ * while the window is open, changes go to settings.sync(). Observer only — the window
+ * module is still loaded on first use.
+ */
+let watching = false;
+function watchPanels() {
+    if (watching) return;
+    watching = true;
+    const mo = new MutationObserver(safe(recs => {
+        for (const r of recs) {
+            const el = r.target;
+            const open = el.classList.contains('openDrawer');
+            if (open === /\bopenDrawer\b/.test(r.oldValue || '')) continue;
+            const m = settingsModule();
+            if (m?.isOpen()) m.sync(el.id, open);
+            else if (open && isDesktop()) openSettings(null);
+        }
+    }));
+    for (const id of Object.values(SET_PANELS)) {
+        const el = document.getElementById(id);
+        if (el) mo.observe(el, { attributes: true, attributeFilter: ['class'], attributeOldValue: true });
+    }
+    observers.push(mo);
 }
 
 function updateWelcome() {
@@ -190,11 +228,14 @@ export function disable({ reload = true } = {}) {
     listeners = [];
     observers.forEach(o => o.disconnect());
     observers = [];
+    watching = false;
     timers.forEach(clearTimeout);
     timers = [];
     if (decorateRaf) cancelAnimationFrame(decorateRaf);
     decorateRaf = 0;
     try { closeMenu(); } catch { /* */ }
+    try { settingsModule()?.unmount(); } catch { /* */ }
+    try { clearAppearance(); } catch { /* */ }
     try { sidebar.unmount(); } catch { /* */ }
     try { chrome.unmount(); } catch { /* */ }
     try { composer.unmount(); } catch { /* */ }

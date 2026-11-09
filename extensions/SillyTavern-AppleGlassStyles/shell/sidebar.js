@@ -2,13 +2,13 @@
 // Header · search (placeholder until the P4 palette) · segments 对话/角色/群组 ·
 // list · footer (connection, persona, settings).
 
-import { icon } from './icons.js?v=202611090053';
-import { openMenu } from './menu.js?v=202611090053';
-import { local, isPinned, setPinned, renamePin, pinList } from './store.js?v=202611090053';
+import { icon } from './icons.js?v=202611090410';
+import { openMenu } from './menu.js?v=202611090410';
+import { local, isPinned, setPinned, renamePin, pinList } from './store.js?v=202611090410';
 import {
     ctx, h, toast, guard, fmtTime, ageDays, summary, stem, thumb, charIndex, toggleDrawer, clickSt,
-    openEntry, openCharacter, openGroup, renameEntry, deleteEntry, getCurrentChatId, personaAvatar, onlineStatus,
-} from './util.js?v=202611090053';
+    openSettings, openEntry, openCharacter, openGroup, renameEntry, deleteEntry, getCurrentChatId, personaAvatar, onlineStatus,
+} from './util.js?v=202611090410';
 
 const SEGMENTS = [['chats', '对话'], ['chars', '角色'], ['groups', '群组']];
 let root = null;
@@ -56,9 +56,9 @@ export function mount(shell, api) {
         if (act === 'collapse') api.setCollapsed(true);
         else if (act === 'new') newMenu(b);
         else if (act === 'search') toast('info', '命令面板（⌘K）将在后续版本接入');
-        else if (act === 'conn') toggleDrawer('rm_api_block', true);           // → 设置 · 连接 (P2a)
-        else if (act === 'persona') toggleDrawer('PersonaManagement', true);    // → 人设 (P2a)
-        else if (act === 'settings') toggleDrawer('user-settings-block', true); // placeholder until the P2a window
+        else if (act === 'conn') openSettings('api');          // 设置 › 连接
+        else if (act === 'persona') openSettings('persona');   // 设置 › 人设
+        else if (act === 'settings') openSettings(null);       // last page (default 外观)
         else if (act === 'pick-char') setSegment('chars');
         else if (act === 'import') clickSt('#character_import_button');
     });
