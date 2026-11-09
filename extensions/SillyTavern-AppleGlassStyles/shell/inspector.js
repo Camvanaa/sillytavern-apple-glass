@@ -14,11 +14,11 @@
 // group_edit of the open group. Anything else → ask ST to re-select (its own
 // #rm_button_selected_ch) and show a neutral placeholder meanwhile.
 
-import { icon } from './icons.js?v=202611091807';
-import { openMenu, closeMenu } from './menu.js?v=202611091807';
-import { local } from './store.js?v=202611091807';
-import { ctx, h, guard, clickSt, isDesktop, INSP_ID, setInspector, restoreInspectorPin, getCurrentChatId, summary, toDate } from './util.js?v=202611091807';
-import { guarded } from './index.js?v=202611091807';
+import { icon } from './icons.js?v=202611091859';
+import { openMenu, closeMenu } from './menu.js?v=202611091859';
+import { local } from './store.js?v=202611091859';
+import { ctx, h, guard, clickSt, isDesktop, INSP_ID, setInspector, restoreInspectorPin, getCurrentChatId, summary, toDate } from './util.js?v=202611091859';
+import { guarded } from './index.js?v=202611091859';
 import { openGroupId } from '../../../../group-chats.js';
 
 let panel = null;

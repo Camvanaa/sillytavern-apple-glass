@@ -10,14 +10,14 @@
 // Matching: substring first (prefix / word start rank higher), then in-order subsequence;
 // matched characters are bold + underlined. Every action goes through ST's own entry points.
 
-import { icon } from './icons.js?v=202611091807';
+import { icon } from './icons.js?v=202611091859';
 import { world_names, selected_world_info, METADATA_KEY } from '../../../../world-info.js';
 import {
     ctx, h, guard, toast, thumb, fmtTime, summary, stem, clickSt, openEntry, openCharacter, openGroup,
     openSettings, loadSettings, setInspector, isInspectorOpen, isDesktop, modKeyLabel, modCombo, getShellApi,
-} from './util.js?v=202611091807';
-import { getRecent, openRightMenu } from './sidebar.js?v=202611091807';
-import { closeMenu } from './menu.js?v=202611091807';
+} from './util.js?v=202611091859';
+import { getRecent, openRightMenu } from './sidebar.js?v=202611091859';
+import { closeMenu } from './menu.js?v=202611091859';
 
 const GROUPS = {
     recent: { name: '最近对话', max: 5 },
@@ -269,10 +269,15 @@ function collect(q) {
     return res;
 }
 
+/** Groups whose source order means something (recency, ST's list order) keep it on ties;
+ *  the rest prefer the shorter title (“温度” before “温度采样”). */
+const KEEP_ORDER = new Set(['recent', 'chat', 'wi', 'set', 'theme']);
+
 function order(res, q) {
     const out = [];
     for (const g of Object.keys(res)) {
-        res[g].sort((a, b) => a.score - b.score || a.title.length - b.title.length);
+        res[g].forEach((it, k) => { it.ord = k; });
+        res[g].sort((a, b) => a.score - b.score || (KEEP_ORDER.has(g) ? 0 : a.title.length - b.title.length) || a.ord - b.ord);
         out.push({ g, best: res[g][0].score, rows: res[g].slice(0, q.startsWith('/') ? 40 : GROUPS[g].max) });
     }
     out.sort((a, b) => (q ? a.best - b.best : 0) || ORDER.indexOf(a.g) - ORDER.indexOf(b.g));
