@@ -10,14 +10,14 @@
 // Matching: substring first (prefix / word start rank higher), then in-order subsequence;
 // matched characters are bold + underlined. Every action goes through ST's own entry points.
 
-import { icon } from './icons.js?v=202611091749';
+import { icon } from './icons.js?v=202611091807';
 import { world_names, selected_world_info, METADATA_KEY } from '../../../../world-info.js';
 import {
     ctx, h, guard, toast, thumb, fmtTime, summary, stem, clickSt, openEntry, openCharacter, openGroup,
     openSettings, loadSettings, setInspector, isInspectorOpen, isDesktop, modKeyLabel, modCombo, getShellApi,
-} from './util.js?v=202611091749';
-import { getRecent, openRightMenu } from './sidebar.js?v=202611091749';
-import { closeMenu } from './menu.js?v=202611091749';
+} from './util.js?v=202611091807';
+import { getRecent, openRightMenu } from './sidebar.js?v=202611091807';
+import { closeMenu } from './menu.js?v=202611091807';
 
 const GROUPS = {
     recent: { name: '最近对话', max: 5 },
@@ -27,9 +27,10 @@ const GROUPS = {
     act: { name: '操作', max: 6 },
     wi: { name: '世界书', max: 5 },
     set: { name: '设置', max: 6 },
+    theme: { name: '主题', max: 8 },
     cmd: { name: '命令', max: 8 },
 };
-const ORDER = ['recent', 'chat', 'char', 'group', 'act', 'wi', 'set', 'cmd'];
+const ORDER = ['recent', 'chat', 'char', 'group', 'act', 'theme', 'wi', 'set', 'cmd'];
 
 let dlg = null;
 let input = null;
@@ -201,7 +202,7 @@ function actionItems() {
     const curTheme = ctx().powerUserSettings?.theme;
     for (const o of document.querySelectorAll('#themes option')) {
         if (!o.value || o.value === curTheme) continue;
-        add(`切换主题：${o.value}`, 'palette', 'purple', () => $('#themes').val(o.value).trigger('change'), { kw: 'theme 主题 皮肤' });
+        add(`切换主题：${o.value}`, 'palette', 'purple', () => $('#themes').val(o.value).trigger('change'), { group: 'theme', kw: 'theme 主题 皮肤' });
     }
     return a;
 }

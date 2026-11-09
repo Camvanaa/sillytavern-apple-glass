@@ -194,6 +194,7 @@ async function keys(T) {
     // arrows wrap; aria-activedescendant follows; typed keys do not reach ST (swipe arrows)
     const swipeBefore = await page.evaluate(() => { const c = SillyTavern.getContext(); return c.chat[c.chat.length - 1]?.swipe_id ?? null; });
     const calls0 = page.__gen.calls;
+    await page.evaluate(() => document.activeElement?.blur());
     await openByKey(T, page);
     await typeQ(T, page, 'a');
     let s = await pal(page);
@@ -209,7 +210,7 @@ async function keys(T) {
         swipe: swipeBefore === await page.evaluate(() => { const c = SillyTavern.getContext(); return c.chat[c.chat.length - 1]?.swipe_id ?? null; }),
         gen: page.__gen.calls === calls0,
     };
-    // Ctrl+K toggles closed
+    // Ctrl+K toggles closed (focus is in the palette field, not an md textarea)
     await openByKey(T, page);
     out.toggleClose = !(await pal(page)).open;
 
@@ -231,18 +232,26 @@ async function keys(T) {
 
     // IME: keydowns while composing never act (Ctrl+K, Ctrl+., Ctrl+\)
     out.ime = await page.evaluate(async () => {
-        const t = document.getElementById('send_textarea');
-        t.focus();
+        document.activeElement?.blur();
+        const t = document.body; // not an md textarea: Ctrl+K would open the palette here
         const fire = o => t.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, cancelable: true, ...o }));
         fire({ key: 'k', code: 'KeyK', ctrlKey: true, isComposing: true });
+        fire({ key: 'K', code: 'KeyK', ctrlKey: true, shiftKey: true, isComposing: true });
         fire({ key: 'Process', code: 'KeyK', ctrlKey: true, keyCode: 229 });
         fire({ key: '.', code: 'Period', ctrlKey: true, isComposing: true });
         fire({ key: '\\', code: 'Backslash', ctrlKey: true, isComposing: true });
         await new Promise(r => setTimeout(r, 500));
         return { pal: !!document.getElementById('ag2-palette')?.open, insp: document.body.classList.contains('ag2-insp-open'), collapsed: document.body.classList.contains('ag2-side-collapsed') };
     });
+    // control: the same Ctrl+K without composition opens it
+    out.imeControl = await page.evaluate(async () => {
+        document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', code: 'KeyK', ctrlKey: true, bubbles: true, cancelable: true }));
+        await new Promise(r => setTimeout(r, 600));
+        const d = document.getElementById('ag2-palette'); const o = !!d?.open; d?.close(); return o;
+    });
+    await T.sleep(300);
     // IME inside the palette: Enter while composing does not run the selection
-    await openByKey(T, page);
+    await openByKey(T, page, 'Control+Shift+K');
     await typeQ(T, page, 'Ser');
     out.imeEnter = await page.evaluate(async () => {
         const i = document.querySelector('#ag2-palette .ag2-pal-input');
@@ -276,9 +285,11 @@ async function keys(T) {
     const c1 = page.__gen.calls;
     await page.click('#send_textarea');
     await page.keyboard.press('Control+Enter');
-    await page.waitForFunction(() => !document.querySelector('#mes_stop:not([style*="none"])') || true, null, { timeout: 5000 }).catch(() => {});
+    await T.sleep(800);
+    const confirm = (await shell(page)).stPopup; // ST asks once (“Regenerate with Ctrl+Enter?”)
+    if (confirm) await page.click('dialog.popup[open] .popup-button-ok');
     await T.sleep(2500);
-    out.stCtrlEnter = { calls: page.__gen.calls - c1 };
+    out.stCtrlEnter = { confirm, calls: page.__gen.calls - c1 };
     out.errors = T.errors(page);
     return out;
 }
@@ -353,6 +364,8 @@ async function esc(T) {
     const m1 = await shell(page);
     out.menu = { before: { menu: m0.menu, insp: m0.insp }, after: { menu: m1.menu, insp: m1.insp } };
     // field inside the inspector: first Esc blurs, second closes
+    await page.click('#right-nav-panel [data-ag2-act="edit"][data-field="desc"]').catch(() => {});
+    await T.sleep(400);
     const fieldOk = await page.evaluate(() => {
         const f = [...document.querySelectorAll('#right-nav-panel input[type="text"], #right-nav-panel textarea')].find(x => x.getClientRects().length && getComputedStyle(x).visibility !== 'hidden');
         if (!f) return null; f.focus(); return document.activeElement === f ? (f.id || f.name || 'field') : null;
@@ -414,6 +427,32 @@ async function lazy(T) {
     return { atBoot, afterOpen, afterQuery: [...req], errors: T.errors(page) };
 }
 
+// ---------------------------------------------------------------- theme: 切换主题 action tears the shell down cleanly
+async function theme(T) {
+    const { page } = await enter(T);
+    await openByKey(T, page);
+    await typeQ(T, page, '主题');
+    const s = await pal(page);
+    const rows = s.rows.map(r => `${r.g}|${r.t}`);
+    await page.fill('#ag2-palette .ag2-pal-input', '');
+    await typeQ(T, page, 'glass dark');
+    const s2 = await pal(page);
+    rows.push('--', ...s2.rows.slice(0, 3).map(r => `${r.g}|${r.t}|${r.m}`));
+    await selectRow(T, page, '主题', t => t === '切换主题：Apple Glass Dark');
+    await page.keyboard.press('Enter');
+    await T.sleep(3000);
+    const after = await page.evaluate(() => ({
+        ag2: document.body.classList.contains('ag2'), theme: SillyTavern.getContext().powerUserSettings.theme,
+        nodes: document.querySelectorAll('[id^="ag2-"]').length, cls: [...document.body.classList].filter(c => c.startsWith('ag2')),
+    }));
+    // keys are unbound with the shell: Ctrl+K no longer opens anything
+    await page.evaluate(() => document.activeElement?.blur());
+    await page.keyboard.press('Control+K');
+    await T.sleep(500);
+    after.palAfter = await page.evaluate(() => !!document.getElementById('ag2-palette'));
+    return { rows, after, errors: T.errors(page) };
+}
+
 // ---------------------------------------------------------------- shots + scan with the palette open
 async function shots(T) {
     const out = {};
@@ -438,7 +477,7 @@ async function shots(T) {
 }
 
 export default async function (T) {
-    const parts = { dev, search, keys, focus, esc, mac, lazy, shots };
+    const parts = { dev, search, keys, focus, esc, mac, lazy, shots, theme };
     if (!parts[part]) throw new Error('unknown part ' + part);
     const r = await parts[part](T);
     await T.save('p4-' + part, r);
