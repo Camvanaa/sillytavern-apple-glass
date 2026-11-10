@@ -1,6 +1,7 @@
 # whitelist approach: only theme/project files are tracked
 /*
 !/.gitignore
+!/README.md
 !/apple-theme.css
 !/apple-glass-2.css
 !/sync-css.sh
@@ -11,7 +12,6 @@
 !/data/default-user/
 /data/default-user/*
 !/data/default-user/themes/
-!/data/default-user/OpenAI Settings/
 !/extensions/
 /extensions/*
 !/extensions/SillyTavern-AppleGlassStyles/
