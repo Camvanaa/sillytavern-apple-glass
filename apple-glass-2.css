@@ -5714,9 +5714,11 @@ html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-scope {
         animation: ag2-sheet-up var(--ag2-dur-panel) var(--ag2-ease-sheet);
     }
 
+    /* R1: only the transition is cut while dragging. `animation: none` here made the sheet
+       replay ag2-sheet-up (and the drawer its fade) when a short drag was released: for
+       ~280ms the sheet slid up again while the drawer already sat at its final place. */
     html body.ag2.ag2-phone.ag2-sheet-drag:not(#_):not(#__) :is(#ag2-settings, .drawer-content.openDrawer) {
         transition: none !important;
-        animation: none !important;
     }
 
     html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings.ag2-set-phone[data-level="list"] .ag2-set-page,

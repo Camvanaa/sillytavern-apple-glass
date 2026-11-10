@@ -116,7 +116,12 @@ function sampler() {
         start() { frames = []; marks = []; n = 0; nm = 0; maxGap = 0; last = 0; t0 = performance.now(); if (!on) { on = true; requestAnimationFrame(tick); } },
         mark(l) { marks.push([l, Math.round(performance.now() - t0)]); },
         /** The inspector's box and look while it is open and at rest. */
-        setRef() { const e = document.getElementById(INSP); const cs = getComputedStyle(e); const r = e.getBoundingClientRect(); ref = inspLook(cs, r); return ref; },
+        async setRef() {
+            const e = document.getElementById(INSP);
+            // at rest: the entry animation must be over (frames are sparse on a loaded host)
+            await Promise.race([Promise.all(e.getAnimations().map(a => a.finished.catch(() => {}))), new Promise(r => setTimeout(r, 3000))]);
+            const cs = getComputedStyle(e); const r = e.getBoundingClientRect(); ref = inspLook(cs, r); return ref;
+        },
         getRef: () => ref,
         useRef(r) { ref = r; },
         stop() {
@@ -369,7 +374,9 @@ async function phone(T, keep) {
     await op('insp-open2', () => tap('#ag2-title .ag2-title-btn'), { ms: 1100 });
     await op('insp-close-esc', () => page.keyboard.press('Escape'), { shots: [50, 120] });
     await op('insp-open3', () => tap('#ag2-title .ag2-title-btn'), { ms: 1100 });
-    await op('insp-close-back', () => tap('#ag2-ph-back').catch(() => page.keyboard.press('Escape')), { ms: 1100 });
+    // closed again before the sheet's entry animation is over
+    await page.keyboard.press('Escape'); await T.sleep(700);
+    await op('insp-open-close-fast', async () => { await tap('#ag2-title .ag2-title-btn'); await T.sleep(90); await page.keyboard.press('Escape'); }, { ms: 1100 });
     if ((await state(page)).insp) { await page.keyboard.press('Escape'); await T.sleep(700); }
     out.afterInsp = await state(page);
     if (await page.evaluate(() => document.body.dataset.ag2Ph !== 'list')) { await tap('#ag2-ph-back').catch(() => {}); await T.sleep(900); }
