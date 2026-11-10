@@ -457,14 +457,141 @@ async function bootOnly(T, keep) {
     return out;
 }
 
+// ---------------------------------------------------------------- cycle: ST's drawer state machine still works
+// Every drawer is opened / closed ROUNDS times through the shell (→ doNavbarIconClick); each time
+// it must be shown inside the window when open and be display:none when closed. Then the same
+// drawers are driven with ST's own toggles under the classic theme (?classic and after switching
+// to Apple Glass Dark): the R1 rules must not apply there (ST's closing transition is back).
+async function cycle(T, keep) {
+    const phoneMode = !!T.cfg.phone;
+    const { page, out } = await make(T, { phone: phoneMode });
+    keep.out = out;
+    await T.boot(page, { ag2: true, settle: 2500 });
+    const ST_PAGES = ['api', 'ai', 'fmt', 'wi', 'persona', 'bg', 'user', 'ext'];
+    const ROUNDS = 4;
+    const act = sel => (phoneMode ? page.tap(sel) : page.click(sel));
+    const snap = () => page.evaluate(async () => {
+        const ids = ['rm_api_block', 'left-nav-panel', 'AdvancedFormatting', 'WorldInfo', 'PersonaManagement', 'Backgrounds', 'user-settings-block', 'rm_extensions_block', 'right-nav-panel'];
+        const win = document.getElementById('ag2-settings');
+        const w = win && !win.hidden ? win.getBoundingClientRect() : null;
+        const open = [], leak = [];
+        for (const id of ids) {
+            const e = document.getElementById(id); const cs = getComputedStyle(e);
+            if (e.classList.contains('openDrawer')) {
+                await Promise.race([Promise.all(e.getAnimations().map(a => a.finished.catch(() => {}))), new Promise(r => setTimeout(r, 2000))]);
+                const r = e.getBoundingClientRect(); const c2 = getComputedStyle(e);
+                const inside = !!w && r.left >= w.left - 1 && r.right <= w.right + 1 && r.top >= w.top - 1 && r.bottom <= w.bottom + 1 && r.height > 200;
+                open.push(`${id}:${id === 'right-nav-panel' ? 'insp' : inside ? 'in' : 'OUT'}:${c2.display}/${c2.visibility}/${c2.opacity}`);
+            } else if (cs.display !== 'none') leak.push(`${id}:${cs.display}`);
+        }
+        return { open, leak, icons: document.querySelectorAll('#top-settings-holder .openIcon').length };
+    });
+    const bad = [];
+    let n = 0;
+    await act(phoneMode ? '#ag2-tabbar [data-tab="settings"]' : '#ag2-sidebar [data-act="settings"]'); await T.sleep(700);
+    for (let r = 0; r < ROUNDS; r++) {
+        for (const p of ST_PAGES) {
+            await act(`#ag2-settings .ag2-set-item[data-page="${p}"]`); await T.sleep(r % 2 ? 120 : 420); // odd rounds: before ST's wait is over
+            if (r % 2) await T.sleep(500);
+            const a = await snap(); n++;
+            if (a.open.length !== 1 || !a.open[0].includes(':in:') || !/\/visible\/1$/.test(a.open[0]) || a.leak.length || a.icons !== 1) bad.push({ r, p, at: 'open', ...a });
+            if (phoneMode) {
+                await act('#ag2-settings .ag2-set-back'); await T.sleep(450);
+                const c = await snap(); n++;
+                if (c.open.length || c.leak.length || c.icons) bad.push({ r, p, at: 'back', ...c });
+            }
+        }
+        // close the window from a drawer page and open it again
+        if (phoneMode) await act('#ag2-settings .ag2-set-item[data-page="api"]'), await T.sleep(450);
+        await page.keyboard.press('Escape'); await T.sleep(450);
+        if (phoneMode && await page.evaluate(() => document.body.classList.contains('ag2-set-open'))) { await page.keyboard.press('Escape'); await T.sleep(450); }
+        const c = await snap(); n++;
+        if (c.open.length || c.leak.length || c.icons) bad.push({ r, at: 'closed', ...c });
+        await act(phoneMode ? '#ag2-tabbar [data-tab="settings"]' : '#ag2-sidebar [data-act="settings"]'); await T.sleep(600);
+    }
+    await page.keyboard.press('Escape'); await T.sleep(500);
+    if (await page.evaluate(() => document.body.classList.contains('ag2-set-open'))) { await page.keyboard.press('Escape'); await T.sleep(500); }
+    out.cycle = { rounds: ROUNDS, checks: n, bad: bad.slice(0, 6), badCount: bad.length };
+    // inspector: toggled through the shell API path (ST's handler), desktop only
+    if (!phoneMode) {
+        await T.openChat(page, await T.longChat(page), 2);
+        const ib = [];
+        for (let i = 0; i < 8; i++) {
+            await page.click('#ag2-tools [data-act="insp"]'); await T.sleep(i % 2 ? 150 : 500); if (i % 2) await T.sleep(450);
+            const a = await snap();
+            const want = i % 2 === 0;
+            if ((a.open.length === 1) !== want || a.leak.length) ib.push({ i, ...a });
+        }
+        out.cycle.inspBad = ib;
+    }
+    // classic theme: ST's own drawers, ST's own closing transition (the R1 rules must not apply)
+    const classic = async label => {
+        const res = await page.evaluate(async () => {
+            const wait = ms => new Promise(r => setTimeout(r, ms));
+            const d = document.getElementById('PersonaManagement');
+            const t = d.closest('.drawer').querySelector(':scope > .drawer-toggle');
+            const o = {};
+            t.click(); await wait(700);
+            let cs = getComputedStyle(d);
+            o.open = `${d.classList.contains('openDrawer')} ${cs.display}/${cs.visibility} h=${Math.round(d.getBoundingClientRect().height)}`;
+            t.click(); await wait(30);
+            cs = getComputedStyle(d);
+            o.closing = `${d.classList.contains('closedDrawer')} display=${cs.display} transition=${cs.transitionProperty}`;
+            await wait(900);
+            o.closed = getComputedStyle(d).display;
+            t.click(); await wait(700);
+            o.reopen = `${d.classList.contains('openDrawer')} ${getComputedStyle(d).display}`;
+            t.click(); await wait(700);
+            o.body = [...document.body.classList].filter(c => c.startsWith('ag2')).join(' ') || '-';
+            o.shell = !!document.getElementById('ag2-shell');
+            return o;
+        });
+        out[label] = res;
+    };
+    await page.evaluate(() => { $('#themes').val('Apple Glass Dark').trigger('change'); }); await T.sleep(3000);
+    await classic('darkTheme');
+    await page.evaluate(() => { $('#themes').val('Apple Glass 2').trigger('change'); }); await T.sleep(3500);
+    out.backAg2 = await page.evaluate(() => ({ ag2: document.body.classList.contains('ag2'), set: document.body.classList.contains('ag2-set-open'), open: [...document.querySelectorAll('.drawer-content.openDrawer')].map(e => e.id).join(',') }));
+    // ?classic boot
+    const p2 = await T.newPage({ phone: phoneMode });
+    await T.prepare(p2, {});
+    await T.boot(p2, { query: '?classic', settle: 3000 });
+    const keepPage = page;
+    // With a query string ST's start-up can stall behind #preloader in this harness (run.mjs boot
+    // note; same on Apple Glass Dark), so its click handlers are not relied on here: the classes
+    // are flipped by hand, which is all the CSS sees. The AG2 theme CSS IS loaded (active theme),
+    // only body.ag2 is missing — the R1 rules must not match.
+    out.classicBoot = await p2.evaluate(async () => {
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        const d = document.getElementById('PersonaManagement');
+        const o = { body: [...document.body.classList].filter(c => c.startsWith('ag2')).join(' ') || '-', shell: !!document.getElementById('ag2-shell'), theme: SillyTavern.getContext().powerUserSettings.theme };
+        // direct: nothing matches the R1 selectors without body.ag2
+        const ids = '#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block';
+        o.r1Matches = document.querySelectorAll(`html body.ag2 :is(${ids}, #right-nav-panel):not(.openDrawer), html body.ag2:not(.ag2-set-open) :is(${ids}).openDrawer, html body.ag2:not(.ag2-insp-open) #right-nav-panel`).length;
+        o.preloader = !!document.getElementById('preloader');
+        d.classList.replace('closedDrawer', 'openDrawer'); await wait(700);
+        let cs = getComputedStyle(d); const r = d.getBoundingClientRect();
+        o.open = `${cs.display}/${cs.visibility} pos=${cs.position} top=${Math.round(r.top)} h=${Math.round(r.height)}`;
+        d.classList.replace('openDrawer', 'closedDrawer'); await wait(30);
+        cs = getComputedStyle(d);
+        o.closing = `display=${cs.display} transition=${cs.transitionProperty}`; // ST's own closing transition still runs
+        await wait(900);
+        o.closed = getComputedStyle(d).display;
+        return o;
+    });
+    void keepPage;
+    if (out.cycle.badCount || (out.cycle.inspBad || []).length) process.exitCode = 1;
+    return out;
+}
+
 export default async function (T) {
     const box = {};
     let out;
-    try { out = await (part === 'boot' ? bootOnly(T, box) : part === 'phone' ? phone(T, box) : desk(T, box)); }
+    try { out = await (part === 'cycle' ? cycle(T, box) : part === 'boot' ? bootOnly(T, box) : part === 'phone' ? phone(T, box) : desk(T, box)); }
     catch (e) { out = box.out || { ops: {}, total: { out: 0, native: 0, blur: 0 } }; out.error = String(e && e.message || e).slice(0, 1600); process.exitCode = 1; }
     out.variant = { part, stReduced: ST_REDUCED, osReduced: !!T.cfg.reduced, shots: SHOTS || null, mem: MEM };
     const bad = out.total.out + out.total.native + out.total.blur;
-    out.verdict = bad || out.error ? 'FAIL' : 'PASS';
+    out.verdict = bad || out.error || process.exitCode ? 'FAIL' : 'PASS';
     if (bad) process.exitCode = 1;
     return out;
 }
