@@ -18,7 +18,8 @@
 //           backdrop-filter of their own; inspector: not the shell's background + radius)
 //   blur    a visible layer (drawers, <body> children, #sheld, #chat, shell layers) with
 //           backdrop-filter blur covering > 60% of the viewport that is
-//           neither the settings sheet nor the inspector in its AG2 form
+//           neither the settings sheet nor the inspector in its AG2 form (frames under ST's
+//           opaque start-up splash #preloader are counted apart as blurUnderSplash)
 // “visible” = display ≠ none, visibility ≠ hidden, opacity > 0.02, box ≥ 2×2 inside the viewport.
 // Frames without body.ag2 (classic theme during the theme round trip, before the shell boots) are
 // not judged: ST's own interface is what must show there.
@@ -108,7 +109,7 @@ function sampler() {
             const cs = getComputedStyle(e);
             if (!cs.backdropFilter || !/blur\(/.test(cs.backdropFilter) || /blur\(0(px)?\)/.test(cs.backdropFilter)) continue;
             if (!shown(cs, r)) continue;
-            blur.push({ t, id: name(e), k: 'blur', rect: R(r), bf: cs.backdropFilter, op: cs.opacity, cls: typeof e.className === 'string' ? e.className.replace(/\s+/g, ' ').trim().slice(0, 80) : '' });
+            blur.push({ t, id: name(e), k: 'blur', rect: R(r), bf: cs.backdropFilter, op: cs.opacity, pre: !!document.getElementById('preloader'), body: b.className.replace(/\s+/g, ' ').slice(0, 160), sheets: document.styleSheets.length, cls: typeof e.className === 'string' ? e.className.replace(/\s+/g, ' ').trim().slice(0, 80) : '' });
         }
         if (rec.length || inspRaw || blur.length) frames.push({ t, rec, insp: inspRaw, blur });
     }
@@ -126,7 +127,7 @@ function sampler() {
         useRef(r) { ref = r; },
         stop() {
             on = false;
-            const res = { frames: n, muts: nm, ms: Math.round(performance.now() - t0), maxGap: Math.round(maxGap), out: 0, native: 0, blur: 0, overlap: 0, inspFrames: 0, bad: [], marks };
+            const res = { frames: n, muts: nm, ms: Math.round(performance.now() - t0), maxGap: Math.round(maxGap), out: 0, native: 0, blur: 0, blurUnderSplash: 0, overlap: 0, inspFrames: 0, bad: [], marks };
             const seen = new Set();
             const push = (x, key) => { if (seen.has(key) || res.bad.length >= 8) return; seen.add(key); res.bad.push(x); };
             for (const f of frames) {
@@ -153,7 +154,10 @@ function sampler() {
                     }
                     if (k) push({ ...i, k, ref: ref ? ref.rect : null }, i.id + k + i.cls + i.body);
                 }
-                if (f.blur.length) { res.blur++; for (const x of f.blur) push(x, x.id + 'blur'); }
+                // under ST's opaque start-up splash (#preloader) nothing of the page is seen: counted apart
+                const seenBlur = f.blur.filter(x => !x.pre);
+                if (seenBlur.length) { res.blur++; for (const x of seenBlur) push(x, x.id + 'blur'); }
+                else if (f.blur.length) { res.blurUnderSplash++; if (!res.splashNote) res.splashNote = f.blur[0]; }
                 if (o) res.out++;
                 if (na) res.native++;
                 if (ov) res.overlap++;
@@ -188,7 +192,7 @@ async function make(T, { phone }) {
     const finish = async (name, extra = {}) => {
         const r = await page.evaluate(() => window.__r1.stop());
         const s = await state(page);
-        out.ops[name] = { frames: r.frames, muts: r.muts, ms: r.ms, maxGap: r.maxGap, out: r.out, native: r.native, blur: r.blur, overlap: r.overlap, insp: r.inspFrames, after: `${s.set ? 'set:' + s.page + (s.level ? '/' + s.level : '') : '-'} insp:${s.insp ? 1 : 0} open:[${s.open}]`, ...extra, ...(r.bad.length ? { bad: r.bad } : {}) };
+        out.ops[name] = { frames: r.frames, muts: r.muts, ms: r.ms, maxGap: r.maxGap, out: r.out, native: r.native, blur: r.blur, overlap: r.overlap, insp: r.inspFrames, ...(r.blurUnderSplash ? { blurUnderSplash: r.blurUnderSplash, splashNote: r.splashNote } : {}), after: `${s.set ? 'set:' + s.page + (s.level ? '/' + s.level : '') : '-'} insp:${s.insp ? 1 : 0} open:[${s.open}]`, ...extra, ...(r.bad.length ? { bad: r.bad } : {}) };
         const t = out.total;
         t.ops++; t.frames += r.frames; t.muts = (t.muts || 0) + r.muts; t.out += r.out; t.native += r.native; t.blur += r.blur; t.overlap += r.overlap;
         if (r.out || r.native || r.blur) t.badOps.push(`${name} out=${r.out} native=${r.native} blur=${r.blur}`);
@@ -444,10 +448,19 @@ async function phone(T, keep) {
     return out;
 }
 
+// ---------------------------------------------------------------- boot only (start-up alignment)
+async function bootOnly(T, keep) {
+    const { page, out, finish } = await make(T, { phone: !!T.cfg.phone });
+    keep.out = out;
+    out.boot = await T.boot(page, { ag2: true, settle: 3500 });
+    await finish('boot');
+    return out;
+}
+
 export default async function (T) {
     const box = {};
     let out;
-    try { out = await (part === 'phone' ? phone(T, box) : desk(T, box)); }
+    try { out = await (part === 'boot' ? bootOnly(T, box) : part === 'phone' ? phone(T, box) : desk(T, box)); }
     catch (e) { out = box.out || { ops: {}, total: { out: 0, native: 0, blur: 0 } }; out.error = String(e && e.message || e).slice(0, 1600); process.exitCode = 1; }
     out.variant = { part, stReduced: ST_REDUCED, osReduced: !!T.cfg.reduced, shots: SHOTS || null, mem: MEM };
     const bad = out.total.out + out.total.native + out.total.blur;
