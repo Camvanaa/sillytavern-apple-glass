@@ -109,7 +109,7 @@ function sampler() {
             const cs = getComputedStyle(e);
             if (!cs.backdropFilter || !/blur\(/.test(cs.backdropFilter) || /blur\(0(px)?\)/.test(cs.backdropFilter)) continue;
             if (!shown(cs, r)) continue;
-            blur.push({ t, id: name(e), k: 'blur', rect: R(r), bf: cs.backdropFilter, op: cs.opacity, pre: !!document.getElementById('preloader'), body: b.className.replace(/\s+/g, ' ').slice(0, 160), sheets: document.styleSheets.length, cls: typeof e.className === 'string' ? e.className.replace(/\s+/g, ' ').trim().slice(0, 80) : '' });
+            blur.push({ t, id: name(e), k: 'blur', rect: R(r), bf: cs.backdropFilter, op: cs.opacity, pre: (() => { const p = document.getElementById('preloader'); if (!p) return null; const c = getComputedStyle(p); const q = p.getBoundingClientRect(); return [c.display, c.opacity, c.backgroundColor, c.zIndex, Math.round(q.width) + 'x' + Math.round(q.height)].join(' '); })(), chatRule: getComputedStyle(document.getElementById('chat')).paddingTop + ' ' + getComputedStyle(b).getPropertyValue('--ag2-read-width'), body: b.className.replace(/\s+/g, ' ').slice(0, 160), sheets: document.styleSheets.length, cls: typeof e.className === 'string' ? e.className.replace(/\s+/g, ' ').trim().slice(0, 80) : '' });
         }
         if (rec.length || inspRaw || blur.length) frames.push({ t, rec, insp: inspRaw, blur });
     }
