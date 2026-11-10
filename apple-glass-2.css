@@ -2944,6 +2944,30 @@ html body.ag2:not(#_):not(#__) #ag2-settings.ag2-set-st .ag2-set-body {
     html body.ag2.ag2-set-open:not(#_):not(#__) #right-nav-panel {
         visibility: hidden !important;
     }
+
+    /* R1 · no native flash. ST closes a drawer by swapping .openDrawer for .closedDrawer and
+       lets `transition: height, display allow-discrete` (2 × animation_duration) play, so the
+       closing drawer stays display:block for ~250ms — without .openDrawer it matched none of
+       the rules above and showed at ST's own spot with ST's own look (over the window when a
+       page was switched, over the chat when the window closed; on phones a full-screen
+       blurred sheet). A running transition also beats `display: none !important`, hence
+       `transition: none`. The window / sheet is what animates; the drawer just goes. */
+    html body.ag2:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block, #right-nav-panel):not(.openDrawer) {
+        display: none !important;
+        transition: none !important;
+        animation: none !important;
+    }
+
+    /* A settings drawer that is open while the window is not (ST re-opened a pinned drawer
+       at start; the frames between a theme switch and the window adopting the drawer; the
+       window closing): never painted at ST's spot. The drawer observer (shell/index.js)
+       opens the window for it, which makes the rules above apply. */
+    html body.ag2:not(.ag2-set-open):not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block).openDrawer {
+        visibility: hidden !important;
+        transition: none !important;
+        animation: none !important;
+        pointer-events: none !important;
+    }
 }
 
 /* --- shell page controls (外观 / 关于) --- */
@@ -4063,6 +4087,9 @@ html body.ag2.ag2-insp-open {
        not shown at all. */
     html body.ag2:not(.ag2-insp-open):not(#_):not(#__) #right-nav-panel {
         display: none !important;
+        /* R1: ST's running `display` transition would keep it painted (see “no native flash”) */
+        transition: none !important;
+        animation: none !important;
     }
 
     html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel.openDrawer {

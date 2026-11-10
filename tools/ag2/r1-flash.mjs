@@ -1,11 +1,11 @@
 // tools/ag2/r1-flash.mjs — R1 probe: “ST's native drawer flashes while a panel closes / switches”.
 //
-//   node tools/ag2/run.mjs tools/ag2/r1-flash.mjs --phase R1 --part desk  [--st-reduced] [--shots pre|post] [--mem]
-//   node tools/ag2/run.mjs tools/ag2/r1-flash.mjs --phase R1 --part phone --phone [--st-reduced] [--shots pre|post] [--mem]
+//   node tools/ag2/run.mjs tools/ag2/r1-flash.mjs --phase R1 --part desk  [--st-reduced] [--snap pre|post] [--mem]
+//   node tools/ag2/run.mjs tools/ag2/r1-flash.mjs --phase R1 --part phone --phone [--st-reduced] [--snap pre|post] [--mem]
 //   --st-reduced  ST's own “减少动态” (power_user.reduced_motion → animation_duration 0)
 //   --reduced     (run.mjs) the OS preference instead
-//   --shots TAG   also take screenshots in the middle of the animations → real/R1/<TAG>-…png
-//                 (screenshots stall frames, so the numbers of a --shots run are not the reference)
+//   --snap TAG    also take screenshots in the middle of the animations → real/R1/<TAG>-…png
+//                 (screenshots stall frames, so the numbers of a --snap run are not the reference)
 //   --mem         inject the worktree CSS in memory (debug); acceptance runs use the published theme
 //
 // How it measures: a requestAnimationFrame sampler (installed before any page script) looks at the
@@ -16,7 +16,8 @@
 //            right / from below, never sit elsewhere or have another size)
 //   native  a visible drawer wearing ST's own look (settings drawers: background / border /
 //           backdrop-filter of their own; inspector: not the shell's background + radius)
-//   blur    a visible element with backdrop-filter blur covering > 60% of the viewport that is
+//   blur    a visible layer (drawers, <body> children, #sheld, #chat, shell layers) with
+//           backdrop-filter blur covering > 60% of the viewport that is
 //           neither the settings sheet nor the inspector in its AG2 form
 // “visible” = display ≠ none, visibility ≠ hidden, opacity > 0.02, box ≥ 2×2 inside the viewport.
 // Frames without body.ag2 (classic theme during the theme round trip, before the shell boots) are
@@ -27,7 +28,7 @@ const argv = process.argv;
 const part = (() => { const i = argv.indexOf('--part'); return i > 0 ? argv[i + 1] : 'desk'; })();
 const MEM = argv.includes('--mem');
 const ST_REDUCED = argv.includes('--st-reduced');
-const SHOTS = (() => { const i = argv.indexOf('--shots'); return i > 0 ? argv[i + 1] : ''; })();
+const SHOTS = (() => { const i = argv.indexOf('--snap'); return i > 0 ? argv[i + 1] : ''; })();
 const PAGES = ['api', 'ai', 'fmt', 'wi', 'persona', 'bg', 'look', 'user', 'ext', 'about'];
 
 /** Runs in the page before everything else. */
@@ -35,7 +36,7 @@ function sampler() {
     if (window.__r1) return;
     const SET = ['rm_api_block', 'left-nav-panel', 'AdvancedFormatting', 'WorldInfo', 'PersonaManagement', 'Backgrounds', 'user-settings-block', 'rm_extensions_block'];
     const INSP = 'right-nav-panel';
-    let frames = [], on = false, t0 = 0, last = 0, maxGap = 0, n = 0, ref = null, marks = [];
+    let frames = [], on = false, t0 = 0, last = 0, maxGap = 0, n = 0, nm = 0, ref = null, marks = [];
     const R = r => [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)];
     const shown = (cs, r) => cs.display !== 'none' && cs.visibility !== 'hidden' && +cs.opacity > 0.02
         && r.width >= 2 && r.height >= 2 && r.right > 0 && r.bottom > 0 && r.left < innerWidth && r.top < innerHeight;
@@ -45,12 +46,27 @@ function sampler() {
     function tick(now) {
         if (!on) return;
         requestAnimationFrame(tick);
-        const b = document.body;
-        if (!b) return;
+        if (!document.body) return;
         n++;
         if (last) maxGap = Math.max(maxGap, now - last);
         last = now;
-        if (!b.classList.contains('ag2')) return;
+        judge(now);
+    }
+    // Also judged right after every class change of a drawer / of <body> (MutationObserver
+    // microtask + the next macrotask): the result no longer depends on the frame rate.
+    let moOn = false;
+    function watch() {
+        if (moOn || !document.body) return;
+        moOn = true;
+        const mo = new MutationObserver(() => { if (!on) return; nm++; judge(performance.now()); setTimeout(() => { if (on) { nm++; judge(performance.now()); } }, 0); });
+        mo.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+        for (const id of [...SET, INSP]) { const e = document.getElementById(id); if (e) mo.observe(e, { attributes: true, attributeFilter: ['class'] }); else moOn = false; }
+    }
+    function judge(now) {
+        const b = document.body;
+        watch();
+        // classic theme on screen (theme round trip): ST's own interface is what must show
+        if (!b.classList.contains('ag2') || !getComputedStyle(b).getPropertyValue('--ag2-insp-w').trim()) return;
         const t = Math.round(now - t0);
         const rec = [];
         const win = document.getElementById('ag2-settings');
@@ -82,7 +98,9 @@ function sampler() {
         // full-page blur: large boxes first (cheap), computed style only for those
         const need = innerWidth * innerHeight * 0.6;
         const blur = [];
-        for (const e of b.querySelectorAll('*')) {
+        // candidates only (a whole-DOM walk per frame overloads the 2-core test host): the drawers,
+        // the top-level layers and the shell's own layers
+        for (const e of b.querySelectorAll(':scope > *, #top-settings-holder .drawer-content, #sheld, #chat, #form_sheld, #ag2-shell > *, #ag2-layer > *, dialog[open]')) {
             if (e.id === 'ag2-settings' || e.id === INSP) continue; // judged above (sheet / inspector form)
             const r = e.getBoundingClientRect();
             const w = Math.min(r.right, innerWidth) - Math.max(r.left, 0), h = Math.min(r.bottom, innerHeight) - Math.max(r.top, 0);
@@ -95,7 +113,7 @@ function sampler() {
         if (rec.length || inspRaw || blur.length) frames.push({ t, rec, insp: inspRaw, blur });
     }
     window.__r1 = {
-        start() { frames = []; marks = []; n = 0; maxGap = 0; last = 0; t0 = performance.now(); if (!on) { on = true; requestAnimationFrame(tick); } },
+        start() { frames = []; marks = []; n = 0; nm = 0; maxGap = 0; last = 0; t0 = performance.now(); if (!on) { on = true; requestAnimationFrame(tick); } },
         mark(l) { marks.push([l, Math.round(performance.now() - t0)]); },
         /** The inspector's box and look while it is open and at rest. */
         setRef() { const e = document.getElementById(INSP); const cs = getComputedStyle(e); const r = e.getBoundingClientRect(); ref = inspLook(cs, r); return ref; },
@@ -103,7 +121,7 @@ function sampler() {
         useRef(r) { ref = r; },
         stop() {
             on = false;
-            const res = { frames: n, ms: Math.round(performance.now() - t0), maxGap: Math.round(maxGap), out: 0, native: 0, blur: 0, overlap: 0, inspFrames: 0, bad: [], marks };
+            const res = { frames: n, muts: nm, ms: Math.round(performance.now() - t0), maxGap: Math.round(maxGap), out: 0, native: 0, blur: 0, overlap: 0, inspFrames: 0, bad: [], marks };
             const seen = new Set();
             const push = (x, key) => { if (seen.has(key) || res.bad.length >= 8) return; seen.add(key); res.bad.push(x); };
             for (const f of frames) {
@@ -165,9 +183,9 @@ async function make(T, { phone }) {
     const finish = async (name, extra = {}) => {
         const r = await page.evaluate(() => window.__r1.stop());
         const s = await state(page);
-        out.ops[name] = { frames: r.frames, ms: r.ms, maxGap: r.maxGap, out: r.out, native: r.native, blur: r.blur, overlap: r.overlap, insp: r.inspFrames, after: `${s.set ? 'set:' + s.page + (s.level ? '/' + s.level : '') : '-'} insp:${s.insp ? 1 : 0} open:[${s.open}]`, ...extra, ...(r.bad.length ? { bad: r.bad } : {}) };
+        out.ops[name] = { frames: r.frames, muts: r.muts, ms: r.ms, maxGap: r.maxGap, out: r.out, native: r.native, blur: r.blur, overlap: r.overlap, insp: r.inspFrames, after: `${s.set ? 'set:' + s.page + (s.level ? '/' + s.level : '') : '-'} insp:${s.insp ? 1 : 0} open:[${s.open}]`, ...extra, ...(r.bad.length ? { bad: r.bad } : {}) };
         const t = out.total;
-        t.ops++; t.frames += r.frames; t.out += r.out; t.native += r.native; t.blur += r.blur; t.overlap += r.overlap;
+        t.ops++; t.frames += r.frames; t.muts = (t.muts || 0) + r.muts; t.out += r.out; t.native += r.native; t.blur += r.blur; t.overlap += r.overlap;
         if (r.out || r.native || r.blur) t.badOps.push(`${name} out=${r.out} native=${r.native} blur=${r.blur}`);
         return r;
     };
@@ -192,7 +210,13 @@ async function desk(T, keep) {
     out.boot = boot;
     // the first boot is not judged here (no inspector reference yet): boot-insp-open / -closed below are
     await page.evaluate(() => window.__r1.stop());
-    const click = sel => page.click(sel);
+    // real mouse events at the element's centre; page.click() sometimes hangs in “waiting for
+    // scheduled navigations” right after a chat switch
+    const click = async sel => {
+        const h = await page.waitForSelector(sel, { state: 'visible', timeout: 15000 });
+        const r = await h.boundingBox();
+        await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
+    };
     const key = k => page.keyboard.press(k);
     await T.openChat(page, await T.longChat(page), 2);
     out.dur = (await state(page)).dur;
@@ -263,17 +287,19 @@ async function desk(T, keep) {
     await op('theme-back-ag2', () => page.evaluate(() => { $('#themes').val('Apple Glass 2').trigger('change'); }), { ms: 4000, shots: [100, 400, 900] });
     out.themeBack = await state(page);
     await op('theme-close', () => key('Escape'));
-    if ((await state(page)).set) await op('theme-close-b', () => page.click('#ag2-settings .ag2-set-close'));
+    if ((await state(page)).set) await op('theme-close-b', () => click('#ag2-settings .ag2-set-close'));
 
     // --- still works afterwards: every drawer opens again in the window, Esc order unchanged
     const fn = {};
     await click('#ag2-sidebar [data-act="settings"]'); await T.sleep(600);
     for (const p of PAGES) {
         await click(`#ag2-settings .ag2-set-item[data-page="${p}"]`); await T.sleep(600);
-        fn[p] = await page.evaluate(() => {
+        fn[p] = await page.evaluate(async () => {
             const w = document.getElementById('ag2-settings').getBoundingClientRect();
             const d = [...document.querySelectorAll('#top-settings-holder .drawer-content.openDrawer')].filter(e => e.id !== 'right-nav-panel');
             if (!d.length) return 'shell:' + document.body.dataset.ag2Set;
+            // headless frames are sparse: let the fade-in end before reading the opacity
+            await Promise.race([Promise.all(d[0].getAnimations().map(a => a.finished.catch(() => {}))), new Promise(r => setTimeout(r, 3000))]);
             const r = d[0].getBoundingClientRect(); const cs = getComputedStyle(d[0]);
             return `${d[0].id} n=${d.length} in=${r.left >= w.left - 1 && r.right <= w.right + 1 && r.top >= w.top - 1 && r.bottom <= w.bottom + 1 && r.height > 200} vis=${cs.visibility}/${cs.display}/${cs.opacity}`;
         });
@@ -284,7 +310,6 @@ async function desk(T, keep) {
     const box = await page.evaluate(() => { const r = document.getElementById('user-settings-block').getBoundingClientRect(); return [r.left + 60, r.top + 12]; });
     await page.mouse.click(box[0], box[1]); await T.sleep(600);
     fn.clickInside = (await state(page)).open;
-    await click('#ag2-tools [data-act="insp"]', { force: true }).catch(() => {});
     await key('Escape'); await T.sleep(700);
     fn.esc1 = await state(page);
     await click('#ag2-tools [data-act="insp"]'); await T.sleep(800);
@@ -394,10 +419,12 @@ async function phone(T, keep) {
     await tap('#ag2-tabbar [data-tab="settings"]'); await T.sleep(900);
     for (const p of PAGES) {
         await tap(`#ag2-settings .ag2-set-item[data-page="${p}"]`); await T.sleep(700);
-        fn[p] = await page.evaluate(() => {
+        fn[p] = await page.evaluate(async () => {
             const w = document.getElementById('ag2-settings').getBoundingClientRect();
             const d = [...document.querySelectorAll('#top-settings-holder .drawer-content.openDrawer')].filter(e => e.id !== 'right-nav-panel');
             if (!d.length) return 'shell:' + document.body.dataset.ag2Set;
+            // headless frames are sparse: let the fade-in end before reading the opacity
+            await Promise.race([Promise.all(d[0].getAnimations().map(a => a.finished.catch(() => {}))), new Promise(r => setTimeout(r, 3000))]);
             const r = d[0].getBoundingClientRect(); const cs = getComputedStyle(d[0]);
             return `${d[0].id} n=${d.length} in=${r.left >= w.left - 1 && r.right <= w.right + 1 && r.top >= w.top - 1 && r.bottom <= w.bottom + 1 && r.height > 200} vis=${cs.visibility}/${cs.display}/${cs.opacity}`;
         });
@@ -414,7 +441,7 @@ export default async function (T) {
     const box = {};
     let out;
     try { out = await (part === 'phone' ? phone(T, box) : desk(T, box)); }
-    catch (e) { out = box.out || { ops: {}, total: { out: 0, native: 0, blur: 0 } }; out.error = String(e && e.message || e).slice(0, 400); process.exitCode = 1; }
+    catch (e) { out = box.out || { ops: {}, total: { out: 0, native: 0, blur: 0 } }; out.error = String(e && e.message || e).slice(0, 1600); process.exitCode = 1; }
     out.variant = { part, stReduced: ST_REDUCED, osReduced: !!T.cfg.reduced, shots: SHOTS || null, mem: MEM };
     const bad = out.total.out + out.total.native + out.total.blur;
     out.verdict = bad || out.error ? 'FAIL' : 'PASS';
