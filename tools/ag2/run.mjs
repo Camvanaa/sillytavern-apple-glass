@@ -296,7 +296,7 @@ im.save(sys.argv[2], 'JPEG', quality=82)`, png, png.replace(/\.png$/, '_s.jpg')]
         await browser.close().catch(() => {});
         console.error(`done ${path.basename(suitePath)} ${Math.round((Date.now() - t0) / 1000)}s`);
     }
-    process.exit(code);
+    process.exit(code || process.exitCode || 0); // a suite may set process.exitCode (r1-flash verdict)
 }
 
 main();
