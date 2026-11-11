@@ -174,12 +174,50 @@ async function toast(T) {
     await shot(T, page, 'toastr');
     await T.sleep(4500);
     out.gone = await page.evaluate(() => document.querySelectorAll('#toast-container > div').length);
+    // in-dialog toast: ST moves #toast-container into the open dialog → must be opaque (§18a)
+    await toggle(T, page);
+    await page.click('#ag2-insp-links [data-ag2-act="persona"]'); await T.sleep(700);
+    await page.evaluate(() => toastr.info('弹窗内提示', '测试'));
+    await T.sleep(400);
+    out.inDialog = await page.evaluate(() => {
+        const c = document.getElementById('toast-container');
+        const t = c?.querySelector('.toast');
+        const dlg = document.querySelector('dialog.popup[open]');
+        return { inDialog: !!dlg && dlg.contains(c), backdrop: t ? (getComputedStyle(t).backdropFilter || getComputedStyle(t).webkitBackdropFilter) : null, bg: t ? getComputedStyle(t).backgroundColor : null };
+    });
+    await shot(T, page, 'toast-in-dialog');
+    await page.keyboard.press('Escape'); await T.sleep(500);
     out.errors = T.errors(page);
     return out;
 }
 
+// ---------------------------------------------------------------- func: controls inside the popups still work
+async function func(T) {
+    const out = {};
+    const { page } = await enter(T);
+    await toggle(T, page);
+    // advanced definitions: a drawer toggles and an input is editable
+    await page.click('#ag2-insp-links [data-ag2-act="adv"]'); await T.sleep(800);
+    out.advOpen = await page.evaluate(() => getComputedStyle(document.getElementById('character_popup')).display !== 'none');
+    const drawerBox = await page.evaluate(() => { const h = document.querySelector('#character_popup .inline-drawer-header'); if (!h) return null; const q = h.getBoundingClientRect(); return [q.x + q.width / 2, q.y + q.height / 2]; });
+    if (drawerBox) { await page.mouse.click(drawerBox[0], drawerBox[1]); await T.sleep(500); }
+    out.advDrawerOpened = await page.evaluate(() => { const d = document.querySelector('#character_popup .inline-drawer'); const c = d?.querySelector('.inline-drawer-content'); return !!c && getComputedStyle(c).display !== 'none'; });
+    out.advInputEditable = await page.evaluate(() => { const t = document.querySelector('#character_popup textarea#personality_textarea'); return !!t && !t.readOnly && !t.disabled; });
+    await page.evaluate(() => document.getElementById('character_cross')?.click()); await T.sleep(700);
+    out.advClosed = await page.evaluate(() => getComputedStyle(document.getElementById('character_popup')).display === 'none');
+    // persona popup: OK button closes it (confirm flow)
+    await page.click('#ag2-insp-links [data-ag2-act="persona"]'); await T.sleep(800);
+    out.personaOpen = await page.evaluate(() => !!document.querySelector('dialog.popup[open]'));
+    out.personaAvatars = await page.evaluate(() => document.querySelectorAll('dialog.popup[open] .persona-list .avatar').length);
+    await page.evaluate(() => document.querySelector('dialog.popup[open] .popup-button-ok')?.click()); await T.sleep(800);
+    out.personaOkClosed = await page.evaluate(() => !document.querySelector('dialog.popup[open]'));
+    out.errors = T.errors(page);
+    out.ok = out.advOpen && out.advDrawerOpened && out.advInputEditable && out.advClosed && out.personaOpen && out.personaOkClosed;
+    return out;
+}
+
 export default async function (T) {
-    const parts = { insp, popups, toast };
+    const parts = { insp, popups, toast, func };
     if (!parts[part]) throw new Error('unknown part ' + part);
     const r = await parts[part](T);
     await T.save('r2b-' + part, r);
