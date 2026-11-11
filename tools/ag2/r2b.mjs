@@ -148,18 +148,28 @@ async function popups(T) {
     await shot(T, page, 'popup-selectchat');
     await page.evaluate(() => document.getElementById('select_chat_cross')?.click()); await T.sleep(900);
     out.selectClosed = await page.evaluate(() => { const e = document.getElementById('shadow_select_chat_popup'); return !e || getComputedStyle(e).display === 'none'; });
-    // 4. legacy #dialogue_popup + #shadow_popup (constructed: show the elements as ST would)
-    await page.evaluate(() => {
-        document.getElementById('dialogue_popup_text').innerHTML = '<h3 class="margin0">删除这条消息？</h3><p>此操作不可撤销。</p>';
-        document.getElementById('shadow_popup').style.display = 'block';
-        document.getElementById('shadow_popup').style.opacity = '1';
-        const dp = document.getElementById('dialogue_popup');
-        dp.style.display = 'flex'; dp.style.opacity = '1';
+    // 4. legacy #shadow_popup > #dialogue_popup via ST's own callPopup (real flow)
+    const usedCallPopup = await page.evaluate(() => {
+        const c = SillyTavern.getContext();
+        if (typeof c.callPopup !== 'function') return false;
+        c.callPopup('<h3 class="margin0">删除这条消息？</h3><p>此操作不可撤销。</p>', 'confirm');
+        return true;
     });
-    await T.sleep(400);
+    if (!usedCallPopup) {
+        await page.evaluate(() => {
+            document.getElementById('dialogue_popup_text').innerHTML = '<h3 class="margin0">删除这条消息？</h3><p>此操作不可撤销。</p>';
+            document.getElementById('shadow_popup').style.display = 'block';
+            document.getElementById('shadow_popup').style.opacity = '1';
+            const dp = document.getElementById('dialogue_popup');
+            dp.style.display = 'flex'; dp.style.opacity = '1';
+        });
+    }
+    await T.sleep(600);
+    out.dialogueViaCallPopup = usedCallPopup;
     out.dialogue = await popSt(page);
     await shot(T, page, 'popup-dialogue');
-    await page.evaluate(() => { document.getElementById('shadow_popup').style.display = 'none'; document.getElementById('dialogue_popup').style.display = 'none'; });
+    await page.evaluate(() => { document.getElementById('dialogue_popup_cancel')?.click(); document.getElementById('shadow_popup').style.display = 'none'; document.getElementById('dialogue_popup').style.display = 'none'; });
+    await T.sleep(400);
     out.errors = T.errors(page);
     return out;
 }

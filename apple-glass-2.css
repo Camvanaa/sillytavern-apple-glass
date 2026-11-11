@@ -6582,12 +6582,12 @@ html body.ag2:not(#_):not(#__) #dialogue_popup #dialogue_popup_controls .menu_bu
     background: var(--ag2-f1) !important;
 }
 
-html body.ag2:not(#_):not(#__) #dialogue_popup #dialogue_popup_ok {
+html body.ag2:not(#_):not(#__) #dialogue_popup #dialogue_popup_controls .menu_button#dialogue_popup_ok {
     background: var(--ag2-accent) !important;
     color: #fff !important;
 }
 
-html body.ag2:not(#_):not(#__) #dialogue_popup #dialogue_popup_ok:hover {
+html body.ag2:not(#_):not(#__) #dialogue_popup #dialogue_popup_controls .menu_button#dialogue_popup_ok:hover {
     background: var(--ag2-accent-hover) !important;
 }
 
