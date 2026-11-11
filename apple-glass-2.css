@@ -3780,7 +3780,7 @@ html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-close:focus-visible {
     }
 
     /* glyph-only buttons: 30px round, 14px l2 icon (§6 “Font Awesome 统一 14px、l2”) */
-    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .menu_button:empty {
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .menu_button:empty:not(input) { /* <input type=button> is always :empty */
         width: 30px !important;
         min-width: 30px !important;
         height: 30px !important;
@@ -4041,6 +4041,836 @@ html body.ag2.reduced-motion:not(#_):not(#__):not(#___) .ag2-hit {
         content: "新布局下无效：面板位置由 Apple Glass 2 统一安排";
     }
 }
+
+/* == 5.5e · Settings pages: layout review (R2a) == */
+/* A pass over every settings page at every scroll position (1440 / 1280 / 390). Fixes what
+   §5.5b left in ST's own look or too tight: heading bars, the top of 生成参数, toolbars that
+   were cut on narrow screens, three-column pages squeezed into the window, label / control
+   gaps. Still CSS only (rule 1); nothing here forces display on a control ST hides. */
+@media screen { /* desktop + phone (§5.9b overrides the geometry) */
+    /* --- pin locks (生成参数 / 世界书): the window opens and closes the drawers itself, a
+       pinned drawer means nothing here; at 50% opacity the lock read as a stray grey square --- */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#lm_button_panel_pin_div, #WI_panel_pin_div) {
+        display: none !important;
+    }
+
+    /* --- 生成参数, the strip above the scroller: ST's hint line is position:absolute, centred on
+       the whole drawer (so it sat left of the content edge, under the lock and over the first
+       heading); the docs “?” is absolute in the corner. Both become one caption row. --- */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel > #clickSlidersTips {
+        position: static !important;
+        flex: none;
+        box-sizing: border-box;
+        width: auto !important;
+        min-height: 20px;
+        margin: 0 28px 2px 0 !important;
+        padding: 0 28px 0 2px !important;
+        color: var(--ag2-l3) !important;
+        font-size: 12px !important;
+        line-height: 20px !important;
+        text-align: left !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel > a.topRightInset {
+        top: 0 !important;
+        right: 28px !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+    }
+
+    /* --- ST heading bars (.standoutHeader: 348° gradient, 1px border, 10px radius) → the same
+       group title as h3 / h4: 12/640 grey, no bar. The buttons a bar carries (.title_restorable:
+       预设 import / export / delete …) stay on its right end. --- */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .standoutHeader:not(.inline-drawer-header) {
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: none !important;
+        box-shadow: none !important;
+        filter: none !important;
+        transition: none !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .inline-drawer-header.standoutHeader:hover {
+        filter: none !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) div.standoutHeader:not(.inline-drawer-header) {
+        box-sizing: border-box;
+        gap: 8px;
+        min-height: 30px;
+        margin: 12px 0 6px !important;
+        padding: 0 2px !important;
+        color: var(--ag2-l3) !important;
+        font-size: 12px !important;
+        font-weight: 640 !important;
+        letter-spacing: 0.02em;
+        line-height: 1.5 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) div.standoutHeader:not(.inline-drawer-header) :is(strong, b) {
+        font-weight: inherit !important;
+    }
+
+    /* a heading that carries buttons: one row, title left, buttons right, centred */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .title_restorable {
+        align-items: center !important;
+        gap: 8px;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .title_restorable > .flex-container {
+        flex: none;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: 6px !important;
+        margin: 0 !important;
+    }
+
+    /* the first heading of a page / of the presets block sits right under the head */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel #respective-presets-block div.standoutHeader {
+        margin-top: 4px !important;
+    }
+
+    /* label + select on one row (ST .oneline-dropdown): label left, select right, centred */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .oneline-dropdown {
+        align-items: center;
+        gap: 6px 12px;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .oneline-dropdown > label {
+        flex: 1 1 120px;
+        margin: 0 !important;
+        color: var(--ag2-l1);
+        font-weight: 500;
+        font-size: var(--ag2-fs-sub);
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .oneline-dropdown > select {
+        flex: 0 1 294px;
+        width: auto !important;
+        min-width: min(100%, 160px) !important;
+    }
+
+    /* a .range-block-range that holds a picker, not a slider (世界书 “已启用的世界书”), is not
+       limited to the 230px slider width */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .range-block-range:not(:has(input[type="range"])) {
+        flex: 1 1 100% !important;
+        max-width: none;
+    }
+
+    /* context sizes run to six or seven digits: the 52px box cut “200000” */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .range-block-counter input[id*="max_context"] {
+        width: 76px !important;
+    }
+
+    /* --- pagination (世界书 entries, 人设): ST's bordered square links → quiet 28px keys --- */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .paginationjs {
+        flex-wrap: wrap;
+        gap: 4px 8px;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .paginationjs-nav {
+        padding: 0 2px !important;
+        color: var(--ag2-l3);
+        font-size: 12px !important;
+        font-weight: 560;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .paginationjs-pages ul {
+        gap: 2px;
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .paginationjs-pages ul li a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        min-width: 28px;
+        height: 28px;
+        padding: 0 6px !important;
+        border: 0 !important;
+        border-radius: 14px !important;
+        background: none;
+        color: var(--ag2-l2) !important;
+        font-size: 12px;
+        line-height: 1;
+        opacity: 1 !important;
+        width: 26px;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .paginationjs-pages ul li.active a {
+        background: var(--ag2-accent-soft);
+        color: var(--ag2-accent-hover) !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .paginationjs-pages ul li.disabled a {
+        opacity: 0.35 !important;
+        color: var(--ag2-l4, rgba(235, 235, 245, 0.22)) !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .paginationjs-size-changer select {
+        font-size: 12.5px !important;
+        min-width: 92px;
+    }
+
+    /* --- 生成参数 › 提示词 list: ST's 1px boxed rows → one rounded list with hairlines --- */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel #completion_prompt_manager #completion_prompt_manager_list {
+        box-sizing: border-box;
+        margin-top: 8px;
+        padding: 4px 6px 6px !important;
+        border: 0 !important;
+        border-radius: 12px !important;
+        background: var(--ag2-f5) !important;
+        box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.065) !important;
+        margin: 8px 0 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel #completion_prompt_manager #completion_prompt_manager_list li {
+        margin: 0 !important;
+        box-sizing: border-box;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel #completion_prompt_manager #completion_prompt_manager_list li.completion_prompt_manager_list_head {
+        padding: 6px 8px 4px !important;
+        color: var(--ag2-l3);
+        font-size: 12px;
+        font-weight: 640;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel #completion_prompt_manager #completion_prompt_manager_list li.completion_prompt_manager_list_separator {
+        display: none;
+        /* the rows carry their own hairlines */
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel #completion_prompt_manager #completion_prompt_manager_list li.completion_prompt_manager_prompt {
+        box-sizing: border-box;
+        min-height: 38px;
+        padding: 4px 8px !important;
+        border: 0 !important;
+        border-radius: 8px;
+        background: none !important;
+        box-shadow: inset 0 -0.5px 0 var(--ag2-sep);
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel #completion_prompt_manager #completion_prompt_manager_list li.completion_prompt_manager_prompt:has(.drag-handle.ui-sortable-handle) {
+        padding-left: 24px !important;
+    }
+
+    /* long prompt names end in an ellipsis instead of a hard cut */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel #completion_prompt_manager #completion_prompt_manager_list .completion_prompt_manager_prompt_name {
+        min-width: 0;
+        text-overflow: ellipsis;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel #completion_prompt_manager .completion_prompt_manager_header {
+        box-sizing: border-box;
+        align-items: center;
+        margin-top: 12px !important;
+        padding: 0 2px !important;
+        color: var(--ag2-l3) !important;
+        font-size: 12px;
+        font-weight: 640;
+        margin: 14px 0 6px !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel #completion_prompt_manager .completion_prompt_manager_header div {
+        margin-top: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel #completion_prompt_manager .completion_prompt_manager_footer {
+        align-items: center;
+        gap: 6px !important;
+        margin-top: 6px;
+        padding: 0 !important;
+        flex-wrap: wrap;
+    }
+
+    /* --- 世界书 --- */
+    /* the two top blocks stack (side by side each got ~380px: the sliders and switches of
+       “全局世界书激活设置” did not fit) and fill the width */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #wi-holder {
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock {
+        flex-direction: column !important;
+        flex-wrap: nowrap !important;
+        gap: 4px !important;
+        align-items: stretch !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock > .range-block {
+        flex: none !important;
+        align-self: stretch !important;
+        box-sizing: border-box;
+        width: 100% !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock > .range-block > .range-block-title {
+        flex: 1 1 100%;
+        color: var(--ag2-l3) !important;
+        font-size: 12px !important;
+        font-weight: 640 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock > .range-block > .range-block-title small {
+        font-size: inherit;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #WIMultiSelector :is(.select2-container, select:not(.select2-hidden-accessible)) {
+        width: 100% !important;
+    }
+
+    /* ST's iOS-only block (mobile-styles.css, @supports (-webkit-touch-callout: none)) sizes
+       #world_popup like a full-screen drawer: width calc(100dvw - 5px), height calc(100dvh -
+       70px), margin-top 36px, a blur. Inside the sheet that made it 37px wider than its column,
+       so both toolbars lost their last button behind the sheet's edge. It is a plain block here. */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup {
+        position: static !important;
+        box-sizing: border-box !important;
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+        border: 0 !important;
+        background: none !important;
+        box-shadow: none !important;
+    }
+
+    /* the two toolbars: one gap, controls centred, the pickers take the free width */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup > .flex-container {
+        align-items: center !important;
+        gap: 8px 6px !important;
+        margin: 0 0 8px !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup > .flex-container > :is(.menu_button, select, input, small) {
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup :is(#world_editor_select, #world_editor_select ~ .select2-container) {
+        flex: 1 1 160px;
+        min-width: 0;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup #world_info_search {
+        flex: 1 1 140px;
+        min-width: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup #world_info_sort_order {
+        flex: 0 1 150px;
+        min-width: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #world_info_pagination:empty {
+        display: none;
+    }
+
+    /* entry rows: ST's bordered form around the card drew a second frame */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry > .wi-card-entry {
+        margin: 0 0 6px !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 12px !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .inline-drawer {
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .inline-drawer-header {
+        gap: 6px !important;
+        padding: 6px 10px !important;
+        cursor: default;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .inline-drawer-header:hover {
+        background: none !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .world_entry_thin_controls {
+        gap: 6px !important;
+        min-width: 0;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .world_entry_thin_controls > .inline-drawer-toggle {
+        display: flex;
+        flex: none;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 30px;
+        margin: 0 !important;
+        cursor: pointer;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .killSwitch {
+        display: flex;
+        flex: none;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 30px;
+        font-size: 17px;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .killSwitch.fa-toggle-on {
+        color: var(--ag2-green) !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .killSwitch.fa-toggle-off {
+        color: var(--ag2-l3) !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .world_entry_thin_controls > .flex-container {
+        gap: 6px;
+        min-width: 0;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry :is(.WIEntryTitleAndStatus, .WIEnteryHeaderControls) {
+        gap: 6px;
+    }
+
+    /* the title is a one-row textarea: same field look as the inputs beside it */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry textarea[name="comment"] {
+        box-sizing: border-box;
+        height: 30px !important;
+        min-height: 30px;
+        padding: 0 10px !important;
+        border-radius: 8px !important;
+        background-color: var(--ag2-f3) !important;
+        box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.05) !important;
+        line-height: 30px !important;
+        white-space: nowrap;
+        resize: none;
+        overflow: hidden;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEntryHeaderTitleMobile {
+        margin: 0 0 2px 2px;
+        color: var(--ag2-l3);
+        font-size: 11.5px;
+        font-weight: 500;
+    }
+
+    /* --- 人设 --- */
+    /* ST caps the sort picker at 4em (“A·”) */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #PersonaManagement #persona_sort_order {
+        flex: 0 0 auto;
+        width: auto !important;
+        min-width: 104px;
+        max-width: none !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #PersonaManagement .persona_management_left_column > .flex-container {
+        gap: 8px 6px;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #PersonaManagement #persona_pagination_container {
+        min-width: 0;
+    }
+
+    /* list rows: ST's 2px white frame on the current persona → accent tint + hairline ring */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #PersonaManagement #user_avatar_block .avatar-container {
+        box-sizing: border-box;
+        border: 0 !important;
+        border-radius: 12px !important;
+        outline: 0 !important;
+        padding: 8px !important;
+        gap: 10px;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #PersonaManagement #user_avatar_block .avatar-container:hover {
+        background: var(--ag2-f5);
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #PersonaManagement #user_avatar_block .avatar-container.selected {
+        background: var(--ag2-accent-soft);
+        box-shadow: inset 0 0 0 1px var(--ag2-accent);
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #PersonaManagement #user_avatar_block .avatar-container .avatar img {
+        border: 0 !important;
+    }
+
+    /* 当前人设: the name on its own line, then the six actions in one row and the “更多…” picker */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #PersonaManagement #persona_controls {
+        align-items: center;
+        gap: 8px 6px;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #PersonaManagement #persona_controls > .persona_name {
+        flex: 1 1 100%;
+        margin: 0 !important;
+        padding: 0 2px !important;
+        color: var(--ag2-l1) !important;
+        font-size: 17px !important;
+        font-weight: 650 !important;
+        line-height: 1.3 !important;
+        opacity: 1 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #PersonaManagement #persona_controls > .persona_controls_buttons_block {
+        flex: none;
+        flex-wrap: nowrap;
+        gap: 6px;
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #PersonaManagement #persona_controls > .persona_controls_buttons_block > .menu_button {
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #PersonaManagement #persona_controls > label {
+        flex: 1 1 140px;
+        height: auto !important;
+        min-width: 0;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #PersonaManagement #persona_controls > label > select {
+        width: 100% !important;
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #PersonaManagement .persona_management_current_persona > .flex-container.justifySpaceBetween {
+        align-items: flex-end;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #PersonaManagement .extension_token_counter {
+        color: var(--ag2-l3);
+        font-size: 12px;
+    }
+
+    /* --- rows: more air, one rhythm (§6: 组内行高一致) --- */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .range-block {
+        margin: 0 0 6px !important;
+        padding: 5px 2px !important;
+    }
+
+    /* a description that sits in a row (switch + text, select + text) takes its own line under
+       the row instead of a squeezed column beside the control */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) :is(.range-block, .oneline-dropdown) > .toggle-description {
+        flex: 1 0 100%;
+        box-sizing: border-box;
+        max-width: 100%;
+        margin: 0 0 2px 2px !important;
+    }
+
+    /* the number box holds 7 digits (上下文长度 2000000 was cut to “2000”) */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .range-block-counter input {
+        width: 68px !important;
+        min-width: 68px;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .range-block-range-and-counter {
+        flex-basis: 310px;
+    }
+
+    /* a title followed by a full-width field (最大回复长度, 种子 …): the field hangs under it */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .range-block > .range-block-title + .wide100p {
+        margin-top: 2px;
+    }
+
+    /* stacked sliders (ST's “neo” ones: caption · slider · number): the 20px knob touched the
+       caption above it */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) input[type="range"].neo-range-slider {
+        margin: 6px 0 2px !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) input.neo-range-input {
+        margin-top: 4px !important;
+    }
+
+    /* switch rows keep one text size wherever ST nests the <small> */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) label.checkbox_label :is(small, span):not(.fa-solid):not(.note-link-span) {
+        font-size: inherit !important;
+    }
+
+    /* several switches in one row never squeeze the label into a one-character column
+       (提示词与格式 › 推理: “自动解析” was stacked letter by letter); they wrap instead */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .flex-container > label.checkbox_label:not(:has(.menu_button)) {
+        min-width: min(100%, 168px);
+    }
+
+    /* glyph-only buttons are 30px round — but an <input type=button> is “:empty” too and its
+       label was cut to a 30px circle (扩展 › TTS “可用声音”) */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) input.menu_button:empty {
+        width: auto !important;
+        min-width: 0 !important;
+        padding: 0 12px !important;
+        color: var(--ag2-l1) !important;
+        font-size: 13px !important;
+    }
+
+    /* a select never collapses to its chevron (人设 排序 was “A.” at max-width 4em) */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) select:not([multiple]):not([size]) {
+        min-width: 76px;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .paginationjs-pages ul li:not(.disabled) a:hover {
+        background: var(--ag2-f3);
+        color: var(--ag2-l1) !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel #completion_prompt_manager .completion_prompt_manager_footer > select {
+        flex: 1 1 160px;
+        min-width: 0;
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel #completion_prompt_manager .range-block {
+        display: block;
+        padding: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel #completion_prompt_manager #completion_prompt_manager_list li.completion_prompt_manager_list_separator hr {
+        margin: 0 !important;
+        background: var(--ag2-sep) !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel #completion_prompt_manager #completion_prompt_manager_list li.completion_prompt_manager_prompt:hover {
+        background: var(--ag2-f5);
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel #completion_prompt_manager #completion_prompt_manager_list li.completion_prompt_manager_prompt span span span {
+        filter: none !important;
+        opacity: 0.62;
+    }
+
+    /* --- 提示词与格式 · 通用: ST lays these pages out as three ~257px columns inside the window
+       (labels wrapped per character, selects squeezed between five buttons). One column, the
+       same order as on phones; the anchor capsules jump between the groups. --- */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #AdvancedFormatting > .flex-container:has(> #ContextSettings),
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block > #user-settings-block-content {
+        flex-direction: column !important;
+        flex-wrap: nowrap !important;
+        align-items: stretch !important;
+        gap: 6px !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #AdvancedFormatting > .flex-container:has(> #ContextSettings) > *,
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block > #user-settings-block-content > * {
+        flex: none !important;
+        box-sizing: border-box;
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block #power-user-option-checkboxes {
+        width: 100%;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list {
+        overflow: visible !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock > .range-block > :is(.range-block-title, .range-block-range, .inline-drawer) {
+        flex: 1 0 100% !important;
+        box-sizing: border-box;
+        width: 100% !important;
+        max-width: none !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock .range-block-title small {
+        color: var(--ag2-l3);
+        font-size: 12px !important;
+        font-weight: 640;
+        letter-spacing: 0.02em;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #WIMultiSelector :is(.select2-container, select:not(.select2-hidden-accessible)) {
+        box-sizing: border-box;
+        width: 100% !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup > .flex-container > .menu_button {
+        flex: none;
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup :is(#world_editor_select, #world_editor_select ~ .select2-container, #world_info_search, #world_info_sort_order) {
+        flex: 1 1 120px;
+        min-width: 0;
+        margin: 0 !important;
+    }
+
+    /* entries: ST's bordered form around the group card read as a double frame */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry form.wi-card-entry {
+        margin: 0 0 6px !important;
+        padding: 0 !important;
+        border: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry form.wi-card-entry > .inline-drawer {
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .inline-drawer-header > .menu_button {
+        flex: none;
+        margin: 0 !important;
+    }
+
+    /* --- R2a second pass --- */
+    /* 生成参数 › 提示词: the manager sat in a flex row and shrank to half the page */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel .range-block:has(> #completion_prompt_manager) {
+        display: block;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel #completion_prompt_manager {
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    /* 世界书 entry rows: fixed columns, so the column captions above the list line up with them
+       (ST pads the caption row by 7em on both sides, which matched nothing) */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEntryTitleAndStatus > select {
+        flex: none;
+        width: 52px !important;
+        min-width: 52px !important;
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEnteryHeaderControls {
+        flex: none;
+        flex-wrap: nowrap;
+        align-items: center;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEnteryHeaderControls > [name="PositionBlock"] > select {
+        width: 172px !important;
+        min-width: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEnteryHeaderControls > .world_entry_form_control > input {
+        box-sizing: border-box;
+        width: 56px !important;
+        min-width: 56px;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #WIEntryHeaderTitlesPC {
+        box-sizing: border-box;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        gap: 6px !important;
+        margin: 2px 0 4px;
+        padding: 0 120px 0 68px !important;
+        color: var(--ag2-l3);
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #WIEntryHeaderTitlesPC > small {
+        flex: none;
+        overflow: hidden;
+        font-size: 11.5px;
+        font-weight: 560;
+        text-align: left;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #WIEntryHeaderTitlesPC > small:nth-child(1) {
+        flex: 1 1 0;
+        min-width: 0;
+        padding-left: 10px;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #WIEntryHeaderTitlesPC > small:nth-child(2) {
+        width: 52px !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #WIEntryHeaderTitlesPC > small:nth-child(3) {
+        width: 172px !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #WIEntryHeaderTitlesPC > small:nth-child(n+4) {
+        width: 56px !important;
+        text-align: center;
+    }
+
+    /* 人设: the pager gets its own line under 创建 · 搜索 · 排序 · 网格 (in the same row it was cut
+       by the column and ran under the grid button) */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #PersonaManagement #persona_search_bar {
+        flex: 1 1 90px;
+        min-width: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #PersonaManagement #persona_pagination_container {
+        order: 9;
+        flex: 1 1 100%;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #PersonaManagement #persona_pagination_container .paginationjs {
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* 通用: “label: select” rows — one label column, so the fields line up, and a gap between rows */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block .flex-container:has(> select.widthNatural) {
+        align-items: center !important;
+        gap: 6px 10px;
+        margin: 0 0 6px;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block .flex-container:has(> select.widthNatural) > :is(span, label, small):first-child {
+        flex: 0 0 112px;
+        margin: 0 !important;
+        color: var(--ag2-l1);
+        font-size: var(--ag2-fs-sub);
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block .flex-container:has(> select.widthNatural) > :first-child small {
+        font-size: inherit !important;
+    }
+
+    /* 背景: ST's boxed jQuery-UI tabs → the shell's segmented control */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #Backgrounds #bg_tabs .bg_tabs_list {
+        align-items: center;
+        gap: 2px;
+        margin: 6px 0 8px;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #Backgrounds #bg_tabs .bg_tabs_list .bg_tab_button {
+        min-width: 76px;
+        height: 30px;
+        border: 0 !important;
+        border-radius: 15px !important;
+        background: none !important;
+        color: var(--ag2-l2);
+        font-size: 13px;
+        font-weight: 560;
+        opacity: 1;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #Backgrounds #bg_tabs .bg_tabs_list .bg_tab_button.ui-tabs-active {
+        background: var(--ag2-f3) !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #Backgrounds #bg_tabs .bg_tabs_list .bg_tab_button a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 14px;
+        color: inherit !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #Backgrounds #bg_tabs .bg_tabs_list .bg_tab_button.ui-tabs-active a {
+        color: var(--ag2-l1) !important;
+    }
+}
+/* == /5.5e == */
 
 /* == 5.6 · Inspector (§5.6, §4, §9.2 #2/#3) == */
 /* The inspector is ST's #right-nav-panel (never moved): this section only places it and
@@ -6038,6 +6868,264 @@ html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-scope {
         display: none;
     }
 }
+
+/* == 5.9b · Phone: settings pages (R2a) == */
+/* Touch sizes (controls 40px) and one-column toolbars for the ST pages inside the sheet. */
+@media (max-width: 1000px) {
+    /* 生成参数: the caption row follows the sheet's 16px gutters */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel > #clickSlidersTips {
+        margin-right: calc(16px + var(--ag2-safe-r)) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel > a.topRightInset {
+        right: calc(16px + var(--ag2-safe-r)) !important;
+    }
+
+    /* --- text size and touch size: 15px rows, 16px fields (below 16px iOS zooms the page on
+       focus), every control 40px --- */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) {
+        font-size: 15px !important;
+        --mainFontSize: 15px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) label.checkbox_label {
+        min-height: 44px;
+        font-size: 15px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) :is(.range-block-title, .oneline-dropdown > label) {
+        font-size: 15px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) :is(h3, h4),
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) div.standoutHeader:not(.inline-drawer-header) {
+        font-size: 13px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) :is(.toggle-description, .editable-slider-notification) {
+        font-size: 13px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) :is(select:not([multiple]):not([size]), input.text_pole, input[type="text"]:not(.select2-search__field), input[type="search"], input[type="password"], input[type="url"], input[type="number"]:not(.range-block-counter input):not(.neo-range-input)) {
+        height: 40px !important;
+        min-height: 40px;
+        border-radius: 10px !important;
+        font-size: 16px !important;
+        line-height: 40px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) select:not([multiple]):not([size]) {
+        padding-right: 30px !important;
+        background-position: right 11px center !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) textarea:not(.select2-search__field) {
+        font-size: 16px !important;
+        line-height: 1.5 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .select2-container .select2-selection {
+        min-height: 40px;
+        border-radius: 10px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) :is(.menu_button, .menu_button_icon) {
+        min-height: 40px;
+        padding: 0 14px !important;
+        border-radius: 20px !important;
+        font-size: 15px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .menu_button:empty:not(input) {
+        width: 40px !important;
+        min-width: 40px !important;
+        height: 40px !important;
+        padding: 0 !important;
+        font-size: 16px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) :is(.range-block-counter input, input.neo-range-input) {
+        width: 64px !important;
+        min-width: 64px;
+        height: 36px !important;
+        border-radius: 9px !important;
+        font-size: 16px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .range-block-counter input[id*="max_context"] {
+        width: 92px !important;
+    }
+
+    /* sliders: a 28px knob needs a taller hit strip */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) input[type="range"] {
+        height: 32px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .inline-drawer-header {
+        min-height: 48px;
+        font-size: 15px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .paginationjs-pages ul li a {
+        min-width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .paginationjs-nav {
+        font-size: 13px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .paginationjs-size-changer select {
+        font-size: 16px !important;
+    }
+
+    /* label + select rows: the select goes under the label when the row is too narrow */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) .oneline-dropdown > select {
+        flex: 1 1 160px;
+    }
+
+    /* --- 世界书 --- */
+    /* toolbar 1: 创建 · 或 · picker fill the first row; the five book actions wrap under it,
+       delete at the far end */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup > .flex-container {
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup :is(#world_editor_select, #world_editor_select ~ .select2-container) {
+        flex: 1 1 calc(100% - 140px);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup #world_popup_delete {
+        margin-left: auto !important;
+    }
+
+    /* toolbar 2: search + sort on one row; then the entry actions with refresh at the far end;
+       then the pager */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup #world_info_search {
+        order: 1;
+        flex: 1 1 calc(100% - 150px);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup #world_info_sort_order {
+        order: 2;
+        flex: 0 0 132px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup :is(#world_popup_new, #OpenAllWIEntries, #CloseAllWIEntries, #world_backfill_memos, #world_apply_current_sorting, #world_refresh) {
+        order: 3;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup #world_refresh {
+        margin-left: auto !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup #world_info_pagination {
+        order: 4;
+        flex: 1 1 100%;
+    }
+
+    /* entry rows: title line, position, the three numbers, then the row's actions */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .inline-drawer-header {
+        flex-wrap: wrap;
+        gap: 8px !important;
+        padding: 10px 12px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .world_entry_thin_controls {
+        flex: 1 1 100%;
+        align-items: flex-start !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .world_entry_thin_controls > .inline-drawer-toggle {
+        width: 28px;
+        height: 40px;
+        font-size: 14px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .killSwitch {
+        width: 32px;
+        height: 40px;
+        font-size: 22px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .world_entry_thin_controls > .flex-container {
+        flex: 1 1 0;
+        gap: 8px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEntryTitleAndStatus {
+        flex: 1 1 100%;
+        flex-wrap: nowrap;
+        gap: 8px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEntryTitleAndStatus > .flex-container {
+        min-width: 0;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry textarea[name="comment"] {
+        height: 40px !important;
+        min-height: 40px;
+        border-radius: 10px !important;
+        font-size: 16px !important;
+        line-height: 40px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEnteryHeaderControls {
+        flex: 1 1 100%;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEnteryHeaderControls > [name="PositionBlock"] {
+        flex: 1 1 100%;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEnteryHeaderControls > [name="PositionBlock"] > select {
+        width: 100% !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEnteryHeaderControls > .world_entry_form_control:not([name="PositionBlock"]) {
+        flex: 1 1 0;
+        flex-wrap: nowrap;
+        min-width: 0;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEnteryHeaderControls > .world_entry_form_control > input {
+        box-sizing: border-box;
+        width: 100% !important;
+        max-width: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEntryHeaderTitleMobile {
+        font-size: 12.5px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .inline-drawer-header > i.menu_button {
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .inline-drawer-header > i.move_entry_button {
+        margin-left: auto !important;
+    }
+
+    /* --- 人设: one column; the six actions keep one row, the picker goes under them --- */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement #persona_sort_order {
+        min-width: 112px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement #persona_controls > .persona_controls_buttons_block {
+        flex: 1 1 100%;
+        justify-content: space-between;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement #persona_controls > label {
+        flex: 1 1 100%;
+    }
+}
+/* == /5.9b == */
 
 /* phone-only shell nodes never show on the desktop layout (and the reverse) */
 html body.ag2:not(.ag2-phone):not(#_):not(#__) .ag2-ph-x,

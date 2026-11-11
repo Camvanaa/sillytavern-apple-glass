@@ -38,6 +38,8 @@ export const checks = (page, roots) => page.evaluate(rs => {
     const shown = e => {
         const c = getComputedStyle(e);
         if (c.display === 'none' || c.visibility !== 'visible' || +c.opacity < 0.02) return false;
+        // content of a closed <details> keeps a box (content-visibility) but is not rendered
+        if (e.checkVisibility && !e.checkVisibility({ contentVisibilityAuto: true })) return false;
         const r = e.getBoundingClientRect();
         return r.width > 0.5 && r.height > 0.5;
     };
@@ -53,7 +55,7 @@ export const checks = (page, roots) => page.evaluate(rs => {
     }
     // ---- clip
     // Deliberate horizontal scrollers / single-line ellipsis boxes are not “cut content”.
-    const SCROLLERS = '.ag2-anchors, .ag2-seg, .select2-selection__rendered, .ag2-look-styles, .ag2-set-results, pre, code, table, .CodeMirror, textarea';
+    const SCROLLERS = '.bg_example, .ag2-anchors, .ag2-seg, .select2-selection__rendered, .ag2-look-styles, .ag2-set-results, pre, code, table, .CodeMirror, textarea';
     const clipOf = e => {
         const fixed = getComputedStyle(e).position === 'fixed';
         if (fixed) return null;
