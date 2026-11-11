@@ -5509,18 +5509,141 @@ html body.ag2.ag2-insp-open {
         display: none;
     }
 
-    /* creator's notes: ST's own block, shown on request from the entry list */
-    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel[data-ag2-insp="char"] #spoiler_free_desc {
+    /* creator's notes: ST's own #spoiler_free_desc block (header + content + its two
+       function buttons), restyled as an AG2 group card. R2b: the old rule only painted
+       the OUTER block, so ST's .standoutHeader gradient bar, its circled chevron and
+       the black bordered content box showed through; worse, the `display:none` was
+       scoped to [data-ag2-insp="char"], so ST's fresh “new character” editor (create
+       view) leaked the whole native block. Now: hidden in every inspector view, shown
+       only for the open character when the user asked for it (char + [data-ag2-notes]),
+       and every inner node reset to AG2 styling. */
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #spoiler_free_desc {
         display: none !important;
     }
 
     html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel[data-ag2-insp="char"][data-ag2-notes] #spoiler_free_desc {
         display: flex !important;
+        flex-direction: column;
+        gap: 8px;
         margin: 0 !important;
-        padding: 10px 14px !important;
-        border-radius: var(--ag2-r-card);
-        background: var(--ag2-f3);
+        padding: 12px 14px !important;
+        border: 0 !important;
+        border-radius: var(--ag2-r-card) !important;
+        background: var(--ag2-f3) !important;
+        box-shadow: none !important;
         font-size: var(--ag2-fs-sub);
+    }
+
+    /* header row: kill ST's 348° gradient bar, its border/radius/shadow and hover filter */
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #spoiler_free_desc > .inline-drawer-header {
+        box-sizing: border-box;
+        align-items: center !important;
+        gap: 8px;
+        min-height: 24px;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: none !important;
+        background-image: none !important;
+        box-shadow: none !important;
+        filter: none !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #spoiler_free_desc > .inline-drawer-header:hover {
+        background: none !important;
+        filter: none !important;
+    }
+
+    /* the label line (ST's #creators_notes_div.title_restorable) → group title, left */
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #spoiler_free_desc #creators_notes_div {
+        display: flex !important;
+        flex: 1 1 auto;
+        align-items: center !important;
+        gap: 6px;
+        min-width: 0;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        background: none !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #spoiler_free_desc #creators_notes_div > span {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow: hidden;
+        color: var(--ag2-l3);
+        font-size: 12.5px;
+        font-weight: 640;
+        text-align: left;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* the two function buttons (全局样式 / 显示隐藏 描述) → 26px ghost icon buttons.
+       They must stay clickable; ST's own handlers (stopPropagation) are untouched. */
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #spoiler_free_desc > .inline-drawer-header .menu_button {
+        flex: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        min-width: 26px;
+        height: 26px;
+        min-height: 26px;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: var(--ag2-r-ctl) !important;
+        background: none !important;
+        box-shadow: none !important;
+        color: var(--ag2-l2) !important;
+        filter: none !important;
+        font-size: 13px !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #spoiler_free_desc > .inline-drawer-header .menu_button:hover {
+        background: var(--ag2-f2) !important;
+        color: var(--ag2-l1) !important;
+    }
+
+    /* the drawer chevron: ST's circled icon at 22.5px → a plain 12px l3 chevron */
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #spoiler_free_desc .inline-drawer-icon {
+        flex: none;
+        margin: 0 0 0 2px !important;
+        color: var(--ag2-l3) !important;
+        filter: none !important;
+        font-size: 12px !important;
+        opacity: 1 !important;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #spoiler_free_desc .inline-drawer-icon.fa-circle-chevron-down::before {
+        content: "\f078";
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #spoiler_free_desc .inline-drawer-icon.fa-circle-chevron-up::before {
+        content: "\f077";
+    }
+
+    /* content: ST's 1px bordered black box → plain AG2 body text on the card */
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #spoiler_free_desc > .inline-drawer-content {
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        background: none !important;
+        color: var(--ag2-l2);
+        font-size: var(--ag2-fs-sub);
+        line-height: 1.55;
+        overflow-wrap: anywhere;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #spoiler_free_desc > .inline-drawer-content :is(p, #creator_notes_empty) {
+        margin: 0 0 6px;
+        color: var(--ag2-l2);
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) #right-nav-panel #spoiler_free_desc > .inline-drawer-content :last-child {
+        margin-bottom: 0;
     }
 
     /* secondary entries: one grouped list */
@@ -5552,6 +5675,16 @@ html body.ag2.ag2-insp-open {
 
     html body.ag2 #right-nav-panel button:is(.ag2-insp-row, .ag2-insp-kv):hover {
         background: var(--ag2-f4);
+    }
+
+    /* R2b: a row with nothing to open (creator's notes on a card without notes) is inert */
+    html body.ag2 #right-nav-panel button.ag2-insp-row:disabled {
+        cursor: default;
+        opacity: 0.45;
+    }
+
+    html body.ag2 #right-nav-panel button.ag2-insp-row:disabled:hover {
+        background: none;
     }
 
     html body.ag2 #right-nav-panel .ag2-insp-row > .ag2-i:first-child {
@@ -6195,6 +6328,664 @@ html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-scope {
     html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-scope { display: none; }
     html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-title { max-width: 100%; }
     html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-sub { display: none; }
+}
+
+/* == 5.8b · ST's native popups · toastr · movingDivs (R2b) == */
+/* §5.8: ST's own dialogs and toasts are made part of AG2. Only their LOOK changes — the
+   open/close logic, the z-order and every control stay ST's (§9.2 #10: these layers sit at
+   z 4000–999999, above the shell; we never touch z-index or behaviour). Materials: one blur
+   layer per surface; full-screen dim backdrops carry NO blur (§7 budget — r1 counts a
+   >60%-viewport blurred layer as a blur frame). */
+
+/* --- modern dialog.popup (scripts/popup.js: persona connections, confirmations, …)
+       ST: 500px, radius 10, blur-tint bg, 14px black glow. AG2: centred card, radius 22,
+       window material, rim + sh3, no border. The card keeps its one blur; the ::backdrop
+       only dims (a second full-screen blur would blow the budget). */
+html body.ag2:not(#_):not(#__) dialog.popup {
+    width: min(520px, calc(100dvw - 24px));
+    max-width: calc(100dvw - 24px);
+    max-height: calc(100dvh - 32px);
+    padding: 16px 20px 18px;
+    border: 0 !important;
+    border-radius: var(--ag2-r-panel) !important;
+    background: var(--ag2-mat-window) !important;
+    -webkit-backdrop-filter: var(--ag2-blur-window);
+    backdrop-filter: var(--ag2-blur-window);
+    box-shadow: var(--ag2-rim), var(--ag2-sh3) !important;
+    color: var(--ag2-l1);
+    font: var(--ag2-fs-body) / 1.5 var(--ag2-font);
+}
+
+html body.ag2.no-blur:not(#_):not(#__) dialog.popup {
+    background: var(--ag2-solid-window) !important;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+
+html body.ag2:not(#_):not(#__) dialog.popup .popup-content {
+    margin-top: 6px;
+    padding: 0 2px;
+    overflow-wrap: anywhere;
+}
+
+html body.ag2:not(#_):not(#__) dialog.popup .popup-content :is(h3, .popup-header) {
+    margin: 0 0 4px;
+    color: var(--ag2-l1);
+    font-size: 16px;
+    font-weight: 650;
+    text-align: center;
+}
+
+html body.ag2:not(#_):not(#__) dialog.popup .multiline {
+    color: var(--ag2-l2);
+    font-size: var(--ag2-fs-sub);
+    line-height: 1.6;
+}
+
+/* persona avatars inside the popup: AG2 selection ring instead of ST's 2px outline */
+html body.ag2:not(#_):not(#__) dialog.popup .persona-list .avatar,
+html body.ag2:not(#_):not(#__) dialog.popup .avatars_inline .avatar {
+    max-height: none;
+    border: 0 !important;
+    border-radius: 12px !important;
+    background: var(--ag2-f4);
+    box-shadow: inset 0 0 0 0.5px var(--ag2-sep-strong) !important;
+    transition: box-shadow var(--ag2-dur) ease;
+}
+
+html body.ag2:not(#_):not(#__) dialog.popup .persona-list .avatar.is_active,
+html body.ag2:not(#_):not(#__) dialog.popup .persona-list .avatar:hover {
+    outline: none !important;
+    box-shadow: inset 0 0 0 2px var(--ag2-accent) !important;
+}
+
+html body.ag2:not(#_):not(#__) dialog.popup .avatar img {
+    border-radius: 12px;
+}
+
+html body.ag2:not(#_):not(#__) dialog.popup .popup-input {
+    margin-top: 10px;
+    border: 0 !important;
+    border-radius: var(--ag2-r-ctl) !important;
+    background: var(--ag2-f4) !important;
+    box-shadow: inset 0 0 0 0.5px var(--ag2-sep-strong) !important;
+    color: var(--ag2-l1) !important;
+    font-size: var(--ag2-fs-sub);
+}
+
+html body.ag2:not(#_):not(#__) dialog.popup .popup-inputs label span {
+    color: var(--ag2-l3);
+    opacity: 1;
+}
+
+/* buttons: primary = accent capsule, secondary/custom = filled capsule (§5.8) */
+html body.ag2:not(#_):not(#__) dialog.popup .popup-controls {
+    gap: 12px;
+    margin-top: 14px;
+}
+
+html body.ag2:not(#_):not(#__) dialog.popup .popup-controls .menu_button {
+    min-height: 36px;
+    margin: 0;
+    padding: 0 20px;
+    border: 0 !important;
+    border-radius: var(--ag2-r-full) !important;
+    background: var(--ag2-f2) !important;
+    color: var(--ag2-l1) !important;
+    filter: none !important;
+    font-size: var(--ag2-fs-sub);
+    font-weight: 600;
+    white-space: nowrap;
+    transition: background-color var(--ag2-dur) ease, filter var(--ag2-dur) ease;
+}
+
+html body.ag2:not(#_):not(#__) dialog.popup .popup-controls .menu_button:hover {
+    background: var(--ag2-f1) !important;
+}
+
+html body.ag2:not(#_):not(#__) dialog.popup .popup-controls .popup-button-ok {
+    background: var(--ag2-accent) !important;
+    color: #fff !important;
+}
+
+html body.ag2:not(#_):not(#__) dialog.popup .popup-controls .popup-button-ok:hover {
+    background: var(--ag2-accent-hover) !important;
+}
+
+html body.ag2:not(#_):not(#__) dialog.popup .popup-button-close {
+    top: 12px;
+    right: 12px;
+    display: inline-flex;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--ag2-r-full);
+    background: var(--ag2-f3);
+    color: var(--ag2-l2);
+    filter: none;
+    font-size: 15px;
+    transition: background-color var(--ag2-dur) ease, color var(--ag2-dur) ease;
+}
+
+html body.ag2:not(#_):not(#__) dialog.popup .popup-button-close:hover {
+    background: var(--ag2-f2);
+    color: var(--ag2-l1);
+}
+
+html body.ag2:not(#_):not(#__) dialog.popup::backdrop {
+    background: rgba(0, 0, 0, 0.42);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+
+/* §5.8 / §18c: Apple sheet scale + fade instead of ST's own pop-in */
+@keyframes ag2-popup-in {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes ag2-popup-out {
+    from { opacity: 1; transform: none; }
+    to { opacity: 0; transform: scale(0.97); }
+}
+
+html body.ag2:not(#_):not(#__) dialog.popup[opening] {
+    animation: ag2-popup-in var(--ag2-dur) var(--ag2-ease);
+}
+
+html body.ag2:not(#_):not(#__) dialog.popup[closing] {
+    animation: ag2-popup-out var(--ag2-dur) var(--ag2-ease);
+}
+
+html body.ag2:not(#_):not(#__) dialog.popup[opening]::backdrop {
+    animation: none;
+}
+
+/* --- legacy #shadow_popup > #dialogue_popup (z 9999, index.html): confirm/delete/input
+       flows that still call script.js callPopup(). Same card as the dialog above. */
+html body.ag2:not(#_):not(#__) #shadow_popup {
+    background: rgba(0, 0, 0, 0.42) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+
+html body.ag2:not(#_):not(#__) #dialogue_popup {
+    width: min(520px, calc(100dvw - 24px)) !important;
+    max-width: calc(100dvw - 24px) !important;
+    max-height: calc(100dvh - 32px) !important;
+    padding: 16px 20px 18px !important;
+    border: 0 !important;
+    border-radius: var(--ag2-r-panel) !important;
+    background: var(--ag2-mat-window) !important;
+    -webkit-backdrop-filter: var(--ag2-blur-window) !important;
+    backdrop-filter: var(--ag2-blur-window) !important;
+    box-shadow: var(--ag2-rim), var(--ag2-sh3) !important;
+    color: var(--ag2-l1);
+    font: var(--ag2-fs-body) / 1.5 var(--ag2-font);
+}
+
+html body.ag2.no-blur:not(#_):not(#__) #dialogue_popup {
+    background: var(--ag2-solid-window) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+
+html body.ag2:not(#_):not(#__) #dialogue_popup #dialogue_popup_text {
+    overflow-wrap: anywhere;
+}
+
+html body.ag2:not(#_):not(#__) #dialogue_popup #dialogue_popup_text h3 {
+    margin: 0 0 4px;
+    color: var(--ag2-l1);
+    font-size: 16px;
+    font-weight: 650;
+}
+
+html body.ag2:not(#_):not(#__) #dialogue_popup #dialogue_popup_text p {
+    margin: 4px 0;
+    color: var(--ag2-l2);
+    font-size: var(--ag2-fs-sub);
+}
+
+html body.ag2:not(#_):not(#__) #dialogue_popup #dialogue_popup_input {
+    margin-top: 10px;
+    border: 0 !important;
+    border-radius: var(--ag2-r-ctl) !important;
+    background: var(--ag2-f4) !important;
+    box-shadow: inset 0 0 0 0.5px var(--ag2-sep-strong) !important;
+    color: var(--ag2-l1) !important;
+    font-size: var(--ag2-fs-sub);
+}
+
+html body.ag2:not(#_):not(#__) #dialogue_popup #dialogue_popup_controls {
+    gap: 12px;
+    margin-top: 14px;
+}
+
+html body.ag2:not(#_):not(#__) #dialogue_popup #dialogue_popup_controls .menu_button {
+    min-height: 36px;
+    margin: 0 !important;
+    padding: 0 20px !important;
+    border: 0 !important;
+    border-radius: var(--ag2-r-full) !important;
+    background: var(--ag2-f2) !important;
+    color: var(--ag2-l1) !important;
+    filter: none !important;
+    font-size: var(--ag2-fs-sub);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+html body.ag2:not(#_):not(#__) #dialogue_popup #dialogue_popup_controls .menu_button:hover {
+    background: var(--ag2-f1) !important;
+}
+
+html body.ag2:not(#_):not(#__) #dialogue_popup #dialogue_popup_ok {
+    background: var(--ag2-accent) !important;
+    color: #fff !important;
+}
+
+html body.ag2:not(#_):not(#__) #dialogue_popup #dialogue_popup_ok:hover {
+    background: var(--ag2-accent-hover) !important;
+}
+
+/* --- #character_popup (高级定义, z 4001, index.html): ST's tall full-width panel → a
+       centred AG2 card. Its inline drawers become group cards; the header line and the
+       top-right × are aligned; every field uses the AG2 text_pole look. */
+html body.ag2:not(#_):not(#__) #character_popup {
+    top: 50% !important;
+    bottom: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: calc(100dvh - 48px) !important;
+    width: min(760px, calc(100dvw - 32px)) !important;
+    min-width: 0 !important;
+    max-width: calc(100dvw - 32px) !important;
+    margin: 0 auto !important;
+    padding: 18px 20px 20px !important;
+    border: 0 !important;
+    border-radius: var(--ag2-r-panel) !important;
+    background: var(--ag2-mat-window) !important;
+    -webkit-backdrop-filter: var(--ag2-blur-window) !important;
+    backdrop-filter: var(--ag2-blur-window) !important;
+    box-shadow: var(--ag2-rim), var(--ag2-sh3) !important;
+    color: var(--ag2-l1);
+    font: var(--ag2-fs-body) / 1.5 var(--ag2-font);
+    transform: translateY(-50%);
+}
+
+html body.ag2.no-blur:not(#_):not(#__) #character_popup {
+    background: var(--ag2-solid-window) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+
+html body.ag2:not(#_):not(#__) #character_popup #character_popup_text {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin: 0 36px 2px 0;
+    min-width: 0;
+}
+
+html body.ag2:not(#_):not(#__) #character_popup #character_popup_text :is(h3, span) {
+    color: var(--ag2-l1);
+    font-size: 17px;
+    font-weight: 650;
+}
+
+html body.ag2:not(#_):not(#__) #character_popup #character_popup_text span {
+    color: var(--ag2-l3);
+    font-weight: 500;
+}
+
+html body.ag2:not(#_):not(#__) #character_popup #character_cross {
+    top: 16px;
+    right: 16px;
+    display: inline-flex;
+    width: 30px;
+    height: 30px;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--ag2-r-full);
+    background: var(--ag2-f3);
+    color: var(--ag2-l2);
+    font-size: 16px;
+    opacity: 1;
+    transition: background-color var(--ag2-dur) ease, color var(--ag2-dur) ease;
+}
+
+html body.ag2:not(#_):not(#__) #character_popup #character_cross:hover {
+    background: var(--ag2-f2);
+    color: var(--ag2-l1);
+}
+
+html body.ag2:not(#_):not(#__) #character_popup hr {
+    margin: 12px 0 !important;
+    border: 0 !important;
+    border-top: 0.5px solid var(--ag2-sep) !important;
+}
+
+/* inline drawers inside 高级定义 → AG2 group cards (same language as the settings window) */
+html body.ag2:not(#_):not(#__) #character_popup .inline-drawer {
+    margin: 6px 0 !important;
+    border: 0 !important;
+    border-radius: 12px !important;
+    background: var(--ag2-f5) !important;
+    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.065) !important;
+}
+
+html body.ag2:not(#_):not(#__) #character_popup .inline-drawer .inline-drawer {
+    background: none !important;
+}
+
+html body.ag2:not(#_):not(#__) #character_popup .inline-drawer-header {
+    align-items: center !important;
+    gap: 8px;
+    min-height: 40px;
+    margin: 0 !important;
+    padding: 6px 12px !important;
+    border: 0 !important;
+    border-radius: 12px !important;
+    background: none !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+    color: var(--ag2-l1) !important;
+    font-size: var(--ag2-fs-sub) !important;
+    font-weight: 600;
+}
+
+html body.ag2:not(#_):not(#__) #character_popup .inline-drawer-header h4 {
+    margin: 0 !important;
+    color: var(--ag2-l1);
+    font-size: var(--ag2-fs-sub);
+}
+
+html body.ag2:not(#_):not(#__) #character_popup .inline-drawer-header h4 small {
+    color: var(--ag2-l3);
+    font-weight: 400;
+}
+
+html body.ag2:not(#_):not(#__) #character_popup .inline-drawer-content {
+    padding: 2px 12px 12px !important;
+    border: 0 !important;
+    background: none !important;
+}
+
+html body.ag2:not(#_):not(#__) #character_popup .inline-drawer-icon {
+    flex: none;
+    margin: 0 0 0 auto !important;
+    color: var(--ag2-l3) !important;
+    filter: none !important;
+    font-size: 12px !important;
+    opacity: 1 !important;
+}
+
+html body.ag2:not(#_):not(#__) #character_popup .inline-drawer-icon.fa-circle-chevron-down::before {
+    content: "\f078";
+}
+
+html body.ag2:not(#_):not(#__) #character_popup .inline-drawer-icon.fa-circle-chevron-up::before {
+    content: "\f077";
+}
+
+html body.ag2:not(#_):not(#__) #character_popup h4 {
+    color: var(--ag2-l3);
+    font-size: 12.5px;
+    font-weight: 640;
+}
+
+html body.ag2:not(#_):not(#__) #character_popup h5 {
+    color: var(--ag2-l3);
+}
+
+html body.ag2:not(#_):not(#__) #character_popup :is(textarea.text_pole, input.text_pole) {
+    border: 0 !important;
+    border-radius: 10px !important;
+    background: rgba(0, 0, 0, 0.28) !important;
+    box-shadow: inset 0 0 0 0.5px var(--ag2-sep-strong) !important;
+    color: var(--ag2-l1) !important;
+    font-size: var(--ag2-fs-sub) !important;
+    line-height: 1.5 !important;
+}
+
+html body.ag2:not(#_):not(#__) #character_popup .extension_token_counter {
+    color: var(--ag2-l3);
+    font-size: var(--ag2-fs-foot);
+    font-variant-numeric: tabular-nums;
+}
+
+html body.ag2:not(#_):not(#__) #character_popup #character_popup_ok {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    margin: 16px auto 0 !important;
+    padding: 0 24px !important;
+    border: 0 !important;
+    border-radius: var(--ag2-r-full) !important;
+    background: var(--ag2-accent) !important;
+    color: #fff !important;
+    font-size: var(--ag2-fs-sub);
+    font-weight: 600;
+    text-align: center;
+}
+
+html body.ag2:not(#_):not(#__) #character_popup #character_popup_ok:hover {
+    background: var(--ag2-accent-hover) !important;
+}
+
+/* --- #shadow_select_chat_popup > #select_chat_popup (切换聊天文件, z 4100) --- */
+html body.ag2:not(#_):not(#__) #shadow_select_chat_popup {
+    background: rgba(0, 0, 0, 0.42) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+
+html body.ag2:not(#_):not(#__) #select_chat_popup {
+    width: min(720px, calc(100dvw - 32px)) !important;
+    max-width: calc(100dvw - 32px) !important;
+    max-height: calc(100dvh - 48px) !important;
+    padding: 14px 16px 16px !important;
+    border: 0 !important;
+    border-radius: var(--ag2-r-panel) !important;
+    background: var(--ag2-mat-window) !important;
+    -webkit-backdrop-filter: var(--ag2-blur-window) !important;
+    backdrop-filter: var(--ag2-blur-window) !important;
+    box-shadow: var(--ag2-rim), var(--ag2-sh3) !important;
+    color: var(--ag2-l1);
+    font: var(--ag2-fs-body) / 1.5 var(--ag2-font);
+}
+
+html body.ag2.no-blur:not(#_):not(#__) #select_chat_popup {
+    background: var(--ag2-solid-window) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+
+html body.ag2:not(#_):not(#__) #select_chat_popup #selectChatPopupHeaderText {
+    color: var(--ag2-l1);
+    font-size: 16px;
+    font-weight: 650;
+}
+
+html body.ag2:not(#_):not(#__) #select_chat_popup #select_chat_search {
+    height: 34px;
+    border: 0 !important;
+    border-radius: var(--ag2-r-ctl) !important;
+    background: var(--ag2-f4) !important;
+    box-shadow: inset 0 0 0 0.5px var(--ag2-sep-strong) !important;
+    color: var(--ag2-l1) !important;
+    font-size: var(--ag2-fs-sub);
+}
+
+html body.ag2:not(#_):not(#__) #select_chat_popup #select_chat_cross {
+    display: inline-flex;
+    width: 28px;
+    height: 28px;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--ag2-r-full);
+    background: var(--ag2-f3);
+    color: var(--ag2-l2);
+    opacity: 1;
+    transition: background-color var(--ag2-dur) ease, color var(--ag2-dur) ease;
+}
+
+html body.ag2:not(#_):not(#__) #select_chat_popup #select_chat_cross:hover {
+    background: var(--ag2-f2);
+    color: var(--ag2-l1);
+}
+
+html body.ag2:not(#_):not(#__) #select_chat_popup :is(#newChatFromManageScreenButton, #chat_import_button) {
+    min-height: 32px;
+    padding: 0 14px !important;
+    border: 0 !important;
+    border-radius: var(--ag2-r-full) !important;
+    background: var(--ag2-f2) !important;
+    color: var(--ag2-l1) !important;
+    filter: none !important;
+    font-size: var(--ag2-fs-foot);
+    font-weight: 600;
+}
+
+html body.ag2:not(#_):not(#__) #select_chat_popup .select_chat_block {
+    border: 0 !important;
+    border-radius: var(--ag2-r-row) !important;
+    background: var(--ag2-f5);
+}
+
+html body.ag2:not(#_):not(#__) #select_chat_popup .select_chat_block:hover {
+    background: var(--ag2-f3) !important;
+}
+
+html body.ag2:not(#_):not(#__) #select_chat_popup .select_chat_block[highlight] {
+    background: var(--ag2-accent-soft) !important;
+}
+
+/* --- toastr: top-centre glass banner, 360 wide, status icon left, colour by type.
+       ST sets the position class from #toastr_position, so the layout stays ST's; only
+       the banner is restyled. Its base64 status icons are kept (coloured disc at left). */
+html body.ag2:not(#_):not(#__) #toast-container > div {
+    width: 360px;
+    padding: 13px 16px 13px 50px;
+    border: 0;
+    border-radius: 14px;
+    background-color: var(--ag2-mat-menu);
+    -webkit-backdrop-filter: var(--ag2-blur-menu);
+    backdrop-filter: var(--ag2-blur-menu);
+    box-shadow: var(--ag2-rim), var(--ag2-sh2);
+    color: var(--ag2-l1);
+    opacity: 1;
+    font-size: var(--ag2-fs-sub);
+}
+
+html body.ag2.no-blur:not(#_):not(#__) #toast-container > div {
+    background-color: rgb(44, 44, 51);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+
+html body.ag2:not(#_):not(#__) #toast-container > div:hover {
+    box-shadow: var(--ag2-rim), var(--ag2-sh3);
+    opacity: 1;
+}
+
+html body.ag2:not(#_):not(#__) #toast-container .toast-title {
+    color: var(--ag2-l1);
+    font-weight: 650;
+}
+
+html body.ag2:not(#_):not(#__) #toast-container .toast-message {
+    color: var(--ag2-l2);
+}
+
+/* a hairline status accent on the leading edge, one colour per type */
+html body.ag2:not(#_):not(#__) #toast-container > div::before {
+    content: "";
+    position: absolute;
+    top: 8px;
+    bottom: 8px;
+    left: 0;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: var(--ag2-graphite);
+}
+
+html body.ag2:not(#_):not(#__) #toast-container > .toast-success::before {
+    background: var(--ag2-green);
+}
+
+html body.ag2:not(#_):not(#__) #toast-container > .toast-error::before {
+    background: var(--ag2-red);
+}
+
+html body.ag2:not(#_):not(#__) #toast-container > .toast-warning::before {
+    background: var(--ag2-orange);
+}
+
+html body.ag2:not(#_):not(#__) #toast-container > .toast-info::before {
+    background: var(--ag2-blue);
+}
+
+/* ST's per-type solid backgrounds would hide the glass: drop them (icon image stays) */
+html body.ag2:not(#_):not(#__) #toast-container > :is(.toast-success, .toast-error, .toast-info, .toast-warning) {
+    background-color: var(--ag2-mat-menu);
+}
+
+html body.ag2.no-blur:not(#_):not(#__) #toast-container > :is(.toast-success, .toast-error, .toast-info, .toast-warning) {
+    background-color: rgb(44, 44, 51);
+}
+
+/* toast-centre containers: ST hard-codes 300px children */
+html body.ag2:not(#_):not(#__) #toast-container.toast-top-center > div,
+html body.ag2:not(#_):not(#__) #toast-container.toast-bottom-center > div {
+    width: 360px;
+}
+
+/* --- #movingDivs (z 4000): third-party panels. The three ST panels inside it
+       (#floatingPrompt / #cfgConfig / #logprobsViewer) are already AG2-styled in §5.6;
+       this only gives any OTHER direct child a matching outer card so a third-party panel
+       does not float as a bare ST box. No rule targets a specific extension's insides. */
+html body.ag2:not(#_):not(#__) #movingDivs > .drawer-content:not(#floatingPrompt):not(#cfgConfig):not(#logprobsViewer) {
+    border: 0 !important;
+    border-radius: var(--ag2-r-panel) !important;
+    background: var(--ag2-mat-menu) !important;
+    box-shadow: var(--ag2-rim), var(--ag2-sh3) !important;
+    color: var(--ag2-l1);
+}
+
+/* --- phone: the same popups become near-full-screen sheets (§5.9). */
+@media (max-width: 1000px) {
+    html body.ag2.ag2-phone:not(#_):not(#__) #character_popup,
+    html body.ag2.ag2-phone:not(#_):not(#__) #select_chat_popup {
+        top: calc(var(--ag2-safe-t) + 10px) !important;
+        bottom: 0 !important;
+        height: auto !important;
+        max-height: none !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        margin: 0 !important;
+        padding: 16px calc(16px + var(--ag2-safe-r)) calc(20px + var(--ag2-safe-b)) calc(16px + var(--ag2-safe-l)) !important;
+        border-radius: var(--ag2-r-window) var(--ag2-r-window) 0 0 !important;
+        transform: none;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) dialog.popup,
+    html body.ag2.ag2-phone:not(#_):not(#__) #dialogue_popup {
+        width: calc(100dvw - 20px) !important;
+        max-width: calc(100dvw - 20px) !important;
+        padding: 16px !important;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #toast-container > div,
+    html body.ag2.ag2-phone:not(#_):not(#__) #toast-container.toast-top-center > div,
+    html body.ag2.ag2-phone:not(#_):not(#__) #toast-container.toast-bottom-center > div {
+        width: calc(100vw - 24px);
+    }
 }
 
 /* == 5.9 · Phone (§5.9, §4, §9.2 #11; design 05) == */

@@ -14,11 +14,11 @@
 // group_edit of the open group. Anything else → ask ST to re-select (its own
 // #rm_button_selected_ch) and show a neutral placeholder meanwhile.
 
-import { icon } from './icons.js?v=202611092120';
-import { openMenu, closeMenu } from './menu.js?v=202611092120';
-import { local } from './store.js?v=202611092120';
-import { ctx, h, guard, clickSt, isDesktop, INSP_ID, setInspector, restoreInspectorPin, getCurrentChatId, summary, toDate } from './util.js?v=202611092120';
-import { guarded } from './index.js?v=202611092120';
+import { icon } from './icons.js?v=202611111914';
+import { openMenu, closeMenu } from './menu.js?v=202611111914';
+import { local } from './store.js?v=202611111914';
+import { ctx, h, guard, clickSt, isDesktop, INSP_ID, setInspector, restoreInspectorPin, getCurrentChatId, summary, toDate } from './util.js?v=202611111914';
+import { guarded } from './index.js?v=202611111914';
 import { openGroupId } from '../../../../group-chats.js';
 
 let panel = null;
@@ -268,6 +268,11 @@ function renderChar(c) {
     val('persona', personaFor(c, ch.avatar));
     val('charworld', ch.data?.extensions?.world || '未绑定');
     const notes = String(ch.data?.creator_notes || ch.creatorcomment || '').trim();
+    // R2b: no notes → the row only reads “无” and does nothing; a click must not open
+    // ST's empty #creator_notes_empty block in the inspector.
+    const notesBtn = ui.links.querySelector('[data-ag2-act="notes"]');
+    if (notesBtn) notesBtn.disabled = !notes;
+    if (!notes) delete panel.dataset.ag2Notes;
     val('notes', notes ? (panel.dataset.ag2Notes ? '收起' : '查看') : '无');
     val('adv', '');
     // Footer: ST's token counter (#result_info) + creation date
@@ -377,8 +382,11 @@ function toggleEdit(field) {
 }
 
 function toggleNotes() {
+    // R2b: nothing to show → stay shut (the row is also disabled in renderChar).
+    const notes = String($id('creator_notes_spoiler')?.textContent || '').trim();
     if (panel.dataset.ag2Notes) delete panel.dataset.ag2Notes;
     else {
+        if (!notes) return;
         panel.dataset.ag2Notes = '1';
         // ST's own inline drawer: open its content if it is collapsed.
         const content = document.querySelector('#spoiler_free_desc > .inline-drawer-content');

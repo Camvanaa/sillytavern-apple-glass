@@ -14,12 +14,12 @@
 // keyboard's top edge.
 // State: localStorage ag2.phPage = list | chat (per device, §9.1).
 
-import { icon } from './icons.js?v=202611092120';
-import { openMenu, closeMenu } from './menu.js?v=202611092120';
-import { local } from './store.js?v=202611092120';
-import { ctx, h, guard, getCurrentChatId, openSettings, setInspector, inspectorModule, openPalette, clickSt } from './util.js?v=202611092120';
-import { chatMenuItems } from './chrome.js?v=202611092120';
-import { segment, setSegment } from './sidebar.js?v=202611092120';
+import { icon } from './icons.js?v=202611111914';
+import { openMenu, closeMenu } from './menu.js?v=202611111914';
+import { local } from './store.js?v=202611111914';
+import { ctx, h, guard, getCurrentChatId, openSettings, setInspector, inspectorModule, openPalette, clickSt } from './util.js?v=202611111914';
+import { chatMenuItems } from './chrome.js?v=202611111914';
+import { segment, setSegment } from './sidebar.js?v=202611111914';
 
 const TABS = [['chats', '对话', 'messages-square'], ['chars', '角色', 'users'], ['wi', '世界书', 'book-open'], ['settings', '设置', 'settings']];
 const SEG_TITLE = { chats: '对话', chars: '角色', groups: '群组' };
