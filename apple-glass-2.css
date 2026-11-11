@@ -4869,6 +4869,89 @@ html body.ag2.reduced-motion:not(#_):not(#__):not(#___) .ag2-hit {
     html body.ag2.ag2-set-open:not(#_):not(#__) #Backgrounds #bg_tabs .bg_tabs_list .bg_tab_button.ui-tabs-active a {
         color: var(--ag2-l1) !important;
     }
+
+    /* --- radio buttons (生成参数: 角色名称行为 / 续写后缀): custom 18px ring + accent dot --- */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) input[type="radio"] {
+        position: relative;
+        flex: none !important;
+        box-sizing: border-box;
+        width: 18px !important;
+        height: 18px !important;
+        min-width: 18px;
+        margin: 0 2px 0 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 50% !important;
+        outline: 0 !important;
+        background: var(--ag2-f2) !important;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18) !important;
+        cursor: pointer;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) input[type="radio"]:checked {
+        background: var(--ag2-accent) !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) input[type="radio"]:checked::before {
+        content: "";
+        position: absolute;
+        inset: 5px;
+        border-radius: 50%;
+        background: #fff;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) label.checkbox_label:has(> input[type="radio"]) {
+        align-items: center;
+        padding: 8px 2px !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) label.checkbox_label:has(> input[type="radio"]) > small {
+        margin: 2px 0 0 26px !important;
+        color: var(--ag2-l3) !important;
+        font-size: 12px !important;
+        font-weight: 400;
+        line-height: 1.45;
+    }
+
+    /* --- ST built-in extensions inside 扩展 (Quick Reply, Regex) --- */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #rm_extensions_block #qr--settings .qr--head {
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #rm_extensions_block #qr--settings .qr--head > .qr--actions {
+        flex: 1 1 260px;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #rm_extensions_block #qr--settings .qr--head > .qr--actions > select {
+        flex: 1 1 140px;
+        min-width: 0;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #rm_extensions_block .regex-script-label {
+        align-items: center !important;
+        gap: 6px;
+        padding: 4px 8px !important;
+        border: 0 !important;
+        border-radius: 10px !important;
+        background: var(--ag2-f5);
+        box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.065);
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #rm_extensions_block .regex-script-label > .regex_script_name {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
 }
 /* == /5.5e == */
 
@@ -6947,7 +7030,7 @@ html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-scope {
     html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) :is(.range-block-counter input, input.neo-range-input) {
         width: 64px !important;
         min-width: 64px;
-        height: 36px !important;
+        height: 40px !important;
         border-radius: 9px !important;
         font-size: 16px !important;
     }
@@ -7123,6 +7206,82 @@ html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-scope {
 
     html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement #persona_controls > label {
         flex: 1 1 100%;
+    }
+
+    /* 提示词与格式 / 通用 preset rows: select on one row, the 5–6 icon buttons under it */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#AdvancedFormatting, #user-settings-block) .flex-container:has(> select[data-preset-manager-for]) {
+        gap: 8px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#AdvancedFormatting, #user-settings-block) select[data-preset-manager-for] {
+        flex: 1 1 100%;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#AdvancedFormatting, #user-settings-block) .flex-container:has(> select[data-preset-manager-for]) > .flex-container {
+        gap: 8px !important;
+    }
+
+    /* textarea labels with an “expand editor” icon on the right: 40px tap target */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) i.editor_maximize {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+    }
+
+    /* 背景: 3 thumbnails per row on phones (ST sets --bg-thumb-columns:5 inline, which beat
+       mobile-styles.css's fallback of 3), and no backdrop-filter on the ⋮ button (§7 rule) */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #Backgrounds :is(#bg_menu_content, #bg_custom_content) {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #Backgrounds .bg_folder_tile .mobile-only-menu-toggle {
+        top: 4px;
+        right: 4px;
+        width: 28px;
+        height: 28px;
+        border-radius: 14px;
+        background: rgba(0, 0, 0, 0.55) !important;
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #Backgrounds .bg_example .BGSampleTitle {
+        padding: 0 32px 2px 6px !important;
+        font-size: 11px !important;
+    }
+
+    /* 世界书 entry (collapsed): ST hides the depth input unless Position is @D; on phones the
+       “深度:” caption above it stayed visible above an empty space */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEnteryHeaderControls > .world_entry_form_control:has(> input[name="depth"][style*="display: none"]) > .WIEntryHeaderTitleMobile {
+        opacity: 0.35;
+    }
+
+    /* 世界书 entry (expanded): stack the keyword fields and the content / recursion row */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry [name="keywordsAndLogicBlock"] {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 8px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry [name="keywordsAndLogicBlock"] > .world_entry_form_control {
+        width: 100%;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry [name="keywordsAndLogicBlock"] select[name="entryLogicType"] {
+        width: 100% !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry [name="contentAndCharFilterBlock"] label[for^="content"] > small > span {
+        flex-wrap: wrap !important;
+        gap: 8px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry [name="contentAndCharFilterBlock"] label.checkbox {
+        flex-wrap: nowrap;
+        gap: 6px;
     }
 }
 /* == /5.9b == */

@@ -108,7 +108,7 @@ export const checks = (page, roots) => page.evaluate(rs => {
     const rect = e => {
         const b = rawRect(e);
         let l = b.left, t = b.top, r = b.right, bt = b.bottom;
-        for (let p = e.parentElement; p && p !== document.body; p = p.parentElement) {
+        for (let p = e; p && p !== document.body; p = p.parentElement) {
             const c = getComputedStyle(p);
             if (c.overflowX === 'visible' && c.overflowY === 'visible') continue;
             const q = p.getBoundingClientRect();
@@ -127,6 +127,11 @@ export const checks = (page, roots) => page.evaluate(rs => {
         for (let j = i + 1; j < boxes.length; j++) {
             const [b, rb] = boxes[j];
             if (a.contains(b) || b.contains(a)) continue;
+            // two inline formatting nodes inside the same text block (e.g. a multi-line sentence
+            // with <b> / <a> inside <small> or .toggle-description): their union boxes overlap
+            // because the sentence wraps, not because text collides
+            const inl = x => !x.matches('input, select, textarea, button, .menu_button, .menu_button_icon, .select2-container, .ag2-switch, .ag2-anchor') && /^inline/.test(getComputedStyle(x).display);
+            if (inl(a) && inl(b)) { const ca = a.closest('p, label, .toggle-description, li, h4, div'), cb = b.closest('p, label, .toggle-description, li, h4, div'); if (ca && (ca === cb || ca.contains(cb) || cb?.contains(ca))) continue; }
             const w = Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left);
             const hh = Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top);
             if (w < 3 || hh < 3) continue;
@@ -171,7 +176,9 @@ const smallTargets = (page, root, min = 40) => page.evaluate(([sel, m]) => {
     if (!r0) return out;
     for (const e of r0.querySelectorAll('button, .menu_button, .menu_button_icon, select, input[type="text"], input[type="search"], input[type="number"], .right_menu_button, i.interactable')) {
         const c = getComputedStyle(e);
-        if (c.display === 'none' || c.visibility !== 'visible') continue;
+        if (c.display === 'none' || c.visibility !== 'visible' || c.pointerEvents === 'none') continue;
+        if (e.closest('[style*="pointer-events: none"], .ag2-look-off')) continue;
+        { let p = e.parentElement, off = false; while (p && p !== r0) { if (getComputedStyle(p).pointerEvents === 'none') { off = true; break; } p = p.parentElement; } if (off) continue; }
         const r = e.getBoundingClientRect();
         if (r.width < 1 || r.height < 1 || r.bottom < 0 || r.top > innerHeight) continue;
         const b = getComputedStyle(e, '::before');
@@ -188,6 +195,12 @@ async function enter(T, opt = {}) {
     const page = await T.newPage();
     // --vw 360: a narrower phone (the suite's phone context is 390×844)
     if (phone && arg('vw', '')) await page.setViewportSize({ width: Number(arg('vw', 390)), height: Number(arg('vh', 844)) });
+    const cssFile = arg('css', '');
+    if (cssFile) {
+        const fs = await import('node:fs');
+        const oldCss = fs.readFileSync(cssFile, 'utf8');
+        opt = { ...opt, mutate: j => { const u = j.settings ? JSON.parse(j.settings) : j; u.power_user.theme = 'Apple Glass 2'; u.power_user.custom_css = oldCss; for (const t of j.themes || []) if (t.name === 'Apple Glass 2') t.custom_css = oldCss; if (j.settings) j.settings = JSON.stringify(u); } };
+    }
     await T.prepare(page, { ...(MEM ? { theme: 'ag2' } : {}), ...opt });
     // --ios: ST's mobile-styles.css ends with an iOS-only block, `@supports (-webkit-touch-callout:
     // none) { … }`, that Chromium never applies (it resizes #world_popup / .drawer-content /
@@ -242,7 +255,7 @@ const markScroller = (page, rootSel) => page.evaluate(sel => {
 // ---------------------------------------------------------------- sweep
 async function sweep(T) {
     const { page, phone } = await enter(T);
-    const vp = phone ? 'ph' + (arg('vw', '') || '') + (has('ios') ? 'i' : '') : String(T.cfg.w);
+    const vp = phone ? 'ph' + (arg('vw', '') || '') : String(T.cfg.w);
     const out = { vp, tag: TAG, pages: {}, totals: { clip: 0, over: 0, native: 0, rows: 0, scan: 0 } };
     await openSettings(T, page, phone);
     for (const p of PAGES) {
@@ -324,7 +337,58 @@ async function dev(T) {
 }
 
 export default async function (T) {
-    const parts = { sweep, dev };
+    
+// ---------------------------------------------------------------- func: controls still work
+async function func(T) {
+    const { page, phone } = await enter(T);
+    await openSettings(T, page, phone);
+    const out = { phone };
+    // 1. 生成参数: slider + number counter + switch + select
+    await goPage(T, page, phone, 'ai');
+    out.ai = await page.evaluate(() => {
+        const sl = document.querySelector('#temp_openai');
+        const num = document.querySelector('#temp_counter_openai');
+        const sw = document.querySelector('#stream_toggle');
+        const sel = document.querySelector('#settings_preset_openai');
+        const t0 = sl ? +sl.value : null, s0 = sw ? sw.checked : null;
+        if (sl) { sl.value = '1.15'; $(sl).val('1.15').trigger('input').trigger('change'); }
+        if (sw) sw.click();
+        const s1 = sw ? sw.checked : null, n1 = num ? +num.value : null;
+        if (sw) sw.click(); // restore
+        if (sl && t0 !== null) { $(sl).val(String(t0)).trigger('input').trigger('change'); }
+        return { sliderChanged: n1 === 1.15, switchToggled: s0 !== null && s1 === !s0, presetOpts: sel ? sel.options.length : 0 };
+    });
+    // 2. 世界书: select a book → entries render; open an entry; create button is clickable
+    await goPage(T, page, phone, 'wi');
+    out.wi = await page.evaluate(() => {
+        const s = document.querySelector('#world_editor_select');
+        if (s && s.options.length > 1) { s.selectedIndex = 1; $(s).trigger('change'); }
+        const cr = document.querySelector('#world_create_button');
+        const r = cr?.getBoundingClientRect();
+        return { selected: s?.value, createBox: r ? [Math.round(r.width), Math.round(r.height)] : null };
+    });
+    await T.sleep(1200);
+    out.wi.entries = await page.evaluate(() => {
+        const n = document.querySelectorAll('#WorldInfo .world_entry').length;
+        const t = document.querySelector('#WorldInfo .world_entry .inline-drawer-toggle');
+        t?.click();
+        const c = document.querySelector('#WorldInfo .world_entry .inline-drawer-content');
+        return { count: n, entryOpened: c ? getComputedStyle(c).display !== 'none' : false };
+    });
+    // 3. 人设: click a persona card, sort select works
+    await goPage(T, page, phone, 'persona');
+    out.persona = await page.evaluate(() => {
+        const cards = [...document.querySelectorAll('#user_avatar_block .avatar-container')];
+        cards[0]?.click();
+        const sort = document.querySelector('#persona_sort_order');
+        if (sort) { sort.value = 'desc'; sort.dispatchEvent(new Event('change', { bubbles: true })); }
+        return { cards: cards.length, selected: document.querySelector('#user_avatar_block .avatar-container.selected') !== null, sortVal: sort?.value };
+    });
+    out.ok = !!(out.ai.sliderChanged && out.ai.switchToggled && out.wi.entries.count > 0 && out.wi.entries.entryOpened && out.persona.cards > 0 && out.persona.selected);
+    return out;
+}
+
+const parts = { sweep, dev, func };
     if (!parts[part]) throw new Error('unknown part ' + part);
     return parts[part](T);
 }
