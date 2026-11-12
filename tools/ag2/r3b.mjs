@@ -35,7 +35,37 @@ async function palette(T) {
     await page.keyboard.press('Enter');
     await T.sleep(700);
     const ran = await page.evaluate(() => ({ open: !!document.querySelector('#ag2-palette[open]'), set: document.body.classList.contains('ag2-set-open'), page: document.body.dataset.ag2Set || null }));
-    return { first, down, up, ran, errors: T.errors(page) };
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Control+K');
+    await T.sleep(250);
+    await page.keyboard.type('温度', { delay: 35 });
+    await T.sleep(900);
+    const repeat = await pal(page);
+    if (repeat.rows.length > 1) {
+        const row = page.locator('#ag2-palette .ag2-pal-row').nth(1);
+        const box = await row.boundingBox();
+        await page.mouse.move(box.x + 10, box.y + 10);
+    }
+    const mouse = await pal(page);
+    await page.keyboard.press('Escape');
+    return { first, down, up, ran, repeat, mouse, errors: T.errors(page) };
+}
+
+async function desktopMenu(T) {
+    const page = await enter(T);
+    await page.click('#ag2-plus');
+    await T.sleep(200);
+    await page.click('#ag2-plus-menu [data-item="wand"]');
+    await T.sleep(300);
+    const state = await page.evaluate(() => {
+        const p = document.querySelector('#ag2-plus-menu'), s = document.querySelector('#extensionsMenu');
+        const a = p?.querySelector('[data-item="wand"]'), r = s?.getBoundingClientRect(), q = p?.getBoundingClientRect(), ar = a?.getBoundingClientRect();
+        return { parent: q && { left: q.left, right: q.right, top: q.top, bottom: q.bottom }, anchor: ar && { left: ar.left, right: ar.right, top: ar.top, bottom: ar.bottom }, child: r && { left: r.left, right: r.right, top: r.top, bottom: r.bottom }, visible: !!s && getComputedStyle(s).display !== 'none', focused: document.activeElement?.closest('#ag2-plus-menu')?.dataset.item || null };
+    });
+    await T.shot(page, 'menu-wand-desk-post');
+    await page.keyboard.press('Escape');
+    await T.sleep(200);
+    return { state, closed: await page.evaluate(() => !document.querySelector('.ag2-menu') && !document.body.classList.contains('ag2-wand-open')), errors: T.errors(page) };
 }
 
 async function phone(T) {
@@ -90,8 +120,29 @@ async function toast(T) {
     return { state, normal, errors: T.errors(page) };
 }
 
+async function compat(T) {
+    const page = await enter(T);
+    await page.hover('#chat .mes.last_mes');
+    await T.sleep(250);
+    await T.shot(page, 'compat-actionbar-post');
+    const buttons = await page.evaluate(() => [...document.querySelectorAll('#chat .mes.last_mes .mes_buttons .extraMesButtons > *, #chat .mes.last_mes .mes_buttons > .mes_btn, #chat .mes.last_mes .mes_buttons > .mes_button')].map(e => ({
+        cls: String(e.className || '').slice(0, 140), text: (e.innerText || e.textContent || '').trim().slice(0, 80), title: e.getAttribute('title'), aria: e.getAttribute('aria-label'),
+        html: e.innerHTML.slice(0, 200), box: (() => { const r = e.getBoundingClientRect(); return { w: Math.round(r.width), h: Math.round(r.height) }; })(),
+        before: (() => { const s = getComputedStyle(e, '::before'); return { content: s.content, mask: s.maskImage, width: s.width, height: s.height }; })(),
+    })));
+    const collapse = page.locator('#chat .mes.last_mes .mes_buttons > .xiaobaix-collapse-btn').first();
+    const beforeClick = await collapse.evaluate(e => ({ visible: !!(e.offsetWidth || e.offsetHeight), expanded: e.classList.contains('active') || e.getAttribute('aria-expanded') }));
+    await collapse.click();
+    await T.sleep(250);
+    const afterClick = await collapse.evaluate(e => ({ expanded: e.classList.contains('active') || e.getAttribute('aria-expanded'), opened: [...e.classList].filter(c => /open|expand|active/i.test(c)) }));
+    const scan = await T.scan(page, ['#chat']);
+    return { buttons, collapse: { beforeClick, afterClick }, scan: { ovf: scan.ovf, dbl: scan.dbl, unhid: scan.unhid, nest: scan.nest, btn: scan.btn }, errors: T.errors(page) };
+}
+
 export default async function (T) {
     if (part === 'phone') return phone(T);
+    if (part === 'desktop') return desktopMenu(T);
     if (part === 'toast') return toast(T);
+    if (part === 'compat') return compat(T);
     return palette(T);
 }
