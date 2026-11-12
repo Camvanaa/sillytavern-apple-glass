@@ -1,31 +1,45 @@
-/* R3a variant C — timeline divider: hairline · icon + text · hairline, no surface, no
-   caption. The lines are .mes::after and .swipeRightBlock::before (both unused on a small
-   system message), so .mes gets its own 3-column grid. Append after §5.3c. */
+/* == 5.3c-C · Small system messages — variant C: timeline divider (user pick, 2026-11-12) ==
+   Appended over §5.3c (four ids beat it): the receipt is a centred divider — hairline ·
+   [icon] option text · hairline — no surface, no sender caption. §5.3c stays intact
+   underneath: this block is guarded by :not(:has(.edit_textarea)), so edit mode, the
+   floating action bar and the delete checkbox keep §5.3c's behaviour. Delete this block
+   to return to the A capsule; B lives in tools/ag2/r3a-variants/B.css.
+   The receipt is a *post-choice echo*, so the option is one line + ellipsis (the card the
+   user picked from is untouched). When the text actually truncates, a “▾ 展开” affordance
+   shows on hover / focus / after a tap; clicking the receipt (reading.js) toggles
+   ag2-ssb-open, which clamps the text to 1 line or lets it wrap. */
+
 @media screen {
     html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea)) {
-        grid-template-columns: [outer card in] minmax(20px, 1fr) [mid] auto [r] minmax(20px, 1fr) [pr end];
-        column-gap: 12px;
+        grid-template-columns:
+            [outer card in] minmax(24px, 1fr) [mid] minmax(0, 560px) [r] minmax(24px, 1fr) [pr end];
+        column-gap: 14px;
         margin-bottom: 20px !important;
     }
 
     html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea)) > .mes_block {
         grid-column: mid;
+        justify-self: center;
         column-gap: 7px;
         max-width: 100%;
-        padding: 2px 0 !important;
+        padding: 2px 14px 2px 0 !important;
         border-radius: 0;
         background: none;
         box-shadow: none;
     }
 
+    /* the two hairlines: .mes::after and .swipeRightBlock::before (both unused on a
+       small system message; §5.3c turned them off, four ids turn them back on).
+       -webkit-line-clamp needs a -webkit-box, so the clamp lives on .mes_text itself. */
     html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea))::after,
     html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea)) > .swipeRightBlock::before {
         content: "" !important;
         display: block;
         grid-row: text;
-        align-self: center;
+        align-self: start;
+        margin: 11px 0 0;   /* the text line's optical centre (13.5px × 1.5 ≈ 20px) */
         height: 0.5px;
-        margin: 0;
+        opacity: 1 !important; /* override the ordinary message's hover-only meta */
         border-radius: 0;
         background: var(--ag2-sep-strong);
         z-index: auto;
@@ -48,14 +62,88 @@
         mask-size: 15px 15px;
     }
 
+    /* no sender caption on the divider */
     html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea)) .ch_name > :first-child {
         display: none !important;
     }
 
+    /* one line + ellipsis when collapsed; wraps when ag2-ssb-open (reading.js toggles it
+       on click; double-click / selection / the buttons never toggle) */
     html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea)) .mes_text {
         color: var(--ag2-l2) !important;
         font-size: 13.5px !important;
         font-weight: 520 !important;
-        line-height: 1.45 !important;
+        line-height: 1.5 !important;
+        text-align: center;
+        max-width: 100%;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 1;
+        overflow: hidden;
+        overflow-wrap: anywhere;
+        cursor: pointer;
+        transition: color var(--ag2-dur) ease;
+    }
+
+    html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea)):hover .mes_text,
+    html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea)):focus-within .mes_text {
+        color: var(--ag2-l1) !important;
+    }
+
+    html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea)).ag2-ssb-open .mes_text {
+        -webkit-line-clamp: unset;
+        display: block;
+        overflow: visible;
+        overflow-wrap: anywhere;
+        white-space: normal;
+        text-align: left;
+    }
+
+    html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea)).ag2-ssb-open > .mes_block {
+        width: 100%;
+    }
+
+    /* the hairlines fade out while expanded (the text is no longer “on a line”) */
+    html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea)).ag2-ssb-open::after,
+    html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea)).ag2-ssb-open > .swipeRightBlock::before {
+        opacity: 0 !important;
+    }
+
+    /* a chevron hint appears only when the text really truncates: reading.js marks
+       data-ag2-clamp="1" on .mes_text when scrollHeight > clientHeight */
+    html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea)) .mes_text::after {
+        content: "";
+        display: none;
+    }
+
+    html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes[data-ag2-clamp="1"]:not(:has(.edit_textarea)) > .mes_block::after {
+        content: "⌄" !important;
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 10px;
+        height: 20px;
+        background: none;
+        mask: none;
+        -webkit-mask: none;
+        opacity: 1;
+        z-index: auto;
+        color: var(--ag2-l3);
+        font-size: 12px;
+        pointer-events: none;
+    }
+
+    html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea)).ag2-ssb-open > .mes_block::after {
+        content: "⌃" !important;
+    }
+
+    /* touch needs no hover: after a tap the hint stays (sticky :hover on iOS) */
+    html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea)) .mes_text[data-ag2-clamp="0"]::after {
+        content: none;
+    }
+
+    html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes.ag2-ssb-bar:not(:hover):not(:focus-within) .mes_buttons {
+        opacity: 1 !important;
+        pointer-events: auto;
     }
 }

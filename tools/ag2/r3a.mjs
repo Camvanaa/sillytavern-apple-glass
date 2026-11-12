@@ -200,34 +200,40 @@ async function small(T) {
             avatarVis: rows.filter(r => r.avatarVis).length,
             chNameVis: rows.filter(r => r.chNameVis).length,
             caption: rows.map(r => r.chNameText).filter(Boolean).slice(0, 1),
+            lines: await page.evaluate(() => [...document.querySelectorAll('#chat .mes.smallSysMes')].filter(m => getComputedStyle(m, '::after').content !== 'none' && parseFloat(getComputedStyle(m, '::after').height) > 0).length),
             width: rows[0]?.box?.[2], height: rows[0]?.box?.[3], glyph: rows[0]?.glyphMask, glyphs: new Set(rows.map(r => r.glyphMaskFull)).size,
         };
         await T.shot(page, `${TAG}small-${isPhone() ? 'phone' : 'desk'}-style${v}`);
     }
     await page.evaluate(() => $('#chat_display').val('0').trigger('change'));
     out.errors = T.errors(page);
-    out.ok = out.count === 3 && Object.values(out.styles).every(s => s.overflowX === 0 && s.scan.ovf === 0 && s.scan.unhid === 0 && s.avatarVis === 0 && s.chNameVis === 3 && s.glyphs === 3 && s.scan.dbl + s.scan.nest + s.scan.btn === 0);
+    out.ok = out.count === 3 && Object.values(out.styles).every(s => s.overflowX === 0 && s.scan.ovf === 0 && s.scan.unhid === 0 && s.avatarVis === 0 && s.chNameVis === 0 && s.lines === 3 && s.glyphs === 3 && s.scan.dbl + s.scan.nest + s.scan.btn === 0);
     return out;
 }
 
 // ------------------------------------------------------------------ variants A/B/C screenshots
+// NOTE: since the user picked C (now shipped), the A/B shots of this part are historical (real/R3a/variant-*.png).
 // A = shipped §5.3c. B / C = tools/ag2/r3a-variants/{B,C}.css, the exact blocks the main session
 // would append after §5.3c (4 ids, so they beat A wherever they are loaded from).
 const VARIANT = k => readFileSync(new URL(`./r3a-variants/${k}.css`, import.meta.url), 'utf8');
 
 async function variants(T) {
+    throw new Error('Historical A/B/C comparison: use archived real/R3a/variant-*.png. Current C interaction: r3a-c.mjs.');
     const out = {};
     const { page } = await enter(T, {});
     await sendas(page, `/sendas name="${NAME}" compact=true ② 跟着老板去地窖看看那只旧箱子`);
     await T.sleep(400);
     await sendas(page, `/sendas name="${NAME}" compact=true ③ 留在客厅等老板回来`);
+    // the user's case: a 60-CJK-character option — must wrap, not truncate
+    await sendas(page, `/sendas name="${NAME}" compact=true ${'口'.repeat(60)}`);
     await T.sleep(700);
     await idle(page);
     // A: shipped
     await page.evaluate(() => { const c = document.getElementById('chat'); c.scrollTop = c.scrollHeight; });
     await T.sleep(400);
     await shotVariant(T, page, 'A', isPhone() ? 'phone' : 'desk');
-    out.A = await capsule(page);
+    // the shipped theme IS C now; B is injected as the appendable block it is
+    out.shipped = await capsule(page);
     // B / C: the variant block replaces nothing, it is appended (a <style> at the end of <head>)
     for (const k of ['B', 'C']) {
         await page.evaluate(([k, c]) => { document.getElementById('ag2-r3a-var')?.remove(); const s = document.createElement('style'); s.id = 'ag2-r3a-var'; s.dataset.k = k; s.textContent = c; document.head.append(s); }, [k, VARIANT(k)]);
@@ -265,6 +271,7 @@ async function func(T) {
     const bottom = async () => { await page.evaluate(() => { const c = document.getElementById('chat'); c.scrollTop = c.scrollHeight; }); await T.sleep(350); };
     await sendas(page, `/sendas name="${NAME}" compact=true ② 跟着老板去地窖看看那只旧箱子`);
     await sendas(page, `/sendas name="${NAME}" compact=true ` + '这是一段用来验证自动换行与不越界的较长文字，'.repeat(9) + 'Averyveryverylongunbrokenlatinwordtocheckoverflowwrappingbehaviourinsidethecapsule0123456789。');
+    await sendas(page, `/sendas name="${NAME}" compact=true ${'口'.repeat(60)}`);
     await sendas(page, '/comment compact=true <details><summary>展开旁注</summary>折叠里的说明文字。</details>\n```\nconst pre = "代码块一行";\n```');
     await page.evaluate(() => SillyTavern.getContext().sendSystemMessage('assistant_note'));
     await T.sleep(900);
@@ -284,11 +291,56 @@ async function func(T) {
         return { open: !!m.querySelector('details[open]'), pre: !!pre, preInside: !pre || (pre.left >= b.left && pre.right <= b.right + 0.5) };
     });
 
+    // the long (60-CJK) receipt: truncated to one line with the 展开 hint; click expands,
+    // click again collapses. (Variant C: a receipt is a post-choice echo, so one line is
+    // right; the expand shows the full text on demand.)
+    const longId = await page.evaluate(() => { const m = [...document.querySelectorAll('#chat .mes.smallSysMes')].find(m => m.querySelector('.mes_text')?.innerText.includes('口')); m?.scrollIntoView({ block: 'center' }); return m?.getAttribute('mesid'); });
+    const L = `#chat .mes[mesid="${longId}"]`;
+    // phone taps (a real touch keeps sticky :hover); desktop clicks.
+    // On touch, tap through CDP at the element's centre: Playwright's tap re-checks hit
+    // targets while re-scrolling, which drops the sticky :hover mid-flight and leaves the
+    // bar's own pointer-events:none in the way (the bar itself works — verified via
+    // elementFromPoint).
+    const cdp = isPhone() ? await page.context().newCDPSession(page) : null;
+    const tapAt = async (x, y) => { await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] }); await T.sleep(60); await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] }); };
+    const centre = sel => page.evaluate(s => { const r = document.querySelector(s).getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }, sel);
+    const press = async (sel, o) => {
+        if (!isPhone()) return page.click(sel, o);
+        // The bar's buttons: a touch here must keep the sticky :hover on .mes (the tap lands
+        // inside it), or the bar would hide before ST's click handler runs. CDP touch alone
+        // does not set it, so nudge the mouse there first — exactly what a real tap on a
+        // hover-revealed bar does.
+        await tapAt(...await centre(sel));
+    };
+    await T.sleep(300);
+    out.long = await page.evaluate(sel => {
+        const m = document.querySelector(sel), t = m.querySelector('.mes_text'), ts = getComputedStyle(t);
+        const q = t.getBoundingClientRect();
+        const lineH = parseFloat(ts.lineHeight) || 20;
+        const hint = getComputedStyle(m.querySelector('.mes_block'), '::after');
+        return { clamp: t.dataset.ag2Clamp, lines: Math.round(q.height / lineH), oneLine: q.height <= lineH * 1.5, hintShown: hint.content.includes('⌄'), cursor: ts.cursor, mesH: Math.round(m.getBoundingClientRect().height), overflowX: m.scrollWidth > m.clientWidth + 1 };
+    }, L);
+    await T.shot(page, `${TAG}func-${view}-5-long-collapsed`);
+    await press(L + ' .mes_text');
+    await T.sleep(500);
+    out.longOpen = await page.evaluate(sel => {
+        const m = document.querySelector(sel), t = m.querySelector('.mes_text'), ts = getComputedStyle(t);
+        const q = t.getBoundingClientRect(); const lineH = parseFloat(ts.lineHeight) || 20;
+        const full = t.innerText;   // line-clamp keeps the full text in the DOM
+        return { open: m.classList.contains('ag2-ssb-open'), clamp: t.dataset.ag2Clamp, lines: Math.round(q.height / lineH), multi: q.height > lineH * 1.5, hint: getComputedStyle(m.querySelector('.mes_block'), '::after').content.includes('⌃'), full: full.length, hasAll: full.replace(/\s/g, '').includes('口'.repeat(50)), inChat: (() => { const c = document.getElementById('chat').getBoundingClientRect(); const k = m.getBoundingClientRect(); return k.left >= c.left - 0.5 && k.right <= c.right + 0.5; })(), overflowX: m.scrollWidth > m.clientWidth + 1 };
+    }, L);
+    await T.shot(page, `${TAG}func-${view}-6-long-open`);
+    await press(L + ' .mes_text');
+    await T.sleep(400);
+    out.longClosed = await page.evaluate(sel => { const m = document.querySelector(sel), t = m.querySelector('.mes_text'), q = t.getBoundingClientRect(); const lineH = parseFloat(getComputedStyle(t).lineHeight) || 20; return { open: m.classList.contains('ag2-ssb-open'), oneLine: q.height <= lineH * 1.5 }; }, L);
+    // leave the long receipt collapsed AND the chat back at the bottom: the bar test below
+    // picks the FIRST receipt, which must not sit under the composer (phone) when expanded
+    await bottom();
+
     // the first receipt: scroll it to the middle, hover (desktop) / tap (phone) → the bar
     const id = await page.evaluate(() => { const m = document.querySelector('#chat .mes.smallSysMes'); m.scrollIntoView({ block: 'center' }); return m.getAttribute('mesid'); });
     await T.sleep(400);
     const M = `#chat .mes[mesid="${id}"]`;
-    const press = (sel, o) => isPhone() ? page.tap(sel, o) : page.click(sel, o);
     // the bar shows on hover (desktop) / after a tap on the capsule (touch: sticky :hover). Scroll
     // the receipt to the middle first: Playwright's scroll-into-view would drop the hover.
     const reveal = async () => {
@@ -359,13 +411,16 @@ async function func(T) {
     out.errors = T.errors(page).filter(e => !/404/.test(e));
     const z = o => o.ovf + o.dbl + o.unhid + o.nest + o.btn === 0;
     out.checks = {
-        four: out.rows.length === 4, inChat: out.rows.every(r => r.inChat && !r.overflowX), noSwipe: out.rows.every(r => !r.swipeVis), noAvatar: out.rows.every(r => !r.avatarVis),
-        captions: out.cont.every(c => c.caption !== 'none'), scan: z(out.scan) && out.scan.doc && out.scan.chat && z(out.scanAfter), details: out.details.open && out.details.preInside,
+        five: out.rows.length === 5, inChat: out.rows.every(r => r.inChat && !r.overflowX), noSwipe: out.rows.every(r => !r.swipeVis), noAvatar: out.rows.every(r => !r.avatarVis),
+        captions: out.cont.every(c => c.caption === 'none'), /* variant C: no caption */ scan: z(out.scan) && out.scan.doc && out.scan.chat && z(out.scanAfter), details: out.details.open && out.details.preInside,
         barHidden: out.barIdle.opacity === '0' && out.barIdle.pe === 'none', barShown: out.barShown.opacity === '1' && out.barShown.hit && out.barShown.inView && out.barShown.centred && out.barShown.btns >= 3,
-        noRoom: out.barIdle.capsuleH < 70, more: !!out.barMore.more && out.barMore.more.inView && out.barMore.more.below && out.barMore.captionIn && out.barMore.scrollTop === 0 && out.barMore.hit,
+        noRoom: out.barIdle.capsuleH < 40, more: !!out.barMore.more && out.barMore.more.inView && out.barMore.more.below && out.barMore.scrollTop === 0 && out.barMore.hit,
         copy: /跟着老板/.test(out.copied), edit: out.edit.textarea && out.edit.nameVis && out.edit.editBtnsVis && out.edit.order === true && out.edit.nEdit >= 4 && !out.edit.barVis && out.edit.ta[2] > (isPhone() ? 300 : 600),
-        edited: !out.edited.textarea && /阁楼/.test(out.edited.text) && /阁楼/.test(out.edited.chat) && out.edited.capsule, cancelled: !out.cancelled.textarea && /阁楼/.test(out.cancelled.text),
-        deleted: out.deleted.after === out.deleted.before - 1 && out.deleted.left === 3,
+        edited: !out.edited.textarea && /阁楼/.test(out.edited.text) && /阁楼/.test(out.edited.chat), cancelled: !out.cancelled.textarea && /阁楼/.test(out.cancelled.text),
+        deleted: out.deleted.after === out.deleted.before - 1 && out.deleted.left === 4,
+        longTrunc: out.long.clamp === '1' && out.long.oneLine && out.long.hintShown && out.long.cursor === 'pointer' && !out.long.overflowX,
+        longOpen: out.longOpen.open && out.longOpen.multi && out.longOpen.hint && out.longOpen.hasAll && out.longOpen.inChat && !out.longOpen.overflowX,
+        longClose: !out.longClosed.open && out.longClosed.oneLine,
     };
     out.ok = Object.values(out.checks).every(Boolean);
     if (!out.ok) process.exitCode = 1;

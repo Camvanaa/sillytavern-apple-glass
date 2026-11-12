@@ -13,7 +13,7 @@
 //    - data-ag2-model on AI messages (model name for the meta line, CSS ::after)
 //    - data-ag2-time="HH:MM" on `.timestamp` (header shows the short time)
 
-import { ctx, toDate } from './util.js?v=202611120458';
+import { ctx, toDate } from './util.js?v=202611121609';
 
 const WEEK = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
 const pad = n => String(n).padStart(2, '0');
@@ -83,17 +83,119 @@ export function decorate() {
         setAttr(el, 'data-ag2-model', !m?.is_user && m?.extra?.model ? String(m.extra.model) : null);
         const ts = el.querySelector('.ch_name .timestamp');
         if (ts) setAttr(ts, 'data-ag2-time', d ? `${pad(d.getHours())}:${pad(d.getMinutes())}` : null);
+        // one-line receipts: mark whether the text really truncates, so the “展开” hint
+        // only shows on the ones that do (data-ag2-clamp on .mes_text; CSS draws the hint).
+        // Re-measured on every decorate pass (resize, font-size change, new messages).
+        const txt = el.querySelector('.mes_text');
+        if (txt && el.classList.contains('smallSysMes') && !el.querySelector('.edit_textarea')) {
+            const expanded = el.classList.contains('ag2-ssb-open');
+            const over = expanded || txt.scrollHeight > txt.clientHeight + 1 || txt.scrollWidth > txt.clientWidth + 1;
+            const v = over ? '1' : '0';
+            if (txt.dataset.ag2Clamp !== v) txt.dataset.ag2Clamp = v;
+            setAttr(el, 'data-ag2-clamp', v);
+            txt.setAttribute('tabindex', '0');
+            txt.setAttribute('role', 'button');
+            txt.setAttribute('aria-expanded', String(expanded));
+            txt.title = expanded ? '收起全文' : '点击展开全文';
+        }
         prevKey = key;
         prevSpeaker = who;
     }
 }
 
+// ------------------------------------------------------------------ small system messages (§5.3c-C)
+// A compact receipt (…/sys/comment compact=true) truncates its option text to one line.
+// Click / tap the divider text (or Enter / Space when focused) to expand the full text,
+// click again to collapse. Delegated on #chat: nothing is bound per message, nothing is
+// inserted — only an `ag2-ssb-open` class toggles, so ST's own click handlers (edit, copy)
+// are untouched and the chat file is never written.
+let ssbBound = null;
+let ssbDown = null;
+let ssbKey = null;
+let ssbResize = null;
+let ssbFrame = 0;
+
+export function bindReceipts() {
+    const chat = document.getElementById('chat');
+    if (!chat || ssbBound) return;
+    // One handler, two jobs on a small-system receipt:
+    //  1. touch: the tap pins the action bar open (ag2-ssb-bar) — :hover alone would hide
+    //     it the moment the tap lands on a bar button, and ST's “更多” popup would close at
+    //     once. A later tap on another receipt / outside / on the bar's own buttons moves on.
+    //  2. expand: a tap on the (truncated) text toggles the full text (ag2-ssb-open). Double-
+    //     click (selection) never toggles: selecting is not a tap.
+    ssbBound = e => {
+        if (e.detail > 1) return;
+        const t = e.target instanceof Element ? e.target : null;
+        const mes = t?.closest?.('#chat > .mes.smallSysMes');
+        if (!mes || mes.querySelector('.edit_textarea')) return;
+        const inBar = !!t.closest('.mes_buttons, .mes_edit_buttons, .extraMesButtons');
+        if (inBar) return; // the bar's own buttons do their own thing
+        if (t.closest('a, button, input, select, textarea, summary, details, pre, code, iframe, [contenteditable="true"]')) return;
+        if (String(getSelection?.() || '') !== '') return;
+        const touch = document.body.classList.contains('ag2-phone'); // width ≤1000px (§5.9): touch layout
+        if (touch) {
+            const open = mes.classList.toggle('ag2-ssb-bar');
+            for (const other of chat.querySelectorAll('.mes.smallSysMes.ag2-ssb-bar')) if (other !== mes) other.classList.remove('ag2-ssb-bar');
+            if (!open) mes.classList.remove('ag2-ssb-bar');
+        }
+        if (!t.closest('.mes_text')) return;
+        const expanded = mes.classList.toggle('ag2-ssb-open');
+        decorate();
+        if (expanded) requestAnimationFrame(() => {
+            // The composer overlays #chat: native scrollIntoView cannot see that occlusion.
+            // Reveal the end of a short receipt; for very long prose keep its beginning visible.
+            if (!mes.isConnected || !mes.classList.contains('ag2-ssb-open')) return;
+            const box = mes.querySelector('.mes_block').getBoundingClientRect();
+            const bounds = chat.getBoundingClientRect();
+            const dock = document.getElementById('form_sheld')?.getBoundingClientRect();
+            const top = bounds.top + 70;
+            const bottom = Math.min(bounds.bottom, dock?.top || innerHeight) - 36;
+            if (box.bottom > bottom) chat.scrollTop += Math.min(box.bottom - bottom, Math.max(0, box.top - top));
+        });
+    };
+    // any pointer-down outside the receipts drops the pinned bars (touch)
+    ssbDown = e => {
+        if (!(e.target instanceof Element) || e.target.closest('#chat .mes.smallSysMes')) return;
+        chat.querySelectorAll('.mes.smallSysMes.ag2-ssb-bar').forEach(m => m.classList.remove('ag2-ssb-bar'));
+    };
+    chat.addEventListener('click', ssbBound);
+    ssbKey = e => {
+        if (!['Enter', ' '].includes(e.key) || !e.target.matches?.('.smallSysMes .mes_text[role="button"]')) return;
+        e.preventDefault();
+        e.stopPropagation();
+        e.target.click();
+    };
+    chat.addEventListener('keydown', ssbKey);
+    document.addEventListener('pointerdown', ssbDown, true);
+    ssbResize = new ResizeObserver(() => {
+        cancelAnimationFrame(ssbFrame);
+        ssbFrame = requestAnimationFrame(decorate);
+    });
+    ssbResize.observe(chat);
+}
+
+export function unbindReceipts() {
+    if (ssbBound) document.getElementById('chat')?.removeEventListener('click', ssbBound);
+    if (ssbKey) document.getElementById('chat')?.removeEventListener('keydown', ssbKey);
+    if (ssbDown) document.removeEventListener('pointerdown', ssbDown, true);
+    ssbResize?.disconnect();
+    ssbResize = null;
+    cancelAnimationFrame(ssbFrame);
+    ssbBound = ssbDown = ssbKey = null;
+    document.querySelectorAll('#chat > .mes.smallSysMes.ag2-ssb-open').forEach(m => m.classList.remove('ag2-ssb-open'));
+}
+
 /** Removes every class / attribute decorate() added (teardown without a reload). */
 export function undecorate() {
+    unbindReceipts();
     document.querySelectorAll('#chat > .mes').forEach(el => {
-        el.classList.remove('ag2-day', 'ag2-cont');
+        el.classList.remove('ag2-day', 'ag2-cont', 'ag2-ssb-open', 'ag2-ssb-bar');
         el.removeAttribute('data-ag2-day');
         el.removeAttribute('data-ag2-model');
+        el.removeAttribute('data-ag2-clamp');
+        const txt = el.querySelector('.mes_text[data-ag2-clamp]');
+        if (txt) for (const a of ['data-ag2-clamp', 'role', 'tabindex', 'aria-expanded', 'title']) txt.removeAttribute(a);
         el.querySelector('.timestamp')?.removeAttribute('data-ag2-time');
     });
 }
