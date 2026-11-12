@@ -80,6 +80,7 @@ const moreSt = page => page.evaluate(() => {
         ariaLabel: b?.getAttribute('aria-label'), ariaExpanded: b?.getAttribute('aria-expanded'),
         title: b?.getAttribute('title'),
         menuOpen: !!menu, menuItems: menu ? menu.querySelectorAll('.ag2-menu-item').length : 0,
+        anim: svg ? getComputedStyle(svg).animationName + ' ' + getComputedStyle(svg).animationDuration : null,
     };
 });
 
@@ -140,7 +141,8 @@ async function more(T) {
         && out.itemClose.icon === 'ellipsis' && !out.itemClose.menuOpen
         && out.escClose.icon === 'ellipsis' && !out.escClose.menuOpen
         && out.pageClose.icon === 'ellipsis' && !out.pageClose.menuOpen
-        && out.rapid5.icon === 'x' && out.rapid5.menuOpen;
+        && out.rapid5.icon === 'x' && out.rapid5.menuOpen
+        && (T.cfg.reduced ? parseFloat(out.opened.anim.split(' ')[1]) <= 0.00001 : /ag2-ph-more-in 0\.2s/.test(out.opened.anim));
     return out;
 }
 
