@@ -20,7 +20,7 @@
 // suite mocks it (chat-completions/generate + status are mocked by default), so a
 // run can never change the data copy nor reach a model API.
 import { createRequire } from 'node:module';
-import { readFileSync, mkdirSync, existsSync } from 'node:fs';
+import { readFileSync, mkdirSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -63,6 +63,25 @@ export const MODELS = ['gemini-4-argon-high', 'test-model-b'];
 const read = f => readFileSync(path.join(TOOLS, f), 'utf8');
 const SCAN_SRC = read('scan.js');
 const BTN_SRC = read('btnscan.js');
+
+// size + mtime of every chat file of the test data copy (AG2_DATA overrides the location)
+const DATA = process.env.AG2_DATA || '/opt/server-agent/workspace/st-testdata/ag2-data';
+function fixtureState() {
+    const out = {};
+    for (const d of ['chats', 'group chats']) {
+        const root = path.join(DATA, 'default-user', d);
+        if (!existsSync(root)) continue;
+        for (const f of readdirSync(root, { recursive: true })) {
+            if (!String(f).endsWith('.jsonl')) continue;
+            const st = statSync(path.join(root, String(f)));
+            out[d + '/' + f] = st.size + ':' + st.mtimeMs;
+        }
+    }
+    return out;
+}
+function fixtureDiff(a, b) {
+    return [...new Set([...Object.keys(a), ...Object.keys(b)])].filter(k => a[k] !== b[k]).map(k => `${k} ${a[k] ? a[k].split(':')[0] : 'new'} → ${b[k] ? b[k].split(':')[0] : 'deleted'} B`);
+}
 
 function sseBody(text, chunks) {
     const parts = [];
@@ -284,6 +303,7 @@ im.save(sys.argv[2], 'JPEG', quality=82)`, png, png.replace(/\.png$/, '_s.jpg')]
 
     const t0 = Date.now();
     let code = 0;
+    const fixture0 = fixtureState();
     try {
         const mod = await import(pathToFileURL(path.resolve(suitePath)).href);
         const out = await mod.default(T);
@@ -292,8 +312,18 @@ im.save(sys.argv[2], 'JPEG', quality=82)`, png, png.replace(/\.png$/, '_s.jpg')]
         code = 1;
         console.error('ERR', e && e.stack || e);
     } finally {
+        // Leave ST before the contexts close. Closing a context tears the routes down, and a
+        // write ST fires in that window (seen with /api/chats/save right after a delete) is no
+        // longer answered by the stub: it reached st-test and rewrote the fixture chat (R3a).
+        // On about:blank no ST code is left to send anything; the unload itself is still stubbed.
+        for (const c of contexts) for (const p of c.pages()) await p.goto('about:blank', { timeout: 15000 }).catch(() => {});
+        await sleep(300);
         for (const c of contexts) await c.close().catch(() => {});
         await browser.close().catch(() => {});
+        // Detective control for the above: the neutral chats must be byte-for-byte untouched.
+        await sleep(700);
+        const changed = fixtureDiff(fixture0, fixtureState());
+        if (changed.length) console.error('FIXTURE-CHANGED (a stubbed write reached st-test): ' + changed.join(' | '));
         console.error(`done ${path.basename(suitePath)} ${Math.round((Date.now() - t0) / 1000)}s`);
     }
     process.exit(code || process.exitCode || 0); // a suite may set process.exitCode (r1-flash verdict)

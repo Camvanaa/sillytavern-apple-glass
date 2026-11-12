@@ -1,0 +1,33 @@
+/* R3a variant B — right-aligned “choice receipt”: lighter than the user bubble (accent
+   outline + faint accent fill), icon in front, no caption. Append after §5.3c. */
+@media screen {
+    html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea)) > .mes_block {
+        justify-self: end;
+        column-gap: 8px;
+        max-width: min(76%, 560px);
+        padding: 9px 16px 9px 12px !important;
+        border-radius: 20px;
+        background: color-mix(in srgb, var(--ag2-accent) 9%, rgba(40, 40, 47, 0.34));
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ag2-accent) 46%, transparent);
+    }
+
+    html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea)) > .mes_block::before {
+        margin-top: 4px;
+        background: var(--ag2-accent);
+    }
+
+    html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea)) .ch_name > :first-child {
+        display: none !important;
+    }
+
+    html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea)) .mes_text {
+        color: var(--ag2-l1) !important;
+        font-size: 15px !important;
+    }
+
+    html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea)) .mes_buttons {
+        left: auto;
+        right: 6px;
+        transform: none;
+    }
+}

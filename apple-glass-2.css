@@ -2088,244 +2088,234 @@ html body.ag2.immersive-mode:not(#_):not(#__) #ap-jump-latest {
     }
 }
 
-/* == 5.3c · small system messages (§5.3, R3a) == */
-/* /sendas ... compact=true (the “Ny规则定下的走向” storyline receipt), /sys compact=true
-   and /comment compact=true all render as .mes.smallSysMes (ST script.js: extra.isSmallSys).
-   ST's native look centres them and hides ch_name + avatar; AG2's grid (§5.3, line 1277)
-   puts .ch_name back via `display: contents !important`, so they leaked as a headless
-   “name line + body” message. Here they become a **centred receipt capsule** instead:
-     [icon]  caption (the message's own ch_name)          <- .ch_name > :first-child
-             option / note text                            <- .mes_text
-   The rule is generic (any .smallSysMes), not matched on the text; only the leading icon
-   differs by ST's own attributes: [type="comment"] → note, [type="narrator"] → quote,
-   everything else (the storyline receipt) → git-branch. No node is moved or inserted.
-   Three :not() ids: §5.3 and §5.9 both set #chat .mes{grid-template-columns} at 2 ids, and
-   the phone one comes later — the capsule needs to win in both layouts. */
+/* == 5.3c · Small system messages (§5.3, R3a) == */
+/* /sendas … compact=true (e.g. the “Ny规则定下的走向” storyline receipt a preset sends after
+   the user picks an option), /sys compact=true, /comment compact=true and ST's own notes all
+   render as .mes.smallSysMes (script.js: extra.isSmallSys). ST's native look centres them and
+   hides .ch_name + the avatar; the §5.3 grid turns .ch_name back on (display: contents
+   !important) while its avatar rule skips .smallSysMes, so they leaked as a headless
+   “name line + body” message. Here they are a centred receipt capsule:
+       [icon]  caption = the message's own name      (.ch_name > :first-child)
+               text                                   (.mes_text)
+   Structure: .mes keeps the §5.3 grid (day separator, delete checkbox); .mes_block stops
+   being display:contents and IS the capsule (a nested 2-column grid); its ::before is the
+   icon. The action row floats under the capsule on hover / tap, so it takes no room.
+   Generic: any .smallSysMes, never matched on the text. Only the icon follows ST's own
+   attributes: [type="comment"] note · [type="narrator"] quote · [is_system="true"] info ·
+   everything else (a /sendas receipt) git-branch. Nothing is moved or inserted.
+   Three :not() ids: these must beat the §5.3 / §5.3b / §5.9 message rules (two ids) wherever
+   they sit in the file. Variants B / C: tools/ag2/r3a-variants/ (handoff/R3a.md). */
 
-@media screen { /* desktop + phone (§5.9 keeps the same capsule, smaller gutters) */
+@media screen { /* desktop + phone */
+    /* no card padding / portrait column: the capsule centres in the whole reading column */
     html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes {
-        /* own grid: day | caption | text | actions, icon column + content column */
-        position: relative;
-        display: grid !important;
-        grid-template-columns: auto minmax(0, 1fr);
-        grid-template-rows: [day] auto [head] auto [text] auto [acts] auto;
-        grid-auto-flow: row;
-        column-gap: 10px;
-        row-gap: 0;
-        align-items: start;
-        width: fit-content !important;
-        max-width: min(100%, 560px);
-        margin: 0 auto 18px !important;
-        padding: 9px 15px 10px !important;
-        /* flex: none — the capsule is a flex child of #chat; without this it shrinks to 0
-           when #chat overflows (no overflow:hidden either: that would kill min-height:auto) */
-        flex: 0 0 auto !important;
-        border: 0 !important;
-        border-radius: var(--ag2-r-card) !important;
-        background: var(--ag2-f4) !important;
-        box-shadow: inset 0 0 0 0.5px var(--ag2-sep-strong) !important;
-        color: var(--ag2-l2) !important;
-    }
-
-    /* consecutive receipt of the same speaker: keep the caption (never merged away) */
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes.ag2-cont .ch_name > :first-child {
-        display: flex !important;
-    }
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes:has(+ .mes.ag2-cont) {
+        --ag2-mes-ol: 0px;
+        --ag2-mes-pl: 0px;
+        --ag2-mes-pr: 0px;
+        --ag2-mes-pt: 0px;
+        --ag2-mes-pb: 0px;
         margin-bottom: 18px !important;
     }
 
-    /* day separator floats above the capsule instead of sitting inside it */
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes::before {
-        content: none;
-        grid-row: day;
-        grid-column: 1 / -1;
-    }
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes.ag2-day::before {
-        content: attr(data-ag2-day);
-        position: absolute;
-        left: 0;
-        right: 0;
-        top: -22px;
-        margin: 0;
-        text-align: center;
-        color: var(--ag2-l3);
-        font-size: var(--ag2-fs-section);
-        font-weight: 560;
-        letter-spacing: 0.02em;
-        font-variant-numeric: tabular-nums;
-    }
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes.ag2-day {
-        margin-top: 22px !important;
+    /* two receipts in a row (same sender → ag2-cont): a small gap, both keep their caption */
+    html body.ag2:not(#_):not(#__):not(#___) #chat .mes:has(+ .mes.smallSysMes.ag2-cont) {
+        margin-bottom: 8px !important;
     }
 
-    /* leading icon: .mes_block::before (card surface elsewhere) becomes the glyph, spanning
-       the caption + text rows in the left column */
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes > .mes_block::before {
-        content: "";
-        grid-row: head / acts;
-        grid-column: 1;
-        align-self: start;
+    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes > .mes_block {
+        display: grid !important;
+        grid-row: text;
+        grid-column: in / pr;
         justify-self: center;
-        width: 16px;
-        min-height: 16px;
-        margin: 1px 0 0;
-        z-index: 0;
-        background: var(--ag2-l3);
-        -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='1.75'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d=%22M15%206a9%209%200%200%200-9%209V3%22/%3E%3Ccircle%20cx=%2218%22%20cy=%226%22%20r=%223%22/%3E%3Ccircle%20cx=%226%22%20cy=%2218%22%20r=%223%22/%3E%3C/svg%3E") no-repeat center top / 16px 16px;
-        mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='1.75'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d=%22M15%206a9%209%200%200%200-9%209V3%22/%3E%3Ccircle%20cx=%2218%22%20cy=%226%22%20r=%223%22/%3E%3Ccircle%20cx=%226%22%20cy=%2218%22%20r=%223%22/%3E%3C/svg%3E") no-repeat center top / 16px 16px;
-    }
-    /* no portrait backdrop on receipt capsules (echo / whisper / ripple / hush) */
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes > .mes_block::after {
-        content: none !important;
-    }
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes[type="comment"] > .mes_block::before {
-        -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='1.75'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d=%22M13.4%202H6a2%202%200%200%200-2%202v16a2%202%200%200%200%202%202h12a2%202%200%200%200%202-2v-7.4%22/%3E%3Cpath%20d=%22M2%206h4%22/%3E%3Cpath%20d=%22M2%2010h4%22/%3E%3Cpath%20d=%22M2%2014h4%22/%3E%3Cpath%20d=%22M2%2018h4%22/%3E%3Cpath%20d=%22M21.378%205.626a1%201%200%201%200-3.004-3.004l-5.01%205.012a2%202%200%200%200-.506.854l-.837%202.87a.5.5%200%200%200%20.62.62l2.87-.837a2%202%200%200%200%20.854-.506z%22/%3E%3C/svg%3E") no-repeat center top / 16px 16px;
-        mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='1.75'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d=%22M13.4%202H6a2%202%200%200%200-2%202v16a2%202%200%200%200%202%202h12a2%202%200%200%200%202-2v-7.4%22/%3E%3Cpath%20d=%22M2%206h4%22/%3E%3Cpath%20d=%22M2%2010h4%22/%3E%3Cpath%20d=%22M2%2014h4%22/%3E%3Cpath%20d=%22M2%2018h4%22/%3E%3Cpath%20d=%22M21.378%205.626a1%201%200%201%200-3.004-3.004l-5.01%205.012a2%202%200%200%200-.506.854l-.837%202.87a.5.5%200%200%200%20.62.62l2.87-.837a2%202%200%200%200%20.854-.506z%22/%3E%3C/svg%3E") no-repeat center top / 16px 16px;
-    }
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes[type="narrator"] > .mes_block::before {
-        -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='1.75'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d=%22M17%205H3%22/%3E%3Cpath%20d=%22M21%2012H8%22/%3E%3Cpath%20d=%22M21%2019H8%22/%3E%3Cpath%20d=%22M3%2012v7%22/%3E%3C/svg%3E") no-repeat center top / 16px 16px;
-        mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='1.75'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d=%22M17%205H3%22/%3E%3Cpath%20d=%22M21%2012H8%22/%3E%3Cpath%20d=%22M21%2019H8%22/%3E%3Cpath%20d=%22M3%2012v7%22/%3E%3C/svg%3E") no-repeat center top / 16px 16px;
+        position: relative;
+        grid-template-columns: auto minmax(0, 1fr);
+        grid-auto-rows: auto;
+        column-gap: 10px;
+        align-items: start;
+        box-sizing: border-box;
+        width: fit-content;
+        max-width: min(100%, 560px);
+        min-width: 0;
+        margin: 0 !important;
+        padding: 9px 16px 10px 13px !important;
+        border-radius: var(--ag2-r-card);
+        background: var(--ag2-mat-float); /* solid in no-blur mode; no backdrop-filter on messages */
+        box-shadow: var(--ag2-rim);
+        /* ST: .mes_block { overflow-x: hidden; overflow-y: clip } — as a real box that clips the
+           floating action row and turns the capsule into a scroll container (opening “更多”
+           scrolled the caption out of it) */
+        overflow: visible !important;
     }
 
-    /* caption: the message's own ch_name as a quiet section label */
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes .ch_name > :first-child {
-        grid-row: head;
+    /* every child goes to the content column, rows by document order
+       (the §5.3 named lines do not exist in this nested grid) */
+    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes > .mes_block > *,
+    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes > .mes_block > .ch_name > * {
         grid-column: 2;
-        display: flex;
-        align-items: center;
-        min-height: 0;
-        margin: 0 0 3px;
-        padding: 0;
-        overflow: visible;
-    }
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes .ch_name > :first-child > .flex-container {
-        align-items: baseline;
-        flex-wrap: nowrap;
-        gap: 6px;
+        grid-row: auto;
         min-width: 0;
     }
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes .ch_name .name_text {
-        /* document style hides .name_text !important (toggle-dependent.css) — the receipt
-           keeps its own caption in every chat style */
-        display: inline !important;
-        overflow: hidden;
-        color: var(--ag2-l3) !important;
-        font-size: 11.5px !important;
-        font-weight: 620 !important;
-        letter-spacing: 0.02em;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes .ch_name .timestamp,
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes .ch_name .mes_ghost,
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes .ch_name .timestamp-icon {
-        display: none !important;
+
+    /* icon (the card surface of the card styles elsewhere) */
+    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes > .mes_block::before {
+        content: "";
+        grid-column: 1;
+        grid-row: 1 / span 2;
+        align-self: start;
+        justify-self: center;
+        position: static;
+        z-index: auto;
+        width: 16px;
+        height: 16px;
+        margin: 1px 0 0;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        background: var(--ag2-l3);
+        -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='1.75'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d=%22M15%206a9%209%200%200%200-9%209V3%22/%3E%3Ccircle%20cx=%2218%22%20cy=%226%22%20r=%223%22/%3E%3Ccircle%20cx=%226%22%20cy=%2218%22%20r=%223%22/%3E%3C/svg%3E") center / 16px 16px no-repeat;
+        mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='1.75'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d=%22M15%206a9%209%200%200%200-9%209V3%22/%3E%3Ccircle%20cx=%2218%22%20cy=%226%22%20r=%223%22/%3E%3Ccircle%20cx=%226%22%20cy=%2218%22%20r=%223%22/%3E%3C/svg%3E") center / 16px 16px no-repeat;
     }
 
-    /* body: readable, wraps freely, never overflows the capsule */
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes .mes_text {
-        grid-row: text;
-        grid-column: 2;
-        min-height: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        color: rgba(255, 255, 255, 0.88) !important;
-        font-size: 14.5px !important;
-        line-height: 1.6 !important;
-        text-align: left;
-        overflow-wrap: anywhere;
-    }
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes .mes_text p:last-child {
-        margin-bottom: 0 !important;
-    }
-    /* <pre> / <details> keep their own layout inside the capsule */
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes .mes_text pre {
-        max-width: 100%;
-    }
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes .mes_text :is(img, iframe, video) {
-        max-width: 100% !important;
+    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes[is_system="true"] > .mes_block::before {
+        -webkit-mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='1.75'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Ccircle%20cx=%2212%22%20cy=%2212%22%20r=%2210%22/%3E%3Cpath%20d=%22M12%2016v-4%22/%3E%3Cpath%20d=%22M12%208h.01%22/%3E%3C/svg%3E");
+        mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='1.75'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Ccircle%20cx=%2212%22%20cy=%2212%22%20r=%2210%22/%3E%3Cpath%20d=%22M12%2016v-4%22/%3E%3Cpath%20d=%22M12%208h.01%22/%3E%3C/svg%3E");
     }
 
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes .mes_media_wrapper,
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes .mes_file_wrapper,
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes .mes_bias {
-        grid-column: 1 / -1;
-        grid-row: auto;
+    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes[type="narrator"] > .mes_block::before {
+        -webkit-mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='1.75'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d=%22M17%205H3%22/%3E%3Cpath%20d=%22M21%2012H8%22/%3E%3Cpath%20d=%22M21%2019H8%22/%3E%3Cpath%20d=%22M3%2012v7%22/%3E%3C/svg%3E");
+        mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='1.75'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d=%22M17%205H3%22/%3E%3Cpath%20d=%22M21%2012H8%22/%3E%3Cpath%20d=%22M21%2019H8%22/%3E%3Cpath%20d=%22M3%2012v7%22/%3E%3C/svg%3E");
     }
 
-    /* action row: full row under the text, shows on hover / focus (desktop) */
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes :is(.mes_buttons, .mes_edit_buttons) {
-        grid-row: acts;
-        grid-column: 1 / -1;
-        justify-self: start;
-        margin: 2px 0 0 !important;
-        opacity: 0;
-    }
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes:hover :is(.mes_buttons, .mes_edit_buttons),
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes:focus-within :is(.mes_buttons, .mes_edit_buttons) {
-        opacity: 1;
-    }
-    /* touch: no hover — keep the row visible so copy / edit / delete stay reachable (§5.9) */
-    html body.ag2.ag2-phone:not(#_):not(#__):not(#___) #chat .mes.smallSysMes :is(.mes_buttons, .mes_edit_buttons) {
-        opacity: 1;
+    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes[type="comment"] > .mes_block::before {
+        -webkit-mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='1.75'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d=%22M13.4%202H6a2%202%200%200%200-2%202v16a2%202%200%200%200%202%202h12a2%202%200%200%200%202-2v-7.4%22/%3E%3Cpath%20d=%22M2%206h4%22/%3E%3Cpath%20d=%22M2%2010h4%22/%3E%3Cpath%20d=%22M2%2014h4%22/%3E%3Cpath%20d=%22M2%2018h4%22/%3E%3Cpath%20d=%22M21.378%205.626a1%201%200%201%200-3.004-3.004l-5.01%205.012a2%202%200%200%200-.506.854l-.837%202.87a.5.5%200%200%200%20.62.62l2.87-.837a2%202%200%200%200%20.854-.506z%22/%3E%3C/svg%3E");
+        mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23000'%20stroke-width='1.75'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d=%22M13.4%202H6a2%202%200%200%200-2%202v16a2%202%200%200%200%202%202h12a2%202%200%200%200%202-2v-7.4%22/%3E%3Cpath%20d=%22M2%206h4%22/%3E%3Cpath%20d=%22M2%2010h4%22/%3E%3Cpath%20d=%22M2%2014h4%22/%3E%3Cpath%20d=%22M2%2018h4%22/%3E%3Cpath%20d=%22M21.378%205.626a1%201%200%201%200-3.004-3.004l-5.01%205.012a2%202%200%200%200-.506.854l-.837%202.87a.5.5%200%200%200%20.62.62l2.87-.837a2%202%200%200%200%20.854-.506z%22/%3E%3C/svg%3E");
     }
 
-    /* delete-mode checkbox: top-right of the capsule, out of the flow */
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes > .del_checkbox {
-        position: absolute;
-        top: 6px;
-        right: 6px;
-        margin: 0 !important;
-    }
-
-    /* swipe nodes never belong on a receipt (ST: OVERSWIPE NONE) */
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes :is(.swipe_left, .swipe_right, .swipes-counter) {
-        display: none !important;
-    }
+    /* no portrait (echo / whisper), no model meta, no swipe capsule (ST: never swipeable) */
+    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes > .mes_block::after,
+    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes::after,
     html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes > .swipeRightBlock::before {
         content: none !important;
     }
 
-    /* the meta model line (§5.3 ::after) is noise on a receipt */
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes::after {
-        content: none !important;
+    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes :is(.swipe_left, .swipe_right, .swipes-counter) {
+        display: none !important;
     }
 
-    /* edit mode: fall back to a plain, full-width readable row (name + textarea + buttons) */
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes:has(.edit_textarea) {
-        display: block !important;
-        width: auto !important;
-        max-width: none;
-        margin: 0 0 18px !important;
-        padding: 0 !important;
-        background: none !important;
-        box-shadow: none !important;
-        border-radius: 0 !important;
-        overflow: visible;
+    /* caption: the sender name as a section label (11.5 / 620, l3); also when ag2-cont */
+    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes .ch_name > :first-child {
+        display: flex !important;
+        align-items: center;
+        min-height: 0;
+        margin: 0 0 2px;
+        padding: 0;
+        overflow: hidden;
     }
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes:has(.edit_textarea) > .mes_block::before,
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes:has(.edit_textarea) > .mes_block::after {
-        content: none !important;
+
+    /* document style hides .name_text with !important (toggle-dependent.css) */
+    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes .ch_name .name_text {
+        display: inline !important;
+        color: var(--ag2-l3) !important;
+        font-size: var(--ag2-fs-section) !important;
+        font-weight: 620 !important;
+        letter-spacing: 0.02em;
     }
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes:has(.edit_textarea) .ch_name > :first-child {
-        grid-row: auto;
+
+    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes:not(:has(.edit_textarea)) .ch_name :is(.timestamp, .timestamp-icon, .mes_ghost) {
+        display: none !important;
+    }
+
+    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes .mes_text {
+        min-height: 0 !important;
+        color: rgba(255, 255, 255, 0.88) !important;
+        font-size: 14.5px !important;
+        line-height: 1.6 !important;
+        letter-spacing: 0;
+        text-align: left;
+    }
+
+    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes .mes_text :is(img, video, iframe, table, pre) {
+        max-width: 100%;
+    }
+
+    /* action row: a floating bar under the capsule, on hover / focus (touch: after a tap).
+       Solid fill, no blur (§5.10). Never permanently shown, also on the last message. */
+    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes > .mes_block > .ch_name > .mes_buttons {
+        /* auto placement: an absolutely positioned grid child is laid out against its grid
+           area, and the bar must centre on the whole capsule */
         grid-column: auto;
-        min-height: 28px;
-        margin: 0 0 9px;
-        padding-left: 0;
+        position: absolute !important;
+        top: calc(100% - 8px);
+        left: 50%;
+        z-index: 10;
+        flex-wrap: wrap;
+        justify-content: center;
+        width: max-content;
+        min-width: 0;
+        max-width: min(420px, calc(100vw - 28px));
+        margin: 0 !important;
+        padding: 3px !important;
+        border-radius: 12px;
+        background: rgba(44, 44, 51, 0.97);
+        box-shadow: var(--ag2-rim), var(--ag2-sh2);
+        transform: translateX(-50%);
     }
+
+    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes:not(:hover):not(:focus-within) .mes_buttons {
+        opacity: 0 !important;
+        pointer-events: none;
+    }
+
+    /* “更多” opens below the bar, centred (it would cover the receipt above it) */
+    html body.ag2:not(.expandMessageActions):not(#_):not(#__):not(#___) #chat .mes.smallSysMes .mes_buttons > .extraMesButtons {
+        top: calc(100% + 6px);
+        bottom: auto;
+        left: 50%;
+        max-width: min(330px, calc(100vw - 28px));
+        transform: translateX(-50%);
+    }
+
+    /* edit mode: a plain full-width block — name, textarea, ST's edit buttons */
+    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes:has(.edit_textarea) > .mes_block {
+        justify-self: stretch;
+        grid-template-columns: minmax(0, 1fr);
+        width: auto;
+        max-width: none;
+        padding: 0 !important;
+        border-radius: 0;
+        background: none;
+        box-shadow: none;
+    }
+
+    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes:has(.edit_textarea) > .mes_block::before {
+        content: none;
+    }
+
+    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes:has(.edit_textarea) > .mes_block > *,
+    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes:has(.edit_textarea) > .mes_block > .ch_name > * {
+        grid-column: 1;
+    }
+
+    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes:has(.edit_textarea) .ch_name > :first-child {
+        min-height: 28px;
+        margin: 0 0 6px;
+    }
+
     html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes:has(.edit_textarea) .ch_name .name_text {
         color: var(--ag2-l1) !important;
         font-size: 13.5px !important;
         font-weight: 640 !important;
+        letter-spacing: -0.01em;
     }
+
     html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes:has(.edit_textarea) .mes_text {
-        min-height: 0 !important;
-        color: rgba(255, 255, 255, 0.9) !important;
+        font-size: var(--ag2-read-size) !important;
     }
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes:has(.edit_textarea) :is(.mes_buttons, .mes_edit_buttons) {
-        opacity: 1;
+
+    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.smallSysMes .mes_edit_buttons {
+        order: 9; /* after the text, like every other message */
+        justify-self: start;
+        margin: 6px 0 0 !important;
     }
 }
 

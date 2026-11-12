@@ -9,7 +9,7 @@
 //   func      task 2 — edit / delete / copy / action-row / long text / <details> survive.
 // Writes are stubbed (run.mjs); /sendas etc. only touch the in-memory chat.
 import { execFileSync } from 'node:child_process';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 const has = n => process.argv.includes('--' + n);
@@ -20,14 +20,6 @@ const TAG = arg('tag', '');
 const isPhone = () => process.argv.includes('--phone');
 const SHOTROOT = '/opt/server-agent/workspace/st-testdata/redesign/real/R3a';
 const NAME = 'Ny规则定下的走向';
-
-/** URL-encoded #000 lucide glyph for a CSS mask (same bytes as the shipped §5.3c). */
-function mask(body) {
-    const svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='#000' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'>" + body + "</svg>";
-    const enc = [...svg].map(c => ('<>#\"% '.includes(c) ? '%' + c.charCodeAt(0).toString(16).toUpperCase().padStart(2, '0') : c)).join('');
-    return `url("data:image/svg+xml,${enc}")`;
-}
-const BRANCH = mask('<path d="M15 6a9 9 0 0 0-9 9V3"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/>');
 
 async function enter(T, opt = {}) {
     const page = await T.newPage({ phone: isPhone(), ...(opt.page || {}) });
@@ -60,14 +52,17 @@ const sySt = page => page.evaluate(() => {
             mesid: el.getAttribute('mesid'),
             type: el.getAttribute('type'),
             ch_name: el.getAttribute('ch_name'),
-            box: box(el), text: el.querySelector('.mes_text')?.innerText?.slice(0, 40),
+            box: box(block), mesBox: box(el), text: el.querySelector('.mes_text')?.innerText?.slice(0, 40),
+            inChat: (() => { const c = chat.getBoundingClientRect(), q = block.getBoundingClientRect(); return q.left >= c.left - 0.5 && q.right <= c.right + 0.5; })(),
+            btnsOpacity: getComputedStyle(el.querySelector('.mes_buttons')).opacity,
             avatarVis: vis(el.querySelector('.mesAvatarWrapper > .avatar')),
             chNameVis: vis(chn), chNameBox: box(chn), chNameText: el.querySelector('.name_text')?.textContent?.trim(),
             nameStyle: cs(el.querySelector('.name_text')),
             textVis: vis(txt), textBox: box(txt), textStyle: cs(txt),
             glyphMask: glyph ? (glyph.maskImage || glyph.webkitMaskImage || 'none').slice(0, 16) : null,
+            glyphMaskFull: glyph ? (glyph.maskImage || glyph.webkitMaskImage || 'none').length : 0,
             glyphBg: glyph ? glyph.backgroundColor : null,
-            sw: el.scrollWidth, cw: el.clientWidth, overflowX: el.scrollWidth > el.clientWidth + 1,
+            sw: block.scrollWidth, cw: block.clientWidth, overflowX: block.scrollWidth > block.clientWidth + 1 || el.scrollWidth > el.clientWidth + 1,
             inView: r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth,
             swipeVis: [...el.querySelectorAll('.swipe_left,.swipe_right,.swipes-counter')].some(vis),
             textSW: txt?.scrollWidth ?? 0, textCW: txt?.clientWidth ?? 0,
@@ -171,7 +166,7 @@ async function small(T) {
     const out = {};
     const { page } = await enter(T, {});
     // three kinds of compact system messages
-    await sendas(page, `/sendas name="${NAME}" compact=true 2️⃣ 跟着老板去地窖看看那只旧箱子`);
+    await sendas(page, `/sendas name="${NAME}" compact=true ② 跟着老板去地窖看看那只旧箱子`);
     await T.sleep(500);
     await sendas(page, `/comment compact=true 这一段是作者对场景的旁注。`);
     await T.sleep(500);
@@ -199,150 +194,179 @@ async function small(T) {
             body: await page.evaluate(() => [...document.body.classList].filter(c => /bubblechat|documentstyle|ap-chat/.test(c)).join(' ')),
             scan: { ovf: sc.ovf, dbl: sc.dbl, unhid: sc.unhid, nest: sc.nest, btn: sc.btn, doc: sc.doc.ok, scrollY: sc.scrollY },
             n: rows.length,
-            overflowX: rows.filter(r => r.overflowX).length,
+            overflowX: rows.filter(r => r.overflowX || !r.inChat).length,
             avatarVis: rows.filter(r => r.avatarVis).length,
             chNameVis: rows.filter(r => r.chNameVis).length,
             caption: rows.map(r => r.chNameText).filter(Boolean).slice(0, 1),
-            width: rows[0]?.box?.[2], glyph: rows[0]?.glyphMask,
+            width: rows[0]?.box?.[2], height: rows[0]?.box?.[3], glyph: rows[0]?.glyphMask, glyphs: new Set(rows.map(r => r.glyphMaskFull)).size,
         };
         await T.shot(page, `${TAG}small-${isPhone() ? 'phone' : 'desk'}-style${v}`);
     }
     await page.evaluate(() => $('#chat_display').val('0').trigger('change'));
     out.errors = T.errors(page);
-    out.ok = out.count === 3 && Object.values(out.styles).every(s => s.overflowX === 0 && s.scan.ovf === 0 && s.scan.unhid === 0 && s.avatarVis === 0 && s.chNameVis >= 1);
+    out.ok = out.count === 3 && Object.values(out.styles).every(s => s.overflowX === 0 && s.scan.ovf === 0 && s.scan.unhid === 0 && s.avatarVis === 0 && s.chNameVis === 3 && s.glyphs === 3 && s.scan.dbl + s.scan.nest + s.scan.btn === 0);
     return out;
 }
 
 // ------------------------------------------------------------------ variants A/B/C screenshots
-// A = shipped §5.3c. B/C are extra overrides injected here (copied into handoff/R3a.md).
-const VAR_B = (M) => `
-html body.ag2.ag2-r3avb:not(#_):not(#__) #chat .mes.smallSysMes { display: block !important; width: auto !important; max-width: none; margin: 0 0 18px !important; padding: 0 !important; background: none !important; box-shadow: none !important; overflow: visible; }
-html body.ag2.ag2-r3avb:not(#_):not(#__) #chat .mes.smallSysMes > .mes_block::before,
-html body.ag2.ag2-r3avb:not(#_):not(#__) #chat .mes.smallSysMes > .mes_block::after { content: none !important; }
-html body.ag2.ag2-r3avb:not(#_):not(#__) #chat .mes.smallSysMes .ch_name { display: none !important; }
-html body.ag2.ag2-r3avb:not(#_):not(#__) #chat .mes.smallSysMes .mes_text {
-    justify-self: end; display: block; width: fit-content; max-width: 76%; margin-left: auto !important;
-    min-height: 0 !important; padding: 9px 14px 9px 34px !important; border-radius: 20px;
-    background: color-mix(in srgb, var(--ag2-accent) 12%, rgba(44, 44, 51, 0.5)) !important;
-    box-shadow: inset 0 0 0 0.5px color-mix(in srgb, var(--ag2-accent) 34%, transparent), inset 0 0.5px 0 rgba(255,255,255,.08) !important;
-    position: relative; color: var(--ag2-l1) !important; font-size: 15px !important; line-height: 1.6 !important; text-align: left;
-}
-html body.ag2.ag2-r3avb:not(#_):not(#__) #chat .mes.smallSysMes .mes_text::before {
-    content: ""; position: absolute; left: 12px; top: 12px; width: 16px; height: 16px; background: var(--ag2-accent);
-    -webkit-mask: ${M} no-repeat center / 16px 16px; mask: ${M} no-repeat center / 16px 16px; opacity: .9;
-}
-html body.ag2.ag2-r3avb:not(#_):not(#__) #chat .mes.smallSysMes .mes_buttons { justify-self: end; }
-html body.ag2.ag2-r3avb:not(#_):not(#__) #chat .mes.smallSysMes.ag2-day::before { content: attr(data-ag2-day); position: static; grid-row: auto; display: block; margin: 0 0 10px; text-align: center; color: var(--ag2-l3); font-size: var(--ag2-fs-section); font-weight: 560; }
-`;
-const VAR_C = (M) => `
-html body.ag2.ag2-r3avc:not(#_):not(#__) #chat .mes.smallSysMes {
-    display: grid !important; grid-template-columns: minmax(24px, 1fr) auto minmax(24px, 1fr);
-    align-items: center; width: 100% !important; max-width: none; margin: 2px 0 20px !important;
-    padding: 0 !important; background: none !important; box-shadow: none !important; column-gap: 12px; overflow: visible;
-}
-html body.ag2.ag2-r3avc:not(#_):not(#__) #chat .mes.smallSysMes > .mes_block { display: contents !important; }
-html body.ag2.ag2-r3avc:not(#_):not(#__) #chat .mes.smallSysMes > .mes_block::before,
-html body.ag2.ag2-r3avc:not(#_):not(#__) #chat .mes.smallSysMes > .mes_block::after { content: none !important; }
-html body.ag2.ag2-r3avc:not(#_):not(#__) #chat .mes.smallSysMes .ch_name { display: contents !important; }
-html body.ag2.ag2-r3avc:not(#_):not(#__) #chat .mes.smallSysMes .ch_name > :first-child { display: none !important; }
-html body.ag2.ag2-r3avc:not(#_):not(#__) #chat .mes.smallSysMes .mes_text {
-    grid-column: 2; grid-row: 1; position: relative; display: inline-flex; align-items: center; gap: 8px;
-    min-height: 0 !important; margin: 0 !important; padding: 0 !important; color: var(--ag2-l2) !important;
-    font-size: 13px !important; line-height: 1.4 !important; white-space: nowrap; max-width: min(60vw, 420px);
-    overflow: hidden; text-overflow: ellipsis;
-}
-html body.ag2.ag2-r3avc:not(#_):not(#__) #chat .mes.smallSysMes .mes_text::before {
-    content: ""; flex: none; width: 15px; height: 15px; background: var(--ag2-l3);
-    -webkit-mask: ${M} no-repeat center / 15px 15px; mask: ${M} no-repeat center / 15px 15px;
-}
-html body.ag2.ag2-r3avc:not(#_):not(#__) #chat .mes.smallSysMes::before { content: ""; grid-column: 1; grid-row: 1; height: 0.5px; background: var(--ag2-sep-strong); }
-html body.ag2.ag2-r3avc:not(#_):not(#__) #chat .mes.smallSysMes::after { content: ""; grid-column: 3; grid-row: 1; height: 0.5px; background: var(--ag2-sep-strong); }
-html body.ag2.ag2-r3avc:not(#_):not(#__) #chat .mes.smallSysMes .mes_buttons { grid-column: 1 / -1; grid-row: 2; justify-self: center; margin-top: 6px !important; }
-html body.ag2.ag2-r3avc:not(#_):not(#__) #chat .mes.smallSysMes.ag2-day::before { height: auto; background: none; grid-column: 1 / -1; }
-`;
+// A = shipped §5.3c. B / C = tools/ag2/r3a-variants/{B,C}.css, the exact blocks the main session
+// would append after §5.3c (4 ids, so they beat A wherever they are loaded from).
+const VARIANT = k => readFileSync(new URL(`./r3a-variants/${k}.css`, import.meta.url), 'utf8');
 
 async function variants(T) {
     const out = {};
     const { page } = await enter(T, {});
-    await sendas(page, `/sendas name="${NAME}" compact=true 2️⃣ 跟着老板去地窖看看那只旧箱子`);
+    await sendas(page, `/sendas name="${NAME}" compact=true ② 跟着老板去地窖看看那只旧箱子`);
     await T.sleep(400);
-    await sendas(page, `/sendas name="${NAME}" compact=true 3️⃣ 留在客厅等老板回来`);
+    await sendas(page, `/sendas name="${NAME}" compact=true ③ 留在客厅等老板回来`);
     await T.sleep(700);
     await idle(page);
     // A: shipped
     await page.evaluate(() => { const c = document.getElementById('chat'); c.scrollTop = c.scrollHeight; });
     await T.sleep(400);
     await shotVariant(T, page, 'A', isPhone() ? 'phone' : 'desk');
-    // B / C: inject overrides
-    for (const [k, mk] of [['B', VAR_B], ['C', VAR_C]]) {
-        await page.evaluate((k) => { document.body.classList.remove('ag2-r3avb', 'ag2-r3avc'); document.body.classList.add('ag2-r3av' + k.toLowerCase()); }, k);
-        const css = mk(BRANCH);
-        await page.evaluate(([k, c]) => { let s = document.getElementById('ag2-r3a-' + k); if (!s) { s = document.createElement('style'); s.id = 'ag2-r3a-' + k; document.head.append(s); } s.textContent = c; }, [k, css]);
+    out.A = await capsule(page);
+    // B / C: the variant block replaces nothing, it is appended (a <style> at the end of <head>)
+    for (const k of ['B', 'C']) {
+        await page.evaluate(([k, c]) => { document.getElementById('ag2-r3a-var')?.remove(); const s = document.createElement('style'); s.id = 'ag2-r3a-var'; s.dataset.k = k; s.textContent = c; document.head.append(s); }, [k, VARIANT(k)]);
         await page.evaluate(() => { const c = document.getElementById('chat'); c.scrollTop = c.scrollHeight; });
         await T.sleep(500);
         await shotVariant(T, page, k, isPhone() ? 'phone' : 'desk');
-        out[k] = await page.evaluate(() => {
-            const el = document.querySelector('#chat .mes.smallSysMes');
-            const q = el.getBoundingClientRect();
-            return { box: [Math.round(q.left), Math.round(q.top), Math.round(q.width), Math.round(q.height)], sw: el.scrollWidth, cw: el.clientWidth };
-        });
+        out[k] = await capsule(page);
     }
+    const sc = await T.scan(page, ['#chat']);
+    out.scanC = { ovf: sc.ovf, dbl: sc.dbl, unhid: sc.unhid, nest: sc.nest, btn: sc.btn };
     out.errors = T.errors(page);
     out.ok = true;
     return out;
 }
 
-/** Expose the branch mask to the page (the variant CSS reuses it). */
+/** Capsule boxes of every small system message + whether they stay inside #chat. */
+const capsule = page => page.evaluate(() => {
+    const c = document.getElementById('chat').getBoundingClientRect();
+    return [...document.querySelectorAll('#chat .mes.smallSysMes')].map(el => {
+        const q = el.querySelector('.mes_block').getBoundingClientRect(), t = el.querySelector('.mes_text').getBoundingClientRect();
+        return { box: [q.left, q.top, q.width, q.height].map(Math.round), text: [t.left, t.top, t.width, t.height].map(Math.round), inside: q.left >= c.left - 0.5 && q.right <= c.right + 0.5 && t.left >= c.left - 0.5 && t.right <= c.right + 0.5 };
+    });
+});
 async function shotVariant(T, page, k, view) {
     const png = await T.shot(page, `variant-${k}-${view}${TAG ? '-' + TAG : ''}`);
     return png;
 }
 
-// ------------------------------------------------------------------ func: edit/delete/copy survive
+// ------------------------------------------------------------------ func: what must keep working
+// long text / <details> + <pre> / ST's own note · hover bar · “更多” · copy · edit · delete · no swipe
 async function func(T) {
     const out = {};
     const { page } = await enter(T, {});
-    await sendas(page, `/sendas name="${NAME}" compact=true 2️⃣ 跟着老板去地窖看看那只旧箱子`);
-    await T.sleep(400);
-    await sendas(page, `/sendas name="${NAME}" compact=true 长文本：` + '这是一段用来验证自动换行与不越界的较长文字。'.repeat(12));
-    await T.sleep(400);
-    await sendas(page, `/comment compact=true <details><summary>展开</summary><pre>code block line</pre></details>`);
-    await T.sleep(800);
+    const view = isPhone() ? 'phone' : 'desk';
+    const bottom = async () => { await page.evaluate(() => { const c = document.getElementById('chat'); c.scrollTop = c.scrollHeight; }); await T.sleep(350); };
+    await sendas(page, `/sendas name="${NAME}" compact=true ② 跟着老板去地窖看看那只旧箱子`);
+    await sendas(page, `/sendas name="${NAME}" compact=true ` + '这是一段用来验证自动换行与不越界的较长文字，'.repeat(9) + 'Averyveryverylongunbrokenlatinwordtocheckoverflowwrappingbehaviourinsidethecapsule0123456789。');
+    await sendas(page, '/comment compact=true <details><summary>展开旁注</summary>折叠里的说明文字。</details>\n```\nconst pre = "代码块一行";\n```');
+    await page.evaluate(() => SillyTavern.getContext().sendSystemMessage('assistant_note'));
+    await T.sleep(900);
     await idle(page);
-    await page.evaluate(() => { const c = document.getElementById('chat'); c.scrollTop = c.scrollHeight; });
+    await bottom();
+    const rows = await sySt(page);
+    out.rows = rows.map(r => ({ type: r.type, name: r.chNameText, box: r.box, inChat: r.inChat, overflowX: r.overflowX, textSW: r.textSW, textCW: r.textCW, swipeVis: r.swipeVis, avatarVis: r.avatarVis, btnsOpacity: r.btnsOpacity }));
+    out.cont = await page.evaluate(() => [...document.querySelectorAll('#chat .mes.smallSysMes')].map(e => ({ cont: e.classList.contains('ag2-cont'), day: e.classList.contains('ag2-day'), caption: getComputedStyle(e.querySelector('.ch_name > :first-child')).display, mb: getComputedStyle(e).marginBottom, last: e.classList.contains('last_mes') })));
+    const sc = await T.scan(page, ['#chat', '#form_sheld']);
+    out.scan = { ovf: sc.ovf, dbl: sc.dbl, unhid: sc.unhid, nest: sc.nest, btn: sc.btn, doc: sc.doc.ok, chat: sc.panels['#chat'].ok, scrollY: sc.scrollY, detail: (sc.ovf + sc.dbl + sc.unhid + sc.nest + sc.btn) ? sc.detail : undefined };
+    await T.shot(page, `${TAG}func-${view}-0-all`);
+    // <details> opens, <pre> stays inside the capsule
+    await page.evaluate(() => { const d = document.querySelector('#chat .mes.smallSysMes[type="comment"] details'); if (d) d.open = true; });
     await T.sleep(300);
-    out.rows = await sySt(page);
-    out.wrap = out.rows.map(r => ({ overflowX: r.overflowX, textSW: r.textSW, textCW: r.textCW, box: r.box }));
-    out.scan = await T.scan(page, ['#chat']);
-    delete out.scan.detail;
-    await T.shot(page, `${TAG}func-${isPhone() ? 'phone' : 'desk'}-0`);
+    out.details = await page.evaluate(() => {
+        const m = document.querySelector('#chat .mes.smallSysMes[type="comment"]'); const b = m.querySelector('.mes_block').getBoundingClientRect(); const pre = m.querySelector('pre')?.getBoundingClientRect();
+        return { open: !!m.querySelector('details[open]'), pre: !!pre, preInside: !pre || (pre.left >= b.left && pre.right <= b.right + 0.5) };
+    });
 
-    // copy the last AI message (unaffected sanity)
-    const copied = await page.evaluate(() => { const b = document.querySelector('#chat .mes.smallSysMes .mes_copy'); b?.click(); return !!b; });
-    out.copyBtnExists = copied;
+    // the first receipt: scroll it to the middle, hover (desktop) / tap (phone) → the bar
+    const id = await page.evaluate(() => { const m = document.querySelector('#chat .mes.smallSysMes'); m.scrollIntoView({ block: 'center' }); return m.getAttribute('mesid'); });
     await T.sleep(400);
-
-    // edit the FIRST receipt: enter edit mode
-    const first = await page.evaluate(() => document.querySelector('#chat .mes.smallSysMes')?.getAttribute('mesid'));
-    await page.evaluate(id => { const m = document.querySelector(`#chat .mes[mesid="${id}"]`); m.querySelector('.mes_edit')?.click(); }, first);
-    await T.sleep(700);
-    out.edit = await page.evaluate(id => {
-        const el = document.querySelector(`#chat .mes[mesid="${id}"]`);
-        const ta = el.querySelector('.edit_textarea');
-        const chn = el.querySelector('.ch_name > :first-child');
-        const q = el.getBoundingClientRect();
-        return { textarea: !!ta, taBox: ta ? [...[ta.getBoundingClientRect().left, ta.getBoundingClientRect().top, ta.getBoundingClientRect().width]].map(Math.round) : null,
-            chNameVis: !!chn && getComputedStyle(chn).display !== 'none' && chn.getBoundingClientRect().height > 0,
-            box: [Math.round(q.left), Math.round(q.top), Math.round(q.width), Math.round(q.height)], overflowX: el.scrollWidth > el.clientWidth + 1,
-            editBtns: el.querySelectorAll('.mes_edit_buttons .menu_button').length };
-    }, first);
-    await T.shot(page, `${TAG}func-${isPhone() ? 'phone' : 'desk'}-edit`);
-    // cancel edit
-    await page.evaluate(id => document.querySelector(`#chat .mes[mesid="${id}"] .mes_edit_cancel`)?.click(), first);
-    await T.sleep(600);
-    out.afterCancel = await page.evaluate(id => { const el = document.querySelector(`#chat .mes[mesid="${id}"]`); return { textarea: !!el.querySelector('.edit_textarea'), cls: el.className }; }, first);
-    out.errors = T.errors(page);
-    out.ok = out.scan.ovf === 0 && out.wrap.every(w => !w.overflowX) && out.edit.textarea && out.edit.chNameVis && !out.afterCancel.textarea;
+    const M = `#chat .mes[mesid="${id}"]`;
+    const press = (sel, o) => isPhone() ? page.tap(sel, o) : page.click(sel, o);
+    // the bar shows on hover (desktop) / after a tap on the capsule (touch: sticky :hover). Scroll
+    // the receipt to the middle first: Playwright's scroll-into-view would drop the hover.
+    const reveal = async () => {
+        await page.evaluate(sel => document.querySelector(sel).scrollIntoView({ block: 'center' }), M);
+        await T.sleep(250);
+        if (isPhone()) await page.tap(M + ' .mes_text'); else await page.hover(M + ' .mes_text');
+        await T.sleep(300);
+    };
+    const bar = () => page.evaluate(sel => {
+        const m = document.querySelector(sel), b = m.querySelector('.mes_buttons'), c = getComputedStyle(b), q = b.getBoundingClientRect(), k = m.querySelector('.mes_block').getBoundingClientRect();
+        const x = m.querySelector('.extraMesButtons'), xq = x.getBoundingClientRect(), xc = getComputedStyle(x);
+        const cap = m.querySelector('.ch_name > :first-child').getBoundingClientRect(), bk = m.querySelector('.mes_block');
+        const hit = (() => { const e = document.elementFromPoint(q.left + 16, q.top + q.height / 2); return !!e && b.contains(e); })();
+        return { hit, scrollTop: bk.scrollTop, captionIn: cap.top >= k.top - 0.5 && cap.bottom <= k.bottom + 0.5, opacity: c.opacity, pe: c.pointerEvents, box: [q.left, q.top, q.width, q.height].map(Math.round), inView: q.left >= 0 && q.right <= innerWidth, centred: Math.abs((q.left + q.right) / 2 - (k.left + k.right) / 2) < 1.5, capsuleH: Math.round(k.height),
+            btns: [...b.children].filter(e => getComputedStyle(e).display !== 'none' && e !== x).length,
+            more: xc.display !== 'none' ? { box: [xq.left, xq.top, xq.width, xq.height].map(Math.round), inView: xq.left >= 0 && xq.right <= innerWidth, below: xq.top >= q.bottom } : null };
+    }, M);
+    await page.mouse.move(5, 5); await T.sleep(250);
+    out.barIdle = await bar();
+    if (isPhone()) await page.tap(M + ' .mes_text'); else await page.hover(M + ' .mes_text');
+    await T.sleep(450);
+    out.barShown = await bar();
+    await T.shot(page, `${TAG}func-${view}-1-bar`);
+    // “更多”
+    await reveal();
+    await press(M + ' .extraMesButtonsHint'); await T.sleep(450);
+    out.barMore = await bar();
+    await T.shot(page, `${TAG}func-${view}-2-more`);
+    await press(M + ' .extraMesButtonsHint').catch(() => {}); await T.sleep(250);
+    // copy
+    await page.context().grantPermissions(['clipboard-read', 'clipboard-write']).catch(() => {});
+    await reveal();
+    await press(M + ' .mes_copy'); await T.sleep(500);
+    out.copied = await page.evaluate(() => navigator.clipboard.readText().then(t => t.slice(0, 30), e => 'ERR ' + e.message));
+    // edit: name line + textarea + edit buttons; type; confirm
+    await reveal();
+    await press(M + ' .mes_edit'); await T.sleep(700);
+    const editSt = () => page.evaluate(sel => {
+        const m = document.querySelector(sel), ta = m.querySelector('.edit_textarea'), n = m.querySelector('.name_text'), eb = m.querySelector('.mes_edit_buttons'), k = m.querySelector('.mes_block');
+        const r = e => { const q = e.getBoundingClientRect(); return [q.left, q.top, q.width, q.height].map(Math.round); };
+        const v = e => !!e && getComputedStyle(e).display !== 'none' && e.getBoundingClientRect().height > 0;
+        return { textarea: !!ta, ta: ta ? r(ta) : null, nameVis: v(n), name: n ? r(n) : null, editBtnsVis: v(eb), editBtns: eb ? r(eb) : null, nEdit: [...eb.querySelectorAll('.menu_button')].filter(v).length,
+            mes: r(m), block: r(k), blockBg: getComputedStyle(k).backgroundColor, order: ta && n && eb ? (r(n)[1] < r(ta)[1] && r(ta)[1] < r(eb)[1]) : null, barVis: v(m.querySelector('.mes_buttons')) };
+    }, M);
+    out.edit = await editSt();
+    await T.shot(page, `${TAG}func-${view}-3-edit`);
+    await page.fill(M + ' .edit_textarea', '② 改过的走向：先去阁楼');
+    await press(M + ' .mes_edit_done'); await T.sleep(700);
+    out.edited = await page.evaluate(sel => { const m = document.querySelector(sel); return { textarea: !!m.querySelector('.edit_textarea'), text: m.querySelector('.mes_text').innerText.trim(), chat: SillyTavern.getContext().chat[Number(m.getAttribute('mesid'))].mes, capsule: getComputedStyle(m.querySelector('.mes_block')).backgroundColor !== 'rgba(0, 0, 0, 0)' }; }, M);
+    // edit → cancel keeps the text
+    await reveal();
+    await press(M + ' .mes_edit'); await T.sleep(500);
+    await press(M + ' .mes_edit_cancel'); await T.sleep(500);
+    out.cancelled = await page.evaluate(sel => ({ textarea: !!document.querySelector(sel + ' .edit_textarea'), text: document.querySelector(sel + ' .mes_text').innerText.trim() }), M);
+    // delete (edit → trash → ST's confirm)
+    const n0 = await page.evaluate(() => SillyTavern.getContext().chat.length);
+    await reveal();
+    await press(M + ' .mes_edit'); await T.sleep(500);
+    await press(M + ' .mes_edit_delete'); await T.sleep(700);
+    const okBtn = page.locator('dialog.popup[open] .popup-button-ok').first();
+    out.deleteConfirm = await okBtn.count();
+    if (out.deleteConfirm) { await (isPhone() ? okBtn.tap() : okBtn.click()); await T.sleep(900); }
+    out.deleted = await page.evaluate(n => ({ before: n, after: SillyTavern.getContext().chat.length, left: document.querySelectorAll('#chat .mes.smallSysMes').length }), n0);
+    await bottom();
+    await T.shot(page, `${TAG}func-${view}-4-after`);
+    const sc2 = await T.scan(page, ['#chat']);
+    out.scanAfter = { ovf: sc2.ovf, dbl: sc2.dbl, unhid: sc2.unhid, nest: sc2.nest, btn: sc2.btn };
+    out.errors = T.errors(page).filter(e => !/404/.test(e));
+    const z = o => o.ovf + o.dbl + o.unhid + o.nest + o.btn === 0;
+    out.checks = {
+        four: out.rows.length === 4, inChat: out.rows.every(r => r.inChat && !r.overflowX), noSwipe: out.rows.every(r => !r.swipeVis), noAvatar: out.rows.every(r => !r.avatarVis),
+        captions: out.cont.every(c => c.caption !== 'none'), scan: z(out.scan) && out.scan.doc && out.scan.chat && z(out.scanAfter), details: out.details.open && out.details.preInside,
+        barHidden: out.barIdle.opacity === '0' && out.barIdle.pe === 'none', barShown: out.barShown.opacity === '1' && out.barShown.hit && out.barShown.inView && out.barShown.centred && out.barShown.btns >= 3,
+        noRoom: out.barIdle.capsuleH < 70, more: !!out.barMore.more && out.barMore.more.inView && out.barMore.more.below && out.barMore.captionIn && out.barMore.scrollTop === 0 && out.barMore.hit,
+        copy: /跟着老板/.test(out.copied), edit: out.edit.textarea && out.edit.nameVis && out.edit.editBtnsVis && out.edit.order === true && out.edit.nEdit >= 4 && !out.edit.barVis && out.edit.ta[2] > (isPhone() ? 300 : 600),
+        edited: !out.edited.textarea && /阁楼/.test(out.edited.text) && /阁楼/.test(out.edited.chat) && out.edited.capsule, cancelled: !out.cancelled.textarea && /阁楼/.test(out.cancelled.text),
+        deleted: out.deleted.after === out.deleted.before - 1 && out.deleted.left === 3,
+    };
+    out.ok = Object.values(out.checks).every(Boolean);
+    if (!out.ok) process.exitCode = 1;
     return out;
 }
 
@@ -350,6 +374,7 @@ export default async function (T) {
     const parts = { more, moreDesk, small, variants, func };
     if (!parts[part]) throw new Error('unknown part ' + part);
     const r = await parts[part](T);
+    if (r.ok === false) process.exitCode = 1;
     await T.save('r3a-' + part, r);
     return r;
 }

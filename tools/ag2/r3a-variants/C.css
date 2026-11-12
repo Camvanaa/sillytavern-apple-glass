@@ -1,0 +1,61 @@
+/* R3a variant C — timeline divider: hairline · icon + text · hairline, no surface, no
+   caption. The lines are .mes::after and .swipeRightBlock::before (both unused on a small
+   system message), so .mes gets its own 3-column grid. Append after §5.3c. */
+@media screen {
+    html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea)) {
+        grid-template-columns: [outer card in] minmax(20px, 1fr) [mid] auto [r] minmax(20px, 1fr) [pr end];
+        column-gap: 12px;
+        margin-bottom: 20px !important;
+    }
+
+    html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea)) > .mes_block {
+        grid-column: mid;
+        column-gap: 7px;
+        max-width: 100%;
+        padding: 2px 0 !important;
+        border-radius: 0;
+        background: none;
+        box-shadow: none;
+    }
+
+    html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea))::after,
+    html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea)) > .swipeRightBlock::before {
+        content: "" !important;
+        display: block;
+        grid-row: text;
+        align-self: center;
+        height: 0.5px;
+        margin: 0;
+        border-radius: 0;
+        background: var(--ag2-sep-strong);
+        z-index: auto;
+    }
+
+    html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea))::after {
+        grid-column: r;
+        max-width: none;
+    }
+
+    html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea)) > .swipeRightBlock::before {
+        grid-column: in;
+    }
+
+    html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea)) > .mes_block::before {
+        width: 15px;
+        height: 15px;
+        margin-top: 2px;
+        -webkit-mask-size: 15px 15px;
+        mask-size: 15px 15px;
+    }
+
+    html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea)) .ch_name > :first-child {
+        display: none !important;
+    }
+
+    html body.ag2:not(#_):not(#__):not(#___):not(#____) #chat .mes.smallSysMes:not(:has(.edit_textarea)) .mes_text {
+        color: var(--ag2-l2) !important;
+        font-size: 13.5px !important;
+        font-weight: 520 !important;
+        line-height: 1.45 !important;
+    }
+}
