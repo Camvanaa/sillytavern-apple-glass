@@ -13,9 +13,55 @@
 // nodes stop mousedown propagation), Esc (capture, stopped so ST's own Esc logic
 // doesn't also run — §8 order), resize and blur. Arrow keys move focus.
 
-import { icon } from './icons.js?v=202611121609';
+import { icon } from './icons.js?v=202611130023';
 
 let current = null;
+
+/** Position a fixed popover around an anchor, preferring the requested side and
+ * falling back to the opposite side before clamping both axes to the viewport. */
+export function positionPopover(el, anchor, { side = 'bottom', gap = 6 } = {}) {
+    if (!el || !(anchor instanceof Element)) return null;
+    const r = anchor.getBoundingClientRect();
+    let mw = el.offsetWidth, mh = el.offsetHeight;
+    let x = r.left, y = r.bottom + gap;
+    if (side === 'right' && document.body.classList.contains('ag2-phone')) {
+        // A 390px viewport cannot fit two 236px menus side by side. The caller anchors
+        // to the whole parent menu; constrain the child to a free region above/below it.
+        const above = r.top - gap - 8;
+        const below = innerHeight - r.bottom - gap - 8;
+        const available = Math.max(120, Math.max(above, below));
+        el.style.setProperty('max-height', Math.round(available) + 'px', 'important');
+        mw = el.offsetWidth;
+        mh = el.offsetHeight;
+        x = r.left;
+        y = above >= below ? r.top - mh - gap : r.bottom + gap;
+    } else if (side === 'top') {
+        const above = r.top - gap - 8;
+        const below = innerHeight - r.bottom - gap - 8;
+        const useAbove = above >= below;
+        el.style.setProperty('max-height', Math.round(Math.max(120, Math.max(above, below))) + 'px', 'important');
+        mh = el.offsetHeight;
+        y = useAbove ? r.top - mh - gap : r.bottom + gap;
+    } else if (side === 'right') {
+        x = r.right + gap;
+        y = r.top;
+        if (x + mw > innerWidth - 8) x = r.left - mw - gap;
+        if (y + mh > innerHeight - 8) y = innerHeight - mh - 8;
+    } else if (side === 'left') {
+        x = r.left - mw - gap;
+        y = r.top;
+        if (x < 8) x = r.right + gap;
+        if (y + mh > innerHeight - 8) y = innerHeight - mh - 8;
+    } else {
+        x = side === 'bottom-end' ? r.right - mw : r.left;
+        if (y + mh > innerHeight - 8) y = r.top - mh - gap;
+    }
+    x = Math.min(Math.max(8, x), Math.max(8, innerWidth - mw - 8));
+    y = Math.min(Math.max(8, y), Math.max(8, innerHeight - mh - 8));
+    el.style.setProperty('left', Math.round(x) + 'px', 'important');
+    el.style.setProperty('top', Math.round(y) + 'px', 'important');
+    return { x, y, width: mw, height: mh };
+}
 
 export function closeMenu() {
     if (!current) return false;

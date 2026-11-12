@@ -2903,11 +2903,11 @@ html body.ag2.ag2-wand-open:not(#_):not(#__) #extensionsMenu {
     display: flex !important;
     flex-direction: column;
     position: fixed !important;
-    inset: auto auto var(--ag2-wand-bottom, 80px) var(--ag2-wand-left, 320px) !important;
+    inset: 80px auto auto 320px !important;
     z-index: 3004 !important;
     min-width: 236px;
     max-width: 320px;
-    max-height: calc(100dvh - 20px);
+    max-height: min(60dvh, calc(100dvh - 20px));
     margin: 0 !important;
     padding: 5px !important;
     border: 0 !important;

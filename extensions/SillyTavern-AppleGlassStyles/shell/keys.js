@@ -11,8 +11,8 @@
 // Never fires while an IME is composing, on auto-repeat of the palette key, or on top of an
 // ST popup. One window-capture listener, added on enable and removed on teardown.
 
-import { isMac, openPalette, paletteModule, settingsModule, setInspector, isDesktop, getShellApi, ctx, INSP_ID, stLayerUp } from './util.js?v=202611121609';
-import { isMenuOpen } from './menu.js?v=202611121609';
+import { isMac, openPalette, paletteModule, settingsModule, setInspector, isDesktop, getShellApi, ctx, INSP_ID, stLayerUp } from './util.js?v=202611130023';
+import { isMenuOpen } from './menu.js?v=202611130023';
 
 let mounted = false;
 
@@ -97,7 +97,7 @@ function onEsc(e) {
     if (stLayerUp()) return;                  // ST popups / editor own Esc
     // Inspector: the last shell layer. ST's floating panels, a running generation (Esc =
     // stop) and autocomplete keep their Esc first, as in ST's own order.
-    if (!isDesktop() || !document.body.classList.contains('ag2-insp-open')) return;
+    if (!document.body.classList.contains('ag2-insp-open')) return;
     if (vis('#mes_stop') || vis('.autoComplete') || vis('#floatingPrompt') || vis('#cfgConfig')
         || vis('#logprobsViewer') || vis('#WorldInfo') || vis('#movingDivs > div')) return;
     const a = document.activeElement;

@@ -14,9 +14,9 @@
 // Every action is a click on ST's own control (`#option_*`, `#attachFile`, the model
 // <select>), as ST's core does it.
 
-import { icon } from './icons.js?v=202611121609';
-import { openMenu, closeMenu } from './menu.js?v=202611121609';
-import { ctx, h, guard, clickSt, toggleDrawer, openSettings, busy, onlineStatus } from './util.js?v=202611121609';
+import { icon } from './icons.js?v=202611130023';
+import { openMenu, closeMenu, positionPopover } from './menu.js?v=202611130023';
+import { ctx, h, guard, clickSt, toggleDrawer, openSettings, busy, onlineStatus } from './util.js?v=202611130023';
 import { showBookmarksButtons } from '../../../../bookmarks.js';
 
 const NO_CONN_TEXT = '未连接 API — 点此连接';
@@ -179,9 +179,11 @@ function toggleWand(btn) {
     btn?.classList.add('ag2-sub-open');
     const b = document.body;
     b.classList.add('ag2-wand-open');
-    b.style.setProperty('--ag2-wand-left', Math.round(r.right + 10) + 'px');
-    // bottom-anchored: grows upwards from the item's bottom edge, kept on screen by CSS max-height
-    b.style.setProperty('--ag2-wand-bottom', Math.max(10, Math.round(innerHeight - r.bottom - 5)) + 'px');
+    // Use the shared popover placer: desktop anchors beside the submenu item; phone stacks
+    // above the complete parent menu so no sibling action is covered.
+    const phone = b.classList.contains('ag2-phone');
+    const anchor = phone ? document.getElementById('ag2-plus-menu') : (btn || document.querySelector('#ag2-plus-menu [data-item="wand"]'));
+    positionPopover(menu, anchor, { side: phone ? 'top' : 'right', gap: 10 });
     const onClick = e => {
         if (WAND_KEEP.some(s => e.target.closest(s))) return;
         if (e.target.closest('.list-group-item, .extension_container > *')) setTimeout(() => closeMenu(), 0);
@@ -198,7 +200,7 @@ function closeWand() {
     wandCleanup = null;
     document.body.classList.remove('ag2-wand-open');
     document.body.style.removeProperty('--ag2-wand-left');
-    document.body.style.removeProperty('--ag2-wand-bottom');
+    document.body.style.removeProperty('--ag2-wand-top');
     document.querySelector('#ag2-plus-menu .ag2-sub-open')?.classList.remove('ag2-sub-open');
 }
 

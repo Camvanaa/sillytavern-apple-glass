@@ -10,14 +10,15 @@
 // Matching: substring first (prefix / word start rank higher), then in-order subsequence;
 // matched characters are bold + underlined. Every action goes through ST's own entry points.
 
-import { icon } from './icons.js?v=202611121609';
+import { icon } from './icons.js?v=202611130023';
 import { world_names, selected_world_info, METADATA_KEY } from '../../../../world-info.js';
 import {
     ctx, h, guard, toast, thumb, fmtTime, summary, stem, clickSt, openEntry, openCharacter, openGroup,
     openSettings, loadSettings, setInspector, isInspectorOpen, isDesktop, modKeyLabel, modCombo, getShellApi,
-} from './util.js?v=202611121609';
-import { getRecent, openRightMenu } from './sidebar.js?v=202611121609';
-import { closeMenu } from './menu.js?v=202611121609';
+} from './util.js?v=202611130023';
+import { getRecent, openRightMenu } from './sidebar.js?v=202611130023';
+import { closeMenu } from './menu.js?v=202611130023';
+import { fixToastrForDialogs } from '../../../../../scripts/popup.js';
 
 const GROUPS = {
     recent: { name: '最近对话', max: 5 },
@@ -41,6 +42,26 @@ let opener = null;
 let seq = 0;
 let freshIndex = false; // the settings index is rebuilt on the first query of each opening
 let cmdCache = null;
+let toastObserver = null;
+
+function keepToastsAbovePalette() {
+    if (!dlg?.open) return;
+    try { fixToastrForDialogs(); } catch { /* ST may not have initialized toastr yet */ }
+    const c = document.getElementById('toast-container');
+    if (c && !dlg.contains(c)) dlg.append(c);
+}
+
+function startToastLayer() {
+    keepToastsAbovePalette();
+    toastObserver = new MutationObserver(keepToastsAbovePalette);
+    toastObserver.observe(document.body, { childList: true, subtree: true });
+}
+
+function stopToastLayer() {
+    toastObserver?.disconnect();
+    toastObserver = null;
+    try { fixToastrForDialogs(); } catch { /* */ }
+}
 
 export const isOpen = () => !!dlg?.open;
 
@@ -355,13 +376,16 @@ async function refresh() {
         if (!rows.length) return;
         res.set = rows;
         const keep = items[sel];
-        render(order(res, q), q, keep);
+        // The late settings group is re-sorted with all existing rows. Always reset the
+        // active descendant to the first rendered result so it cannot point at a row whose
+        // index moved when settings arrived (e.g. “温度”: setting first, action second).
+        render(order(res, q), q);
     } catch (e) {
         console.warn('[AG2] palette: settings index failed', e);
     }
 }
 
-function render(groups, q, keep = null) {
+function render(groups, q) {
     items = [];
     let html = '';
     for (const { g, rows } of groups) {
@@ -378,10 +402,7 @@ function render(groups, q, keep = null) {
     }
     if (!items.length) html = `<div class="ag2-pal-empty">${q ? '没有找到结果' : '还没有对话'}</div>`;
     list.innerHTML = html;
-    // a late group (settings) must not move the selection the user is on
-    let i = 0;
-    if (keep) { const k = items.findIndex(x => x.title === keep.title && x.group === keep.group); if (k >= 0) i = k; }
-    select(i, true);
+    select(0, true);
 }
 
 function select(i, scroll = true) {
@@ -429,6 +450,7 @@ export function open({ query = '' } = {}) {
     cmdCache = null; // extensions may register commands late
     input.value = query;
     dlg.showModal();
+    startToastLayer();
     input.focus();
     refresh();
     return true;
@@ -437,6 +459,7 @@ export function open({ query = '' } = {}) {
 export function close() {
     if (!dlg?.open) return false;
     seq++;
+    stopToastLayer();
     dlg.close();
     list.replaceChildren();
     items = [];
@@ -449,6 +472,7 @@ export function close() {
 export function toggle(opt) { return isOpen() ? close() : open(opt); }
 
 export function unmount() {
+    stopToastLayer();
     try { if (dlg?.open) dlg.close(); } catch { /* */ }
     dlg?.remove();
     dlg = input = list = null;
