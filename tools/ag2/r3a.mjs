@@ -209,7 +209,7 @@ async function small(T) {
     }
     await page.evaluate(() => $('#chat_display').val('0').trigger('change'));
     out.errors = T.errors(page);
-    out.ok = out.count === 3 && out.styles['0·阅读'].scan.ovf === 0 && Object.values(out.styles).every(s => s.overflowX === 0 && s.ovf === 0);
+    out.ok = out.count === 3 && Object.values(out.styles).every(s => s.overflowX === 0 && s.scan.ovf === 0 && s.scan.unhid === 0 && s.avatarVis === 0 && s.chNameVis >= 1);
     return out;
 }
 
