@@ -13,7 +13,7 @@
 //    - data-ag2-model on AI messages (model name for the meta line, CSS ::after)
 //    - data-ag2-time="HH:MM" on `.timestamp` (header shows the short time)
 
-import { ctx, toDate } from './util.js?v=202611111914';
+import { ctx, toDate } from './util.js?v=202611120458';
 
 const WEEK = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
 const pad = n => String(n).padStart(2, '0');

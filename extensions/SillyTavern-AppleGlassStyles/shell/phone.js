@@ -14,12 +14,12 @@
 // keyboard's top edge.
 // State: localStorage ag2.phPage = list | chat (per device, §9.1).
 
-import { icon } from './icons.js?v=202611111914';
-import { openMenu, closeMenu } from './menu.js?v=202611111914';
-import { local } from './store.js?v=202611111914';
-import { ctx, h, guard, getCurrentChatId, openSettings, setInspector, inspectorModule, openPalette, clickSt } from './util.js?v=202611111914';
-import { chatMenuItems } from './chrome.js?v=202611111914';
-import { segment, setSegment } from './sidebar.js?v=202611111914';
+import { icon } from './icons.js?v=202611120458';
+import { openMenu, closeMenu, isMenuOpen } from './menu.js?v=202611120458';
+import { local } from './store.js?v=202611120458';
+import { ctx, h, guard, getCurrentChatId, openSettings, setInspector, inspectorModule, openPalette, clickSt } from './util.js?v=202611120458';
+import { chatMenuItems } from './chrome.js?v=202611120458';
+import { segment, setSegment } from './sidebar.js?v=202611120458';
 
 const TABS = [['chats', '对话', 'messages-square'], ['chars', '角色', 'users'], ['wi', '世界书', 'book-open'], ['settings', '设置', 'settings']];
 const SEG_TITLE = { chats: '对话', chars: '角色', groups: '群组' };
@@ -62,9 +62,14 @@ export function mount(shell) {
     more.type = 'button';
     more.setAttribute('aria-label', '更多');
     more.setAttribute('aria-haspopup', 'menu');
+    more.setAttribute('aria-expanded', 'false');
     more.title = '更多';
-    more.innerHTML = icon('ellipsis', 20);
-    more.addEventListener('click', () => moreMenu(more));
+    setMoreIcon(more, 'ellipsis', '更多');
+    // ⋯ opens the chat menu; while it is open the same button is × and closes it (R3a task 1).
+    more.addEventListener('click', () => {
+        if (isMenuOpen() && moreMenuOwner === more) { closeMenu(); return; }
+        moreMenu(more);
+    });
 
     shell.append(bar, back, more);
     nodes = [big, bar, back, more];
@@ -192,6 +197,17 @@ async function showInspector(seg) {
     inspectorModule()?.setSeg?.(seg);
 }
 
+/** The button that currently owns the open ⋯ menu (null when none) — R3a task 1. */
+let moreMenuOwner = null;
+
+/** Swaps the ⋯ button's glyph/label; the icon fades+rotates in via CSS (§5.9, --ag2-dur). */
+function setMoreIcon(btn, name, label) {
+    if (!btn) return;
+    btn.innerHTML = icon(name, name === 'x' ? 18 : 20);
+    btn.setAttribute('aria-label', label);
+    btn.title = label;
+}
+
 function moreMenu(anchor) {
     const c = ctx();
     const inChat = !!chatKey();
@@ -204,7 +220,23 @@ function moreMenu(anchor) {
         ...chatMenuItems(),
         { separator: true },
         { id: 'search', label: '搜索…', icon: 'search', onSelect: () => openPalette() },
-    ], { align: 'end' });
+    ], {
+        align: 'end',
+        // Every close path (outside tap, item pick, Esc, page switch, unmount) restores ⋯.
+        // The callback captures its own anchor: a later openMenu() (which closes the current
+        // menu first) only restores the icon if it is still the owner.
+        onClose: () => {
+            if (moreMenuOwner === anchor) {
+                setMoreIcon(anchor, 'ellipsis', '更多');
+                anchor.setAttribute('aria-expanded', 'false');
+                moreMenuOwner = null;
+            }
+        },
+    });
+    // Set after openMenu (its internal closeMenu() may have run the previous onClose).
+    moreMenuOwner = anchor;
+    setMoreIcon(anchor, 'x', '关闭菜单');
+    anchor.setAttribute('aria-expanded', 'true');
 }
 
 // ------------------------------------------------------------------ keyboard / viewport
