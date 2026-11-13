@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 
 export default async function(T) {
-    const page = await T.newPage();
-    await T.prepare(page, { powerUser: { reduced_motion: T.cfg.reduced } });
+    const page = await T.newPage({reduced:T.cfg.part==='os'});
+    await T.prepare(page, { powerUser: { reduced_motion: T.cfg.part==='st' } });
     await T.boot(page, { ag2: true });
     await page.evaluate(async () => {
         const build = document.querySelector('#ag2-shell').dataset.build;
