@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {writeFileSync} from 'node:fs';
 const ROOT='/opt/server-agent/workspace/st-testdata/redesign/motion-fixes';
 export default async function(T){
-    const mode=T.cfg.part||'normal',id=(T.cfg.phone?'phone':'desktop')+'-'+mode;
+    const mode=T.cfg.part||'normal',id=(T.cfg.phone?'phone':'desktop')+'-'+mode+(T.cfg.tag?'-'+T.cfg.tag:'');
     const page=await T.newPage({reduced:['os','media-only'].includes(mode)});
     await T.prepare(page,{powerUser:{reduced_motion:mode==='st'}});
     await T.boot(page,{ag2:true});await T.openChat(page,await T.longChat(page));
