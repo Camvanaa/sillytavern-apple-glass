@@ -10,14 +10,14 @@
 // Matching: substring first (prefix / word start rank higher), then in-order subsequence;
 // matched characters are bold + underlined. Every action goes through ST's own entry points.
 
-import { icon } from './icons.js?v=20261113QA02';
+import { icon } from './icons.js?v=20261113QA03';
 import { world_names, selected_world_info, METADATA_KEY } from '../../../../world-info.js';
 import {
     ctx, h, guard, toast, thumb, fmtTime, summary, stem, clickSt, openEntry, openCharacter, openGroup,
     openSettings, loadSettings, setInspector, isInspectorOpen, isDesktop, modKeyLabel, modCombo, getShellApi,
-} from './util.js?v=20261113QA02';
-import { getRecent, openRightMenu } from './sidebar.js?v=20261113QA02';
-import { closeMenu } from './menu.js?v=20261113QA02';
+} from './util.js?v=20261113QA03';
+import { getRecent, openRightMenu } from './sidebar.js?v=20261113QA03';
+import { closeMenu } from './menu.js?v=20261113QA03';
 import { fixToastrForDialogs } from '../../../../../scripts/popup.js';
 
 const GROUPS = {
@@ -46,9 +46,9 @@ let toastObserver = null;
 
 function keepToastsAbovePalette() {
     if (!dlg?.open) return;
+    // ST includes our dialog in its topmost-layer lookup. A nested ST popup wins;
+    // appending back to the palette would ping-pong on every observer delivery.
     try { fixToastrForDialogs(); } catch { /* ST may not have initialized toastr yet */ }
-    const c = document.getElementById('toast-container');
-    if (c && !dlg.contains(c)) dlg.append(c);
 }
 
 function startToastLayer() {
@@ -459,8 +459,8 @@ export function open({ query = '' } = {}) {
 export function close() {
     if (!dlg?.open) return false;
     seq++;
-    stopToastLayer();
     dlg.close();
+    stopToastLayer(); // relocate after it leaves the top layer, including existing toasts
     list.replaceChildren();
     items = [];
     const o = opener;
@@ -472,8 +472,8 @@ export function close() {
 export function toggle(opt) { return isOpen() ? close() : open(opt); }
 
 export function unmount() {
-    stopToastLayer();
     try { if (dlg?.open) dlg.close(); } catch { /* */ }
+    stopToastLayer();
     dlg?.remove();
     dlg = input = list = null;
     items = [];

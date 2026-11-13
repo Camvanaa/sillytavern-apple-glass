@@ -7362,7 +7362,8 @@ html body.ag2.no-blur:not(#_):not(#__) #toast-container > :is(.toast-success, .t
 
 /* ST relocates #toast-container INTO the open dialog (popup.js fixToastrForDialogs):
    §18a forbids a blurred layer inside another, so toasts shown there go opaque. */
-html body.ag2:not(#_):not(#__) dialog.popup #toast-container > div {
+html body.ag2:not(#_):not(#__) dialog.popup #toast-container > div,
+html body.ag2:not(#_):not(#__) dialog#ag2-palette #toast-container > div {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
     background-color: rgb(44, 44, 51);
