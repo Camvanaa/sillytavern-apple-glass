@@ -78,6 +78,7 @@ let version = '';
 let phoneMode = false; // the sheet form, fixed for one open (a width change closes it)
 let lastFocus = null;
 let activeDragCleanup = null;
+let dragging = false;
 const stEvents = [];
 
 export const isOpen = () => isOpenNow;
@@ -545,35 +546,55 @@ async function listNow({ focus = false } = {}, valid) {
 }
 
 /** Phone sheet: drag the grabber / a head down to dismiss (both sheet and drawer follow). */
+const translated = new Set();
+function sheetOffset(dy = null) {
+    // `translate` is independent of the entry keyframe's transform. Write only the
+    // two surfaces, not an inherited top variable that reflows every ST control.
+    const nodes = dy == null ? [...translated] : [root, ...openPanels().map(id => document.getElementById(id))].filter(Boolean);
+    for (const node of nodes) {
+        if (dy == null) node.style.removeProperty('translate');
+        else { translated.add(node); node.style.setProperty('translate', `0 ${dy}px`); }
+    }
+    if (dy == null) { translated.clear(); document.body.style.removeProperty('--ag2-sheet-dy'); }
+    else document.body.style.setProperty('--ag2-sheet-dy', dy + 'px');
+}
 function dragDismiss(handle) {
     handle?.addEventListener('pointerdown', e => {
-        if (!isOpenNow || !phoneMode || !e.isPrimary || e.button > 0 || activeDragCleanup
+        if (!isOpenNow || !phoneMode || !e.isPrimary || e.button > 0 || dragging
             || e.target.closest('button, input, a, select, textarea')) return;
+        const startDy = parseFloat(getComputedStyle(root).translate.split(' ')[1]) || 0;
+        activeDragCleanup?.(); // a new pointer takes over the current presentation position
+        dragging = true;
         const pointerId = e.pointerId;
-        const y0 = e.clientY;
+        const y0 = e.clientY - startDy;
         const t0 = performance.now();
-        let dy = 0;
+        let dy = startDy;
         const style = document.body.style;
+        sheetOffset(dy);
         document.body.classList.add('ag2-sheet-drag');
         const move = ev => {
             if (ev.pointerId !== pointerId) return;
-            dy = Math.max(0, ev.clientY - y0); style.setProperty('--ag2-sheet-dy', dy + 'px');
+            dy = Math.max(0, ev.clientY - y0); sheetOffset(dy);
         };
-        const cleanup = () => {
+        const cleanup = (keepPosition = false) => {
             window.removeEventListener('pointermove', move);
             window.removeEventListener('pointerup', up);
             window.removeEventListener('pointercancel', cancel);
             window.removeEventListener('blur', cleanup);
-            document.body.classList.remove('ag2-sheet-drag');
-            style.removeProperty('--ag2-sheet-dy');
+            if (keepPosition !== true) {
+                document.body.classList.remove('ag2-sheet-drag');
+                sheetOffset();
+            }
             activeDragCleanup = null;
+            dragging = false;
         };
         const cancel = ev => { if (ev.pointerId === pointerId) cleanup(); };
         const up = ev => {
             if (ev.pointerId !== pointerId) return;
-            cleanup();
             const v = dy / Math.max(1, performance.now() - t0); // px/ms
-            if (dy > 120 || (dy > 40 && v > 0.6)) close();
+            const dismiss = dy > 120 || (dy > 40 && v > 0.6);
+            cleanup(true);
+            settleDrag(dy, dismiss);
         };
         activeDragCleanup = cleanup;
         window.addEventListener('pointermove', move);
@@ -581,6 +602,37 @@ function dragDismiss(handle) {
         window.addEventListener('pointercancel', cancel);
         window.addEventListener('blur', cleanup);
     });
+}
+
+function settleDrag(from, dismiss) {
+    if (document.body.classList.contains('reduced-motion') || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        sheetOffset();
+        document.body.classList.remove('ag2-sheet-drag');
+        if (dismiss) close();
+        return;
+    }
+    const to = dismiss ? Math.max(from, innerHeight) : 0;
+    let cancelled = false;
+    sheetOffset(from);
+    const animations = [...translated].map(node => node.animate(
+        [{translate:`0 ${from}px`}, {translate:`0 ${to}px`}],
+        {duration:200, easing:'cubic-bezier(.22,1,.36,1)', fill:'forwards'},
+    ));
+    const cleanup = () => {
+        cancelled = true;
+        for (const animation of animations) animation.cancel();
+        window.removeEventListener('blur', cleanup);
+        document.body.classList.remove('ag2-sheet-drag');
+        sheetOffset();
+        activeDragCleanup = null;
+    };
+    activeDragCleanup = cleanup;
+    window.addEventListener('blur', cleanup);
+    Promise.all(animations.map(animation => animation.finished)).then(() => {
+        if (cancelled) return;
+        cleanup();
+        if (dismiss) close();
+    }).catch(() => { /* explicit close, blur, unmount or pointer takeover cancelled it */ });
 }
 
 /** Serialised: ST's drawer switch waits animation_duration, so clicks queue up instead of racing. */
@@ -764,7 +816,7 @@ function onFocus(e) {
 
 function onKey(e) {
     if (!isOpenNow || e.isComposing) return;
-    if (e.target instanceof HTMLSelectElement && e.target.matches(':open')) return;
+    if (document.querySelector('select:open')) return;
     if (stLayerUp() || isMenuOpen()) return; // their own Esc runs first (one layer per press)
     if (e.key === 'Tab') {
         const items = focusItems();

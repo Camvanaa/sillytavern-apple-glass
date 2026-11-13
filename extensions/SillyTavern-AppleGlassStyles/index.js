@@ -153,13 +153,14 @@ function ensureJumpButton() {
     jumpBtn = document.createElement('button');
     jumpBtn.id = 'ap-jump-latest';
     jumpBtn.type = 'button';
+    jumpBtn.tabIndex = -1;
     jumpBtn.title = '回到最新消息';
     jumpBtn.innerHTML = '<i class="fa-solid fa-arrow-down"></i><span>最新消息</span>';
     jumpBtn.addEventListener('click', () => {
         const chat = document.getElementById('chat');
         if (!chat) return;
-        // body.reduced-motion covers both SillyTavern's switch and the OS setting.
-        chat.scrollTo({ top: chat.scrollHeight, behavior: document.body.classList.contains('reduced-motion') ? 'auto' : 'smooth' });
+        const reduced = document.body.classList.contains('reduced-motion') || matchMedia('(prefers-reduced-motion: reduce)').matches;
+        chat.scrollTo({ top: chat.scrollHeight, behavior: reduced ? 'auto' : 'smooth' });
     });
     host.prepend(jumpBtn);
     return jumpBtn;
@@ -172,7 +173,10 @@ function updateJumpButton() {
     const btn = ensureJumpButton();
     if (!chat || !btn) return;
     const distance = chat.scrollHeight - chat.scrollTop - chat.clientHeight;
-    btn.classList.toggle('is-visible', distance > Math.max(600, chat.clientHeight * 0.9));
+    const visible = distance > Math.max(600, chat.clientHeight * 0.9);
+    btn.classList.toggle('is-visible', visible);
+    btn.tabIndex = visible ? 0 : -1;
+    if (!visible && document.activeElement === btn) document.getElementById('send_textarea')?.focus({ preventScroll: true });
 }
 
 function scheduleJumpButton() {

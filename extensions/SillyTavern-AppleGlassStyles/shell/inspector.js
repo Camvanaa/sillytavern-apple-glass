@@ -158,6 +158,8 @@ export function mount() {
 const onMq = guarded(() => sync());
 
 export function unmount() {
+    clearTimeout(notesTimer);
+    clearTimeout(tagTimer);
     if (!mounted) return;
     mounted = false;
     closeMenu();
@@ -381,7 +383,9 @@ function toggleEdit(field) {
     ta?.scrollIntoView({ block: 'nearest' });
 }
 
+let notesTimer = 0;
 function toggleNotes() {
+    clearTimeout(notesTimer);
     // R2b: nothing to show → stay shut (the row is also disabled in renderChar).
     const notes = String($id('creator_notes_spoiler')?.textContent || '').trim();
     if (panel.dataset.ag2Notes) delete panel.dataset.ag2Notes;
@@ -391,7 +395,12 @@ function toggleNotes() {
         // ST's own inline drawer: open its content if it is collapsed.
         const content = document.querySelector('#spoiler_free_desc > .inline-drawer-content');
         if (content && getComputedStyle(content).display === 'none') $('#spoiler_free_desc > .inline-drawer-toggle').trigger('click');
-        setTimeout(() => $id('spoiler_free_desc')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 50);
+        const owner = panel;
+        notesTimer = setTimeout(() => {
+            if (!mounted || panel !== owner || !panel.dataset.ag2Notes || !document.body.classList.contains('ag2-insp-open')) return;
+            const reduced = document.body.classList.contains('reduced-motion') || matchMedia('(prefers-reduced-motion: reduce)').matches;
+            $id('spoiler_free_desc')?.scrollIntoView({ block: 'nearest', behavior: reduced ? 'auto' : 'smooth' });
+        }, 50);
     }
     render();
 }
