@@ -28,12 +28,13 @@
 const argv = process.argv;
 const part = (() => { const i = argv.indexOf('--part'); return i > 0 ? argv[i + 1] : 'desk'; })();
 const MEM = argv.includes('--mem');
+const FRAMES = argv.includes('--frames'); // retain every sampled frame, not just anomaly summaries
 const ST_REDUCED = argv.includes('--st-reduced');
 const SHOTS = (() => { const i = argv.indexOf('--snap'); return i > 0 ? argv[i + 1] : ''; })();
 const PAGES = ['api', 'ai', 'fmt', 'wi', 'persona', 'bg', 'look', 'user', 'ext', 'about'];
 
 /** Runs in the page before everything else. */
-function sampler() {
+function sampler(recordAll = false) {
     if (window.__r1) return;
     const SET = ['rm_api_block', 'left-nav-panel', 'AdvancedFormatting', 'WorldInfo', 'PersonaManagement', 'Backgrounds', 'user-settings-block', 'rm_extensions_block'];
     const INSP = 'right-nav-panel';
@@ -111,7 +112,7 @@ function sampler() {
             if (!shown(cs, r)) continue;
             blur.push({ t, id: name(e), k: 'blur', rect: R(r), bf: cs.backdropFilter, op: cs.opacity, pre: (() => { const p = document.getElementById('preloader'); if (!p) return null; const c = getComputedStyle(p); const q = p.getBoundingClientRect(); return [c.display, c.opacity, c.backgroundColor, c.zIndex, Math.round(q.width) + 'x' + Math.round(q.height)].join(' '); })(), chatRule: getComputedStyle(document.getElementById('chat')).paddingTop + ' ' + getComputedStyle(b).getPropertyValue('--ag2-read-width'), body: b.className.replace(/\s+/g, ' ').slice(0, 160), sheets: document.styleSheets.length, cls: typeof e.className === 'string' ? e.className.replace(/\s+/g, ' ').trim().slice(0, 80) : '' });
         }
-        if (rec.length || inspRaw || blur.length) frames.push({ t, rec, insp: inspRaw, blur });
+        if (recordAll || rec.length || inspRaw || blur.length) frames.push({ t, rec, insp: inspRaw, blur });
     }
     window.__r1 = {
         start() { frames = []; marks = []; n = 0; nm = 0; maxGap = 0; last = 0; t0 = performance.now(); if (!on) { on = true; requestAnimationFrame(tick); } },
@@ -162,6 +163,7 @@ function sampler() {
                 if (na) res.native++;
                 if (ov) res.overlap++;
             }
+            if (recordAll) res.raw = frames;
             frames = [];
             return res;
         },
@@ -182,15 +184,16 @@ const state = page => page.evaluate(() => {
 
 async function make(T, { phone }) {
     const page = await T.newPage({ phone });
-    await page.addInitScript(sampler);
+    await page.addInitScript(sampler, FRAMES);
     await T.prepare(page, { ...(MEM ? { theme: 'ag2' } : {}), ...(ST_REDUCED ? { powerUser: { reduced_motion: true } } : {}) });
     const out = { ops: {}, total: { ops: 0, frames: 0, out: 0, native: 0, blur: 0, overlap: 0, badOps: [] } };
     const tagPrefix = (SHOTS ? SHOTS + '-' : '') + (phone ? 'ph-' : 'dk-') + (ST_REDUCED ? 'red-' : '');
-    const { mkdirSync } = await import('node:fs');
+    const { mkdirSync, writeFileSync } = await import('node:fs');
     const dir = `${T.cfg.shotRoot}/${T.cfg.phase}`;
     mkdirSync(dir, { recursive: true });
     const finish = async (name, extra = {}) => {
         const r = await page.evaluate(() => window.__r1.stop());
+        if (FRAMES) writeFileSync(`${dir}/${tagPrefix}${name}-frames.json`, JSON.stringify({ raw: r.raw, marks: r.marks, maxGap: r.maxGap }));
         const s = await state(page);
         out.ops[name] = { frames: r.frames, muts: r.muts, ms: r.ms, maxGap: r.maxGap, out: r.out, native: r.native, blur: r.blur, overlap: r.overlap, insp: r.inspFrames, ...(r.blurUnderSplash ? { blurUnderSplash: r.blurUnderSplash, splashNote: r.splashNote } : {}), after: `${s.set ? 'set:' + s.page + (s.level ? '/' + s.level : '') : '-'} insp:${s.insp ? 1 : 0} open:[${s.open}]`, ...extra, ...(r.bad.length ? { bad: r.bad } : {}) };
         const t = out.total;

@@ -303,13 +303,15 @@ im.save(sys.argv[2], 'JPEG', quality=82)`, png, png.replace(/\.png$/, '_s.jpg')]
 
     const t0 = Date.now();
     let code = 0;
+    let out;
     const fixture0 = fixtureState();
     try {
         const mod = await import(pathToFileURL(path.resolve(suitePath)).href);
-        const out = await mod.default(T);
-        console.log(JSON.stringify(out, null, 1));
+        out = await mod.default(T);
+        if (out?.ok === false) code = 1;
     } catch (e) {
         code = 1;
+        out = { ok: false, error: String(e?.stack || e) };
         console.error('ERR', e && e.stack || e);
     } finally {
         // Leave ST before the contexts close. Closing a context tears the routes down, and a
@@ -323,7 +325,13 @@ im.save(sys.argv[2], 'JPEG', quality=82)`, png, png.replace(/\.png$/, '_s.jpg')]
         // Detective control for the above: the neutral chats must be byte-for-byte untouched.
         await sleep(700);
         const changed = fixtureDiff(fixture0, fixtureState());
-        if (changed.length) console.error('FIXTURE-CHANGED (a stubbed write reached st-test): ' + changed.join(' | '));
+        if (changed.length) {
+            code = 1;
+            out = { ok: false, fixtureChanged: changed, suite: out };
+            console.error('FIXTURE-CHANGED (a stubbed write reached st-test): ' + changed.join(' | '));
+        }
+        if ((code || process.exitCode) && out && !Array.isArray(out)) out.ok = false;
+        console.log(JSON.stringify(out, null, 1));
         console.error(`done ${path.basename(suitePath)} ${Math.round((Date.now() - t0) / 1000)}s`);
     }
     process.exit(code || process.exitCode || 0); // a suite may set process.exitCode (r1-flash verdict)
