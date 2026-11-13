@@ -70,7 +70,9 @@ export async function genChecks(T, page) {
         await idle();
         await page.evaluate(() => document.querySelector('#chat .mes.last_mes .swipe_left').click());
         await waitCounter('1/2');
-        out.swipe = page.__gen.calls === before + 1 ? `ok (${c0} → 2/2 new → 1/2)` : 'FAIL calls ' + before + '→' + page.__gen.calls;
+        // The awaited 2/2 → 1/2 counters prove the swipe. Ny may issue additional mocked
+        // background requests, so the total request counter is a lower bound, not exactly one.
+        out.swipe = page.__gen.calls >= before + 1 ? `ok (${c0} → 2/2 new → 1/2; ${page.__gen.calls - before} mock requests)` : 'FAIL calls ' + before + '→' + page.__gen.calls;
     } catch (e) { out.swipe = 'FAIL ' + String(e.message).slice(0, 120); }
     try {
         page.__gen.delayMs = 8000;

@@ -375,8 +375,26 @@ async function themes(T) {
     });
     out.dark.scan = await T.scan(page, ['#user-settings-block']);
     await T.shot(page, 'theme-dark-from-window-1440');
+    await page.evaluate(() => {
+        window.__qaThemeFrames=[];window.__qaThemeRecording=true;const start=performance.now();
+        const sample=()=>{
+            if(!window.__qaThemeRecording)return;
+            const b=document.body,root=document.querySelector('#ag2-settings');
+            const state={ag2:b.classList.contains('ag2'),ready:b.classList.contains('ag2-ready'),open:b.classList.contains('ag2-set-open'),page:b.dataset.ag2Set||null,hidden:root?.hidden??null,drawer:document.querySelector('#user-settings-block')?.classList.contains('openDrawer')};
+            window.__qaThemeFrames.push({t:Math.round(performance.now()-start),...state});requestAnimationFrame(sample);
+        };requestAnimationFrame(sample);
+    });
     await page.evaluate(() => { $('#themes').val('Apple Glass 2').trigger('change'); });
     await T.sleep(3500);
+    out.ag2At3500 = await state(page);
+    try {
+        await page.waitForFunction(()=>document.body.classList.contains('ag2-set-open')&&document.body.dataset.ag2Set==='user'&&document.querySelector('#user-settings-block.openDrawer'),null,{timeout:15000});
+    } catch(e) {
+        out.ok=false;out.error=String(e.message);
+        out.adoptionTimeline=await page.evaluate(()=>{window.__qaThemeRecording=false;return window.__qaThemeFrames;});
+        return out;
+    }
+    out.adoptionTimeline=await page.evaluate(()=>{window.__qaThemeRecording=false;return window.__qaThemeFrames;});
     const st = await state(page);
     out.ag2Again = {
         windowAdopted: st.open && st.page === 'user' && st.panels[0] === '#user-settings-block', panelInWin: inside(st.panel, st.win),

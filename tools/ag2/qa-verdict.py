@@ -21,6 +21,8 @@ def walk(value, path):
             p = f"{path}.{k}"
             if k in ("ok", "backOk", "wrapOk") and v is False:
                 require(False, p, v)
+            if k in ("windowAdopted", "panelInWin", "onlyCurrent", "inspectorHidden"):
+                require(v is True, p, v)
             if k in ("ovf", "dbl", "unhid", "nest", "btn") and isinstance(v, (int, float)):
                 require(v == 0, p, v)
             walk(v, p)
