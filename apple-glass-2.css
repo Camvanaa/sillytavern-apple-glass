@@ -3440,7 +3440,8 @@ html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-lab {
 html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-lab small {
     display: block;
     margin-top: 2px;
-    color: var(--ag2-l3);
+    color: var(--ag2-l2);
+    opacity: 1;
     font-size: 12px;
     font-weight: 400;
     line-height: 1.45;
@@ -5455,8 +5456,9 @@ html body.ag2.ag2-insp-open {
     }
 
     @keyframes ag2-insp-in {
-        from { opacity: 0; transform: translateX(16px); }
-        to { opacity: 1; transform: none; }
+        /* Opaque throughout to mask ST's editor; preserve the verified 16px entry. */
+        from { transform: translateX(16px); }
+        to { transform: none; }
     }
 
     /* medium: floats over the chat, so a deeper shadow separates it (§4) */
@@ -6545,6 +6547,41 @@ html body.ag2 #ag2-palette::backdrop {
     background: rgba(0, 0, 0, 0.32);
 }
 
+/* Toasts stay in ST's chosen topmost dialog, but participate in layout. Only a
+   non-empty container takes space; long/multiple notices scroll in a bounded slot. */
+html body.ag2:not(#_):not(#__) :is(dialog.popup, dialog#ag2-palette) > #toast-container {
+    position: static !important;
+    inset: auto !important;
+    order: -1;
+    flex: 0 1 auto;
+    min-height: 0;
+    max-height: min(160px, 25dvh);
+    width: auto !important;
+    margin: 8px !important;
+    overflow: auto;
+    pointer-events: auto;
+    text-align: left;
+}
+html body.ag2:not(#_):not(#__) :is(dialog.popup, dialog#ag2-palette) > #toast-container:empty {
+    display: none !important;
+}
+html body.ag2:not(#_):not(#__) :is(dialog.popup, dialog#ag2-palette) > #toast-container > div {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 0 6px !important;
+    overflow-wrap: anywhere;
+}
+html body.ag2:not(#_):not(#__) :is(dialog.popup, dialog#ag2-palette) > #toast-container > div:last-child {
+    margin-bottom: 0 !important;
+}
+html body.ag2:not(#_):not(#__) dialog.popup:has(> #toast-container:not(:empty)) {
+    min-height: 0;
+}
+html body.ag2:not(#_):not(#__) dialog.popup:has(> #toast-container:not(:empty)) > .popup-body {
+    min-height: 0;
+    flex: 1 1 auto;
+}
+
 /* --- field row: icon · input · esc --- */
 html body.ag2:not(#_):not(#__) #ag2-palette .ag2-pal-field {
     display: flex;
@@ -7450,7 +7487,7 @@ html body.ag2:not(#_):not(#__) #movingDivs > .drawer-content:not(#floatingPrompt
         --ag2-sheet-top: calc(var(--ag2-safe-t) + 10px);
         --ag2-win-x: 0px;
         --ag2-win-w: 100vw;
-        --ag2-win-y: calc(var(--ag2-sheet-top) + var(--ag2-sheet-dy, 0px));
+        --ag2-win-y: var(--ag2-sheet-top);
         --ag2-win-h: calc(var(--ag2-ph-h) - var(--ag2-sheet-top));
         --ag2-set-nav: 0px;
         --ag2-set-head: 56px;
@@ -7849,6 +7886,30 @@ html body.ag2:not(#_):not(#__) #movingDivs > .drawer-content:not(#floatingPrompt
         /* nearly opaque: the list's controls must not read through the sheet */
         background: rgba(28, 28, 33, 0.94);
         animation: ag2-sheet-up var(--ag2-dur-panel) var(--ag2-ease-sheet);
+    }
+
+    html body.ag2.ag2-phone.no-blur:not(#_):not(#__) #ag2-settings.ag2-set-phone {
+        background: var(--ag2-solid-window);
+    }
+
+    /* Labels get their own line, rather than shrinking to 50px beside a 230px range. */
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings .ag2-set-row:has(> :is(.ag2-range, .ag2-swatches)) {
+        flex-wrap: wrap;
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings .ag2-set-row:has(> :is(.ag2-range, .ag2-swatches)) > .ag2-set-lab {
+        flex: 1 0 100%;
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__) #ag2-settings .ag2-set-row > .ag2-range {
+        flex: 1 1 0;
+        width: auto;
+        min-width: 0;
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__) #rm_api_block :has(> #connection_profiles) {
+        flex-wrap: wrap;
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__) #rm_api_block #connection_profiles {
+        flex: 1 0 100% !important;
+        width: 100% !important;
     }
 
     /* R1: only the transition is cut while dragging. `animation: none` here made the sheet
@@ -8573,6 +8634,126 @@ html body.ag2.reduced-motion:not(#_):not(#__) {
     --ag2-dur-press: 0.01ms;
     --ag2-dur: 0.01ms;
     --ag2-dur-panel: 0.01ms;
+}
+
+/* Gesture state is diagnostic/non-inherited; presentation translates only its surfaces. */
+@property --ag2-sheet-dy {
+    syntax: "<length>";
+    inherits: false;
+    initial-value: 0px;
+}
+
+/* Native controls use the dark platform fallback too (ST defaults to only light). */
+html body.ag2:not(#_):not(#__) {
+    color-scheme: dark;
+}
+
+/* Real scrolling surfaces only: leave the intentionally hidden QR / anchor bars alone.
+   Firefox uses the standard path. WebKit's path resets BOTH standard properties so its
+   thumb/track/button rules actually paint instead of being overridden by thin/auto. */
+html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body, .ag2-set-nav, .drawer-content, .scrollableInner, textarea, .select2-results__options, .popup-content, #toast-container) {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(235,235,245,.3) transparent;
+}
+@supports selector(::-webkit-scrollbar) {
+    html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body, .ag2-set-nav, .drawer-content, .scrollableInner, textarea, .select2-results__options, .popup-content, #toast-container) {
+        scrollbar-width: auto;
+        scrollbar-color: auto;
+    }
+    html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body, .ag2-set-nav, .drawer-content, .scrollableInner, textarea, .select2-results__options, .popup-content, #toast-container)::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+        background: transparent;
+    }
+    html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body, .ag2-set-nav, .drawer-content, .scrollableInner, textarea, .select2-results__options, .popup-content, #toast-container)::-webkit-scrollbar-thumb {
+        background: rgba(235,235,245,.3);
+        border-radius: 6px;
+        border: 0;
+    }
+    html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body, .ag2-set-nav, .drawer-content, .scrollableInner, textarea, .select2-results__options, .popup-content, #toast-container)::-webkit-scrollbar-track,
+    html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body, .ag2-set-nav, .drawer-content, .scrollableInner, textarea, .select2-results__options, .popup-content, #toast-container)::-webkit-scrollbar-corner {
+        background: transparent;
+        box-shadow: none;
+        border: 0;
+    }
+    html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body, .ag2-set-nav, .drawer-content, .scrollableInner, textarea, .select2-results__options, .popup-content, #toast-container)::-webkit-scrollbar-button {
+        display: none;
+        width: 0;
+        height: 0;
+    }
+}
+
+/* Keep native select semantics/events; only ordinary single-selects opt in. */
+@supports (appearance: base-select) {
+    html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible),
+    html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible)::picker(select) {
+        appearance: base-select !important;
+    }
+    html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible)::picker-icon {
+        display: none; /* existing single chevron stays, including the shell's SVG */
+    }
+    html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible)::picker(select) {
+        margin-block: 5px;
+        padding: 5px;
+        max-height: min(320px, 50dvh);
+        overflow: auto;
+        border: 1px solid var(--ag2-sep-strong);
+        border-radius: 12px;
+        background: var(--ag2-solid-menu);
+        color: var(--ag2-l1);
+        box-shadow: var(--ag2-sh3);
+        scrollbar-width: thin;
+        scrollbar-color: rgba(235,235,245,.3) var(--ag2-solid-menu);
+    }
+    html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible) option {
+        min-height: 32px;
+        padding: 6px 10px;
+        border-radius: 7px;
+        background: transparent;
+        color: var(--ag2-l1);
+        line-height: 1.4;
+    }
+    html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible) option:checked {
+        background: var(--ag2-f2);
+    }
+    html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible) option:is(:hover, :focus-visible) {
+        background: var(--ag2-accent);
+        color: #fff;
+        outline: 0;
+    }
+}
+
+html body.ag2:not(#_):not(#__) .select2-dropdown {
+    padding: 5px;
+    border: 1px solid var(--ag2-sep-strong);
+    border-radius: 12px;
+    background: var(--ag2-solid-menu);
+    color: var(--ag2-l1);
+    box-shadow: var(--ag2-sh3);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+html body.ag2:not(#_):not(#__) .select2-results__option {
+    border-radius: 7px;
+    padding: 6px 10px;
+}
+html body.ag2:not(#_):not(#__) .select2-results__option[aria-selected="true"] {
+    background: var(--ag2-f2);
+    color: var(--ag2-l1);
+}
+html body.ag2:not(#_):not(#__) .select2-results__option--highlighted[aria-selected] {
+    background: var(--ag2-accent);
+    color: #fff;
+}
+/* Only paired range readouts hide redundant spin buttons; keyboard stepping remains. */
+html body.ag2:not(#_):not(#__) :is(.range-block-counter input[type="number"], input.neo-range-input[type="number"]) {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+html body.ag2:not(#_):not(#__) :is(.range-block-counter input[type="number"], input.neo-range-input[type="number"])::-webkit-inner-spin-button,
+html body.ag2:not(#_):not(#__) :is(.range-block-counter input[type="number"], input.neo-range-input[type="number"])::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 html body.ag2.reduced-motion:not(#_):not(#__) *,

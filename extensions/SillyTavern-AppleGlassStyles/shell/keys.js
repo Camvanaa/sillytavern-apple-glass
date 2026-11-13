@@ -92,7 +92,13 @@ const vis = sel => { try { return $(sel).is(':visible'); } catch { return false;
 
 function onEsc(e) {
     const pal = paletteModule();
-    if (pal?.isCovered() || (e.target instanceof HTMLSelectElement && e.target.matches(':open'))) return;
+    if (document.querySelector('select:open')) {
+        // base-select focuses an OPTION. Let the UA cancel its picker; keep ST's
+        // document Esc handler from consuming/preventing that default action.
+        e.stopImmediatePropagation();
+        return;
+    }
+    if (pal?.isCovered()) return;
     if (pal?.isOpen()) { e.preventDefault(); e.stopImmediatePropagation(); pal.close(); return; }
     if (isMenuOpen()) return;                 // menu.js closes it (document capture, stops ST)
     if (settingsModule()?.isOpen()) return;   // settings.js's own window handler
