@@ -14,12 +14,12 @@
 // keyboard's top edge.
 // State: localStorage ag2.phPage = list | chat (per device, §9.1).
 
-import { icon } from './icons.js?v=20261113QA03';
-import { openMenu, closeMenu, isMenuOpen } from './menu.js?v=20261113QA03';
-import { local } from './store.js?v=20261113QA03';
-import { ctx, h, guard, getCurrentChatId, openSettings, setInspector, inspectorModule, openPalette, clickSt } from './util.js?v=20261113QA03';
-import { chatMenuItems } from './chrome.js?v=20261113QA03';
-import { segment, setSegment } from './sidebar.js?v=20261113QA03';
+import { icon } from './icons.js?v=20261113QA04';
+import { openMenu, closeMenu, isMenuOpen } from './menu.js?v=20261113QA04';
+import { local } from './store.js?v=20261113QA04';
+import { ctx, h, guard, getCurrentChatId, openSettings, setInspector, inspectorModule, openPalette, clickSt } from './util.js?v=20261113QA04';
+import { chatMenuItems } from './chrome.js?v=20261113QA04';
+import { segment, setSegment } from './sidebar.js?v=20261113QA04';
 
 const TABS = [['chats', '对话', 'messages-square'], ['chars', '角色', 'users'], ['wi', '世界书', 'book-open'], ['settings', '设置', 'settings']];
 const SEG_TITLE = { chats: '对话', chars: '角色', groups: '群组' };
@@ -245,10 +245,14 @@ function onViewport() {
     const vv = window.visualViewport;
     const s = document.body.style;
     if (!vv) return;
-    s.setProperty('--ag2-vvh', Math.round(vv.height) + 'px');
-    s.setProperty('--ag2-vvt', Math.max(0, Math.round(vv.offsetTop)) + 'px');
+    // VisualViewport reads flush pending styles. Snapshot before writing inherited body
+    // variables: alternating these caused three full style passes at the phone breakpoint.
+    const height = vv.height, top = vv.offsetTop, layoutHeight = window.innerHeight;
+    const set = (name, value) => { if (s.getPropertyValue(name) !== value) s.setProperty(name, value); };
+    set('--ag2-vvh', Math.round(height) + 'px');
+    set('--ag2-vvt', Math.max(0, Math.round(top)) + 'px');
     // iOS keeps the layout viewport and shrinks only the visual one; Android Chrome
     // (interactive-widget=resizes-content) resizes both, where this stays false and the
     // layout follows by itself.
-    document.body.classList.toggle('ag2-kb', window.innerHeight - vv.height > 120);
+    document.body.classList.toggle('ag2-kb', layoutHeight - height > 120);
 }
