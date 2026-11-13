@@ -7,16 +7,16 @@
 // class and listener it added and reloads the current chat.
 // Any exception during enable → automatic teardown + one toastr.
 
-export const BUILD = '20261113MF03';
+export const BUILD = '20261113MF04';
 
-import { local, importStPinsOnce, applyAppearance, clearAppearance } from './store.js?v=20261113MF03';
-import { ctx, h, toggleDrawer, SET_PANELS, settingsModule, openSettings, isDesktop, INSP_ID, inspectorModule, loadInspector, setInspector, setShellApi, paletteModule, PHONE_MQ, loadPhone, phoneModule } from './util.js?v=20261113MF03';
-import { closeMenu } from './menu.js?v=20261113MF03';
-import * as sidebar from './sidebar.js?v=20261113MF03';
-import * as chrome from './chrome.js?v=20261113MF03';
-import * as reading from './reading.js?v=20261113MF03';
-import * as composer from './composer.js?v=20261113MF03';
-import * as keys from './keys.js?v=20261113MF03';
+import { local, importStPinsOnce, applyAppearance, clearAppearance } from './store.js?v=20261113MF04';
+import { ctx, h, toggleDrawer, SET_PANELS, settingsModule, openSettings, isDesktop, INSP_ID, inspectorModule, loadInspector, setInspector, setShellApi, paletteModule, PHONE_MQ, loadPhone, phoneModule } from './util.js?v=20261113MF04';
+import { closeMenu } from './menu.js?v=20261113MF04';
+import * as sidebar from './sidebar.js?v=20261113MF04';
+import * as chrome from './chrome.js?v=20261113MF04';
+import * as reading from './reading.js?v=20261113MF04';
+import * as composer from './composer.js?v=20261113MF04';
+import * as keys from './keys.js?v=20261113MF04';
 
 const BODY_CLASSES = ['ag2', 'ag2-welcome', 'ag2-side-collapsed', 'ag2-ready', 'ag2-wand-open', 'ag2-set-open', 'ag2-insp-open', 'ag2-phone', 'ag2-kb'];
 let on = false;

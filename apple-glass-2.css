@@ -8635,8 +8635,10 @@ html:has(> body.ag2:not(#_):not(#__)) {
     initial-value: 0px;
 }
 
-/* Native controls use the dark platform fallback too (ST defaults to only light). */
-html body.ag2:not(#_):not(#__) {
+/* Only native form controls opt into dark UA chrome. A page-wide scheme changes
+   the embedding boundary and makes light/transparent third-party iframes opaque.
+   Keep ST's page/content scheme intact, including message cards and embedded SVG. */
+html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, dialog.popup, #send_form) :is(input, select, textarea) {
     color-scheme: dark;
 }
 

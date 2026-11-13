@@ -154,7 +154,10 @@ export default async function(T) {
         const list=page.locator('#ag2-pal-list');await list.hover();await page.mouse.wheel(0,500);await T.sleep(200);
         assert.ok(await list.evaluate(e=>e.scrollTop>0));
         out.checks.scrollbar=await list.evaluate(e=>({scheme:getComputedStyle(e).colorScheme,width:getComputedStyle(e).scrollbarWidth,color:getComputedStyle(e).scrollbarColor,button:getComputedStyle(e,'::-webkit-scrollbar-button').display,track:getComputedStyle(e,'::-webkit-scrollbar-track').backgroundColor}));
-        assert.equal(out.checks.scrollbar.scheme,'dark');assert.equal(out.checks.scrollbar.button,'none');
+        // Explicit scrollbar parts provide the dark appearance; the scroll container
+        // must retain the host scheme so embedded content does not gain an opaque canvas.
+        assert.ok(out.checks.scrollbar.scheme.includes('light'));assert.equal(out.checks.scrollbar.button,'none');
+        assert.equal(out.checks.scrollbar.track,'rgba(0, 0, 0, 0)');
         assert.equal(out.checks.scrollbar.width,'auto');assert.equal(out.checks.scrollbar.color,'auto');
         await shot('palette-scrollbar-cdp');await cdp.detach();await page.keyboard.press('Escape');
         }
