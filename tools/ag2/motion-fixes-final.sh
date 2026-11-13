@@ -27,6 +27,22 @@ run life-media-only motion-fixes-life --part media-only --phone
 run fallback motion-fixes-fallback --part fallback
 TMPDIR=/tmp/opencode timeout 600 xvfb-run -a -e /tmp/opencode/motion-xvfb.log -s '-screen 0 1600x1000x24' node tools/ag2/run.mjs tools/ag2/motion-fixes-fallback.mjs --headed --classic-scrollbars --phase motion-fixes --shots /opt/server-agent/workspace/st-testdata/redesign >"$OUT/headed.json" 2>"$OUT/headed.err"
 rc=$?; echo "headed exit $rc" | tee -a "$OUT/exits.log"; [ "$rc" = 0 ] || failed=1
+if [ "$rc" = 0 ]; then
+    # xvfb-run merges the child's stderr into stdout. Preserve its raw output and
+    # separate only the known runner footer; unexpected trailing output fails review.
+    python3 - "$OUT" <<'PY' || failed=1
+import json, pathlib, re, sys
+p = pathlib.Path(sys.argv[1]) / 'headed.json'
+raw = p.read_text()
+data, end = json.JSONDecoder().raw_decode(raw)
+tail = raw[end:].strip()
+assert not tail or re.fullmatch(r'done motion-fixes-fallback.mjs \d+s', tail), tail
+p.with_suffix('.raw.log').write_text(raw)
+p.write_text(json.dumps(data, indent=2) + '\n')
+p.with_suffix('.err').write_text(tail + '\n')
+assert data.get('ok') is True
+PY
+fi
 run qa-desktop qa-fixes --tag final
 run qa-phone qa-fixes --phone --tag final
 run r1-desktop r1-flash --part desk --frames --tag final
