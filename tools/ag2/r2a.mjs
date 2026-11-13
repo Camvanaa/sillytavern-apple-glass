@@ -150,7 +150,17 @@ export const checks = (page, roots) => page.evaluate(rs => {
         if (e.closest('#ag2-settings')) continue; // the shell's own nodes
         const c = getComputedStyle(e);
         if (/gradient/.test(c.backgroundImage) && !e.matches('input[type="range"], .ag2-hit, .bg_example, .thumbnail-clipper, .BGSampleTitle, .avatar, img')) native.push(path(e) + ' gradient');
-        if (e.matches('input[type="checkbox"], input[type="radio"], select:not([multiple]):not([size])') && (c.appearance || c.webkitAppearance) !== 'none') native.push(path(e) + ' appearance:' + c.appearance);
+        if (e.matches('input[type="checkbox"], input[type="radio"], select:not([multiple]):not([size])') && (c.appearance || c.webkitAppearance) !== 'none') {
+            // The supported native picker is intentionally opt-in, not leaked UA chrome.
+            // Require the real themed picker (both appearances, dark surface, radius),
+            // rather than exempting every select merely because its tag is SELECT.
+            const p = e.matches('select:not(.select2-hidden-accessible)') ? getComputedStyle(e, '::picker(select)') : null;
+            const rgb = p?.backgroundColor.match(/^rgb\((\d+), (\d+), (\d+)\)$/);
+            const themedPicker = c.appearance === 'base-select' && CSS.supports('appearance', 'base-select')
+                && p?.appearance === 'base-select' && parseFloat(p.borderRadius) >= 8
+                && rgb && rgb.slice(1).every(v => Number(v) < 100) && c.colorScheme === 'dark';
+            if (!themedPicker) native.push(path(e) + ' appearance:' + c.appearance);
+        }
     }
     // ---- rows: controls of one flex row with different heights (text inputs / selects / buttons)
     const rows = [];

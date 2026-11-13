@@ -4,9 +4,11 @@ export default async function(T) {
     const page = await T.newPage({reduced:T.cfg.part==='os'});
     await T.prepare(page, { powerUser: { reduced_motion: T.cfg.part==='st' } });
     await T.boot(page, { ag2: true });
+    const baselineErrors = new Set(T.errors(page));
     await page.evaluate(async () => {
         const build = document.querySelector('#ag2-shell').dataset.build;
-        window.mf = await import(`/scripts/extensions/third-party/SillyTavern-AppleGlassStyles/shell/settings.js?v=${build}`);
+        const util = await import(`/scripts/extensions/third-party/SillyTavern-AppleGlassStyles/shell/util.js?v=${build}`);
+        window.mf = await util.loadSettings();
     });
     const out = { ok: false, phone: T.cfg.phone, checks: {}, shots: [] };
     const stable = async (pageName, level = 'page') => {
@@ -26,6 +28,13 @@ export default async function(T) {
     assert.equal(await page.locator('#ag2-read-size').count(), 1);
     assert.equal(await page.locator('.drawer-content.openDrawer').count(), 0);
     out.checks.AV01 = true;
+    if(T.cfg.phone){
+        await page.evaluate(async()=>{await mf.open('api');void mf.close();void mf.open(null);});
+        await stable(null,'list');
+        assert.equal(await page.locator('.drawer-content.openDrawer').count(),0);
+        assert.equal(await page.evaluate(()=>document.activeElement.closest('#ag2-settings')?.id),'ag2-settings');
+        out.checks.reopenList=true;
+    }
     await page.evaluate(() => mf.close());
     await page.keyboard.press('Control+k');
     await page.waitForSelector('#ag2-palette[open]');
@@ -48,6 +57,8 @@ export default async function(T) {
     assert.equal(await page.locator('.ag2-pal-input').getAttribute('aria-activedescendant'), selection);
     out.checks.AV02 = true;
     await page.keyboard.press('Escape');
+    out.newErrors = T.errors(page).filter(e=>!baselineErrors.has(e));
+    assert.deepEqual(out.newErrors.filter(e=>/pageerror:|\[AG2\]/.test(e)), []);
     out.ok = true;
     return out;
 }

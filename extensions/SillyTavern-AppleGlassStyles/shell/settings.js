@@ -19,10 +19,10 @@
 // the sheet below the head (same CSS variables as the window). Drag the grabber / head down
 // to dismiss.
 
-import { ctx, h, guard, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar } from './util.js?v=20261113MF01';
-import { icon } from './icons.js?v=20261113MF01';
-import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261113MF01';
-import { isMenuOpen } from './menu.js?v=20261113MF01';
+import { ctx, h, guard, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar, nativeSelectOpen } from './util.js?v=20261113MF02';
+import { icon } from './icons.js?v=20261113MF02';
+import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261113MF02';
+import { isMenuOpen } from './menu.js?v=20261113MF02';
 
 const PAGES = [
     { id: 'api', name: '连接', icon: 'plug', tile: 'green', group: 0, lead: '选择 API 来源，填写地址、密钥和模型。' },
@@ -178,7 +178,7 @@ let results = [];
 
 const loadSearch = async () => {
     if (!searchMod) {
-        searchMod = await import('./search.js?v=20261113MF01');
+        searchMod = await import('./search.js?v=20261113MF02');
         searchMod.init(PAGES.map(({ id, name, lead }) => ({ id, name, lead })));
     }
     return searchMod;
@@ -490,7 +490,7 @@ export function open(page = null) {
     if (!root) build();
     const phone = isOpenNow ? phoneMode : isPhone();
     if (!PAGE[page]) {
-        const adopt = openPanels();
+        const adopt = pending ? [] : openPanels(); // an old close/open is not a fresh external drawer intent
         // phones open on the list level unless a drawer is being adopted
         page = adopt.length ? pageOfPanel(adopt[adopt.length - 1]) : (phone ? null : local.get('setPage', 'look'));
         if (!PAGE[page] && !phone) page = 'look';
@@ -569,7 +569,6 @@ function dragDismiss(handle) {
         const y0 = e.clientY - startDy;
         const t0 = performance.now();
         let dy = startDy;
-        const style = document.body.style;
         sheetOffset(dy);
         document.body.classList.add('ag2-sheet-drag');
         const move = ev => {
@@ -614,10 +613,14 @@ function settleDrag(from, dismiss) {
     const to = dismiss ? Math.max(from, innerHeight) : 0;
     let cancelled = false;
     sheetOffset(from);
+    const start = performance.now();
     const animations = [...translated].map(node => node.animate(
-        [{translate:`0 ${from}px`}, {translate:`0 ${to}px`}],
-        {duration:200, easing:'cubic-bezier(.22,1,.36,1)', fill:'forwards'},
+        [{ translate: `0 ${from}px` }, { translate: `0 ${to}px` }],
+        { duration: 200, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'forwards' },
     ));
+    // One release timestamp for both surfaces, rather than each animation waiting for
+    // its first render opportunity before starting the 200ms clock.
+    for (const animation of animations) animation.startTime = start;
     const cleanup = () => {
         cancelled = true;
         for (const animation of animations) animation.cancel();
@@ -816,7 +819,7 @@ function onFocus(e) {
 
 function onKey(e) {
     if (!isOpenNow || e.isComposing) return;
-    if (document.querySelector('select:open')) return;
+    if (nativeSelectOpen()) return;
     if (stLayerUp() || isMenuOpen()) return; // their own Esc runs first (one layer per press)
     if (e.key === 'Tab') {
         const items = focusItems();

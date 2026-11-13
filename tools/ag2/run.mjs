@@ -92,7 +92,10 @@ function sseBody(text, chunks) {
 }
 
 async function main() {
-    const browser = await chromium.launch({ executablePath: '/opt/google/chrome/chrome', headless: true, args: ['--no-sandbox'] });
+    // Optional visual verification of platform scrollbars under Xvfb. All contexts,
+    // write/model guards, fixture checks and about:blank teardown remain identical.
+    const browser = await chromium.launch({ executablePath: '/opt/google/chrome/chrome', headless: !flag('headed', false),
+        args: ['--no-sandbox', ...(flag('classic-scrollbars', false) ? ['--disable-features=OverlayScrollbar,OverlayScrollbars,FluentOverlayScrollbar'] : [])] });
     const contexts = [];
     const consoleLog = [];
 

@@ -11,8 +11,8 @@
 // Never fires while an IME is composing, on auto-repeat of the palette key, or on top of an
 // ST popup. One window-capture listener, added on enable and removed on teardown.
 
-import { isMac, openPalette, paletteModule, settingsModule, setInspector, isDesktop, getShellApi, ctx, INSP_ID, stLayerUp } from './util.js?v=20261113MF01';
-import { isMenuOpen } from './menu.js?v=20261113MF01';
+import { isMac, openPalette, paletteModule, settingsModule, setInspector, isDesktop, getShellApi, ctx, INSP_ID, stLayerUp, nativeSelectOpen } from './util.js?v=20261113MF02';
+import { isMenuOpen } from './menu.js?v=20261113MF02';
 
 let mounted = false;
 
@@ -49,7 +49,7 @@ function onKey(e) {
     const pal = paletteModule();
 
     if (is(e, 'k', 'KeyK')) {
-        if (pal?.isCovered()) return;
+        if (pal?.isCovered() || nativeSelectOpen()) return;
         if (!e.shiftKey && !mac && mdOwnsCtrlK(e.target)) return; // ST: insert inline code
         if (!pal?.isOpen() && stLayerUp()) return;                // not on top of an ST popup
         e.preventDefault();
@@ -92,7 +92,7 @@ const vis = sel => { try { return $(sel).is(':visible'); } catch { return false;
 
 function onEsc(e) {
     const pal = paletteModule();
-    if (document.querySelector('select:open')) {
+    if (nativeSelectOpen()) {
         // base-select focuses an OPTION. Let the UA cancel its picker; keep ST's
         // document Esc handler from consuming/preventing that default action.
         e.stopImmediatePropagation();

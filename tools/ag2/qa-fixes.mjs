@@ -21,7 +21,8 @@ export default async function(T) {
     const baselineErrors=new Set(T.errors(page));
     await page.evaluate(async base => {
         const v=document.querySelector('#ag2-shell').dataset.build;
-        window.qaSettings=await import(base+'settings.js?v='+v);
+        const util=await import(base+'util.js?v='+v);
+        window.qaSettings=await util.loadSettings();
     },BASE);
     const view=T.cfg.phone?'phone':'desktop', prefix=`${T.cfg.tag||'post'}-${view}`;
     const shot=label=>T.shot(page,prefix+'-'+label);

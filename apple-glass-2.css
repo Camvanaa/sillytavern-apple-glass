@@ -7886,6 +7886,9 @@ html body.ag2:not(#_):not(#__) #movingDivs > .drawer-content:not(#floatingPrompt
         /* nearly opaque: the list's controls must not read through the sheet */
         background: rgba(28, 28, 33, 0.94);
         animation: ag2-sheet-up var(--ag2-dur-panel) var(--ag2-ease-sheet);
+        /* Gesture translate is owned by WAAPI. Do not let reduced's 0.01ms catch-all
+           invent an `all` transition when an immediate reset removes inline translate. */
+        transition-property: none !important;
     }
 
     html body.ag2.ag2-phone.no-blur:not(#_):not(#__) #ag2-settings.ag2-set-phone {
@@ -8624,18 +8627,7 @@ html:has(> body.ag2:not(#_):not(#__)) {
     to { opacity: 1; transform: none; }
 }
 
-/* == 14 · Accessibility (reduced motion) == */
-/* ST adds body.reduced-motion for its own switch AND the OS setting; the media
-   query covers the moment before ST has run. Zeroing the duration tokens covers
-   every AG2 rule; the catch-all covers ST and third-party CSS. 0.01ms (not 0)
-   so transitionend / animationend still fire. */
-
-html body.ag2.reduced-motion:not(#_):not(#__) {
-    --ag2-dur-press: 0.01ms;
-    --ag2-dur: 0.01ms;
-    --ag2-dur-panel: 0.01ms;
-}
-
+/* == 13.1 · Shared native controls and gesture state == */
 /* Gesture state is diagnostic/non-inherited; presentation translates only its surfaces. */
 @property --ag2-sheet-dy {
     syntax: "<length>";
@@ -8652,13 +8644,13 @@ html body.ag2:not(#_):not(#__) {
    Firefox uses the standard path. WebKit's path resets BOTH standard properties so its
    thumb/track/button rules actually paint instead of being overridden by thin/auto. */
 html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body, .ag2-set-nav, .drawer-content, .scrollableInner, textarea, .select2-results__options, .popup-content, #toast-container) {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(235,235,245,.3) transparent;
+    scrollbar-width: thin !important;
+    scrollbar-color: rgba(235,235,245,.3) transparent !important;
 }
 @supports selector(::-webkit-scrollbar) {
     html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body, .ag2-set-nav, .drawer-content, .scrollableInner, textarea, .select2-results__options, .popup-content, #toast-container) {
-        scrollbar-width: auto;
-        scrollbar-color: auto;
+        scrollbar-width: auto !important;
+        scrollbar-color: auto !important;
     }
     html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body, .ag2-set-nav, .drawer-content, .scrollableInner, textarea, .select2-results__options, .popup-content, #toast-container)::-webkit-scrollbar {
         width: 6px;
@@ -8689,12 +8681,15 @@ html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body,
     html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible)::picker(select) {
         appearance: base-select !important;
     }
-    html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible)::picker-icon {
+    html body.ag2:not(#_):not(#__) #ag2-settings select:not([multiple]):not([size]):not(.select2-hidden-accessible)::picker-icon,
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) select:not([multiple]):not([size]):not(.select2-hidden-accessible)::picker-icon {
         display: none; /* existing single chevron stays, including the shell's SVG */
     }
     html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible)::picker(select) {
+        box-sizing: border-box;
         margin-block: 5px;
         padding: 5px;
+        max-width: calc(100dvw - 24px);
         max-height: min(320px, 50dvh);
         overflow: auto;
         border: 1px solid var(--ag2-sep-strong);
@@ -8712,6 +8707,8 @@ html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body,
         background: transparent;
         color: var(--ag2-l1);
         line-height: 1.4;
+        white-space: normal;
+        overflow-wrap: anywhere;
     }
     html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible) option:checked {
         background: var(--ag2-f2);
@@ -8754,6 +8751,17 @@ html body.ag2:not(#_):not(#__) :is(.range-block-counter input[type="number"], in
 html body.ag2:not(#_):not(#__) :is(.range-block-counter input[type="number"], input.neo-range-input[type="number"])::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
+}
+
+/* == 14 · Accessibility (reduced motion) == */
+/* ST adds body.reduced-motion for its own switch AND the OS setting; the media
+   query covers the moment before ST has run. Zeroing the duration tokens covers
+   every AG2 rule; the catch-all covers ST and third-party CSS. 0.01ms (not 0)
+   so transitionend / animationend still fire. */
+html body.ag2.reduced-motion:not(#_):not(#__) {
+    --ag2-dur-press: 0.01ms;
+    --ag2-dur: 0.01ms;
+    --ag2-dur-panel: 0.01ms;
 }
 
 html body.ag2.reduced-motion:not(#_):not(#__) *,

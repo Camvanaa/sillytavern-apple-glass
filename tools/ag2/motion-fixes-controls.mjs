@@ -4,17 +4,18 @@ const ROOT = '/opt/server-agent/workspace/st-testdata/redesign/motion-fixes';
 
 export default async function(T) {
     const mode = T.cfg.part || 'normal', view = T.cfg.phone ? 'phone' : 'desktop';
-    const id = `${view}-${mode}`, out = {ok:false, id, checks:{}, shots:[]};
+    const id = `${view}-${mode}${T.cfg.tag?'-'+T.cfg.tag:''}`, out = {ok:false, id, checks:{}, shots:[]};
     mkdirSync(ROOT, {recursive:true});
     const save = () => writeFileSync(`${ROOT}/${id}-detail.json`, JSON.stringify(out,null,2));
     const page = await T.newPage({reduced:mode==='os'||mode==='media-only'});
     await T.prepare(page,{powerUser:{reduced_motion:mode==='st'}});
     await T.boot(page,{ag2:true});
     await T.openChat(page, await T.longChat(page));
+    const baselineErrors=new Set(T.errors(page));
     await page.evaluate(async()=>{
         const base='/scripts/extensions/third-party/SillyTavern-AppleGlassStyles/shell/',v=document.querySelector('#ag2-shell').dataset.build;
-        window.mf=await import(base+'settings.js?v='+v);
         window.mu=await import(base+'util.js?v='+v);
+        window.mf=await mu.loadSettings();
     });
     out.channels = await page.evaluate(()=>({body:document.body.classList.contains('reduced-motion'),media:matchMedia('(prefers-reduced-motion: reduce)').matches}));
     if(mode==='media-only')await page.evaluate(()=>document.body.classList.remove('reduced-motion'));
@@ -64,6 +65,9 @@ export default async function(T) {
                 const slot=await page.locator('dialog.popup[open] #toast-container').evaluate(e=>({h:e.clientHeight,sh:e.scrollHeight,position:getComputedStyle(e).position}));
                 assert.equal(slot.position,'static');assert.ok(slot.h<=161&&slot.sh>slot.h);
                 await shot(`popup-${width}-${long}-toast`);
+                await page.locator('dialog.popup[open] #toast-container').hover();
+                await page.mouse.wheel(0,1000);await T.sleep(150);
+                assert.ok(await page.locator('dialog.popup[open] #toast-container').evaluate(e=>e.scrollTop>0),'long notices reachable by real wheel');
                 await page.evaluate(()=>toastr.remove());
                 const after=await hit('dialog.popup[open] .popup-button-ok');
                 assert.ok(after.hit&&Math.abs(before.y-after.y)<2,'no-toast geometry restored');
@@ -84,21 +88,25 @@ export default async function(T) {
             await page.evaluate(()=>toastr.remove());await page.keyboard.press('Escape');
         }
         out.checks.AV03=true;out.checks.AV04=true;out.checks.AV05=true;out.checks.AV06=true;save();
-        await open('bg');
-        const select=page.locator('#bg-sort');
+        out.checks.pickers=[];
+        for(const [pageName,selector] of [['bg','#bg-sort'],['look','#ag2-meta'],['api','#custom_prompt_post_processing']]){
+        await open(pageName);
+        const select=page.locator(selector);
         await select.click();
         assert.equal(await select.evaluate(e=>e.matches(':open')),true,'native picker truly open');
         out.checks.picker=await select.evaluate(e=>({appearance:getComputedStyle(e).appearance,radius:getComputedStyle(e,'::picker(select)').borderRadius,before:e.value}));
         assert.equal(out.checks.picker.appearance,'base-select');
-        await shot('native-picker-open');
+        await shot('native-picker-open-'+pageName);
         await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');
         out.checks.picker.after=await select.inputValue();
         assert.notEqual(out.checks.picker.after,out.checks.picker.before);
         assert.equal(await select.evaluate(e=>document.activeElement===e),true);
         await select.click();await page.keyboard.press('Escape');
         assert.equal(await select.evaluate(e=>e.matches(':open')),false);
-        assert.equal(await page.evaluate(()=>mf.currentPage()),'bg');
+        assert.equal(await page.evaluate(()=>mf.currentPage()),pageName);
         assert.equal(await select.evaluate(e=>document.activeElement===e),true);
+        out.checks.pickers.push({pageName,selector,...out.checks.picker});
+        }
         await open('ai');
         const number=page.locator('#temp_counter_openai'),range=page.locator('#temp_openai');
         await number.fill('2');await number.dispatchEvent('input');await number.focus();
@@ -111,11 +119,33 @@ export default async function(T) {
         const s2=page.locator('.drawer-content.openDrawer .select2-selection').first();
         if(await s2.count()){
             await s2.click();await page.waitForSelector('.select2-dropdown');
+            await shot('select2-open-natural');
             await page.evaluate(()=>{const e=document.querySelector('.select2-results__options');const li=document.createElement('li');li.id='mf-overflow';li.textContent='中性滚动测试';li.style.height='1000px';e.append(li);});
             const results=page.locator('.select2-results__options');await results.hover();await page.mouse.wheel(0,500);await T.sleep(200);
             assert.ok(await results.evaluate(e=>e.scrollTop>0));
             await shot('select2-wheel');await page.keyboard.press('Escape');out.checks.select2=true;
         }else out.checks.select2='phone ST uses native select (desktop tested separately)';
+        // Neutral in-memory options exercise the real Select2 plugin's highlighted/
+        // selected rows even when this fixture has no active world book results.
+        await open('look');
+        await page.evaluate(()=>{
+            const s=document.createElement('select');s.id='mf-select2';s.innerHTML=Array.from({length:40},(_,i)=>`<option value="${i}">中性 Select2 选项 ${i}</option>`).join('');
+            document.querySelector('.ag2-set-body').prepend(s);$(s).select2({width:'100%'});$(s).select2('open');
+        });
+        await page.waitForSelector('.select2-dropdown');
+        const selected=page.locator('.select2-results__option--highlighted');
+        await selected.waitFor();
+        out.checks.select2Style=await selected.evaluate(e=>({radius:getComputedStyle(e).borderRadius,bg:getComputedStyle(e).backgroundColor,blur:getComputedStyle(e.closest('.select2-dropdown')).backdropFilter}));
+        assert.equal(out.checks.select2Style.radius,'7px');assert.equal(out.checks.select2Style.blur,'none');
+        await shot('select2-highlighted-neutral');
+        await page.locator('.select2-search__field:visible').focus();
+        await page.keyboard.press('ArrowDown');await page.keyboard.press('Enter');
+        assert.equal(await page.locator('#mf-select2').inputValue(),'1');
+        await page.evaluate(()=>$('#mf-select2').select2('open'));
+        await page.locator('.select2-results__options').hover();await page.mouse.wheel(0,600);await T.sleep(200);
+        assert.ok(await page.locator('.select2-results__options').evaluate(e=>e.scrollTop>0));
+        await shot('select2-options-wheel-neutral');await page.keyboard.press('Escape');
+        await page.evaluate(()=>$('#mf-select2').select2('destroy').remove());
         await close();await page.keyboard.press('Control+k');await page.waitForSelector('#ag2-palette[open]');
         await page.locator('.ag2-pal-input').fill('api');await T.sleep(500);
         const cdp=await page.context().newCDPSession(page);await cdp.send('Emulation.setScrollbarsHidden',{hidden:false});
@@ -123,6 +153,7 @@ export default async function(T) {
         assert.ok(await list.evaluate(e=>e.scrollTop>0));
         out.checks.scrollbar=await list.evaluate(e=>({scheme:getComputedStyle(e).colorScheme,width:getComputedStyle(e).scrollbarWidth,color:getComputedStyle(e).scrollbarColor,button:getComputedStyle(e,'::-webkit-scrollbar-button').display,track:getComputedStyle(e,'::-webkit-scrollbar-track').backgroundColor}));
         assert.equal(out.checks.scrollbar.scheme,'dark');assert.equal(out.checks.scrollbar.button,'none');
+        assert.equal(out.checks.scrollbar.width,'auto');assert.equal(out.checks.scrollbar.color,'auto');
         await shot('palette-scrollbar-cdp');await cdp.detach();await page.keyboard.press('Escape');
         }
         if(T.cfg.phone){
@@ -160,6 +191,8 @@ export default async function(T) {
             assert.equal(await page.locator('#ag2-settings').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(28, 28, 33)');
             await close();out.checks.noBlur=true;
         }
+        out.newErrors=T.errors(page).filter(e=>!baselineErrors.has(e));
+        assert.deepEqual(out.newErrors.filter(e=>/pageerror:|\[AG2\]/.test(e)),[]);
         out.ok=true;
     }finally{save();}
     return out;
