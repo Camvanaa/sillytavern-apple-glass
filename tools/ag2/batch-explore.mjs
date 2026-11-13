@@ -1,7 +1,7 @@
 // Seeded, model-based UI exploration for AG2. Run through the existing guarded driver:
 // node tools/ag2/run.mjs tools/ag2/batch-explore.mjs --phase batch --phone --steps 160 --seed 240513
 // It intentionally uses only reversible UI actions; all writes/model calls remain stubbed by run.mjs.
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 
 const arg = name => {
     const i = process.argv.indexOf('--' + name);
@@ -10,6 +10,10 @@ const arg = name => {
 const seedArg = Number(arg('seed') || 240513);
 const stepsArg = Math.max(1, Math.min(2000, Number(arg('steps') || 120)));
 const reportDir = String(arg('out') || '/tmp/opencode/ag2-batch');
+// Replay entries contain { action, draws }; draws are action-local RNG values.
+const replay = arg('replay') ? JSON.parse(readFileSync(String(arg('replay')), 'utf8')) : null;
+const settleMs = Number(arg('settle') || 90);
+const scanEvery = Math.max(1, Number(arg('scan-every') || 10));
 
 function rng(seed) {
     let x = seed >>> 0;
@@ -83,6 +87,13 @@ async function snapshot(page) {
             doc: [de.scrollWidth, de.clientWidth], scroll: [scrollX, scrollY], overflow, openDrawers,
             rects: { shell: rect(document.querySelector('#ag2-shell')), settings: rect(document.querySelector('#ag2-settings')),
                 palette: rect(document.querySelector('#ag2-palette')), inspector: rect(document.querySelector('#right-nav-panel')) },
+            surfaces: [...document.querySelectorAll('#ag2-sidebar, #ag2-settings, #right-nav-panel, #ag2-palette, #toast-container, #toast-container > div')].map(e => {
+                const c = getComputedStyle(e);
+                return { id: e.id, class: e.className, rect: rect(e), visible: vis(e), opacity: c.opacity,
+                    display: c.display, transform: c.transform, pointerEvents: c.pointerEvents,
+                    backdropFilter: c.backdropFilter, animations: e.getAnimations().map(a => ({ state: a.playState, time: a.currentTime })) };
+            }),
+            perfNow: performance.now(),
         };
     });
 }
@@ -150,7 +161,7 @@ function makeActions(T, page, random) {
                 if (await visible(page, '#ag2-tabbar [data-tab="settings"]')) await click(page, '#ag2-tabbar [data-tab="settings"]');
                 else await click(page, '#ag2-sidebar [data-act="settings"]');
             }
-            const level = await page.locator('#ag2-settings').getAttribute('data-level').catch(() => null);
+            const level = await page.evaluate(() => document.querySelector('#ag2-settings')?.getAttribute('data-level'));
             if (level === 'list') {
                 const pages = ['ai', 'look', 'wi', 'persona', 'user', 'api', 'fmt', 'ext'];
                 await click(page, `#ag2-settings .ag2-set-item[data-page="${choose(pages)}"]`);
@@ -161,7 +172,10 @@ function makeActions(T, page, random) {
         ['settings-scroll', async () => {
             const sel = await visible(page, '#ag2-settings .ag2-set-body') ? '#ag2-settings .ag2-set-body' : '.drawer-content.openDrawer > .scrollableInner';
             const fraction = random();
-            await page.locator(sel).evaluate((e, f) => { e.scrollTop = f * Math.max(0, e.scrollHeight - e.clientHeight); }, fraction).catch(() => {});
+            await page.evaluate(({ sel, fraction }) => {
+                const e = document.querySelector(sel);
+                if (e) e.scrollTop = fraction * Math.max(0, e.scrollHeight - e.clientHeight);
+            }, { sel, fraction });
         }],
         ['toast', async () => page.evaluate(() => window.toastr?.info?.('批量探索提示', '', { timeOut: 650 }))],
         ['resize-jitter', async () => {
@@ -186,8 +200,12 @@ function makeActions(T, page, random) {
 export default async function (T) {
     const page = await T.newPage();
     await page.addInitScript(() => {
-        window.__ag2BatchPerf = { longTasks: [], layoutShifts: [] };
-        try { new PerformanceObserver(l => window.__ag2BatchPerf.longTasks.push(...l.getEntries().map(e => Math.round(e.duration))))
+        window.__ag2BatchPerf = { longTasks: [], layoutShifts: [], events: [] };
+        try { new PerformanceObserver(l => {
+            const es = l.getEntries();
+            window.__ag2BatchPerf.longTasks.push(...es.map(e => Math.round(e.duration)));
+            window.__ag2BatchPerf.events.push(...es.map(e => ({ type: 'longtask', start: e.startTime, duration: e.duration })));
+        })
             .observe({ type: 'longtask', buffered: true }); } catch {}
         try { new PerformanceObserver(l => window.__ag2BatchPerf.layoutShifts.push(...l.getEntries().filter(e => !e.hadRecentInput).map(e => e.value)))
             .observe({ type: 'layout-shift', buffered: true }); } catch {}
@@ -196,47 +214,63 @@ export default async function (T) {
     const boot = await T.boot(page, { ag2: true, settle: 1000 });
     await T.openChat(page, await T.longChat(page), 2);
     const seed = seedArg >>> 0;
-    const random = rng(seed);
+    const next = rng(seed);
+    let draws = [], replayDraws = null;
+    const random = () => {
+        if (replayDraws && !replayDraws.length) throw new Error('replay exhausted action-local RNG draws');
+        const value = replayDraws ? replayDraws.shift() : next();
+        draws.push(value);
+        return value;
+    };
     const actions = makeActions(T, page, random);
     const trace = [], issues = [], samples = [], baselineErrors = new Set(T.errors(page));
     const t0 = Date.now();
-    for (let i = 0; i < stepsArg; i++) {
-        const [name, run] = actions[Math.floor(random() * actions.length)];
+    const steps = replay ? Math.min(stepsArg, replay.length) : stepsArg;
+    const shotPrefix = `${T.cfg.phone ? 'phone' : 'desktop'}${T.cfg.reduced ? '-reduced' : ''}-${seed}`;
+    for (let i = 0; i < steps; i++) {
+        const action = replay ? actions.find(([name]) => name === replay[i].action) : actions[Math.floor(next() * actions.length)];
+        if (!action) throw new Error(`unknown replay action at step ${i}`);
+        const [name, run] = action;
+        draws = []; replayDraws = replay ? [...(replay[i].draws || [])] : null;
+        const perfStart = await page.evaluate(() => performance.now());
         const started = Date.now();
         let actionError = null;
         try { await run(); } catch (e) { actionError = String(e?.message || e).slice(0, 300); }
-        await T.sleep(90);
+        await T.sleep(settleMs);
         const check = await invariant(page);
-        const entry = { i, action: name, ms: Date.now() - started, actionError, state: check.snapshot };
+        const entry = { i, action: name, draws, ms: Date.now() - started, perfStart, perfEnd: check.snapshot.perfNow, actionError, state: check.snapshot };
         trace.push(entry);
         if (check.failures.length || actionError) {
             const issue = { step: i, action: name, failures: check.failures, actionError, state: check.snapshot };
             issues.push(issue);
-            if (issues.length <= 6) await T.shot(page, `issue-${String(issues.length).padStart(2, '0')}-step-${i}`).catch(() => {});
+            if (issues.length <= 6) issue.screenshot = await T.shot(page, `${shotPrefix}-issue-${String(issues.length).padStart(2, '0')}-step-${i}`).catch(() => null);
         }
-        if (i % 10 === 9 || check.failures.length) {
+        if (i % scanEvery === scanEvery - 1 || check.failures.length) {
             const scan = await T.scan(page, ['#ag2-shell', '#ag2-settings', '#right-nav-panel', '#chat']);
             samples.push({ step: i, scan: { ovf: scan.ovf, dbl: scan.dbl, unhid: scan.unhid, nest: scan.nest, btn: scan.btn,
-                doc: scan.doc, panels: scan.panels }, check: check.failures });
+                doc: scan.doc, panels: scan.panels, detail: scan.detail }, check: check.failures });
             if ([scan.ovf, scan.dbl, scan.unhid, scan.nest, scan.btn].some(Boolean) && !issues.some(x => x.step === i && x.failures.some(y => y.startsWith('scan')))) {
-                issues.push({ step: i, action: name, failures: [`scan ${JSON.stringify({ ovf: scan.ovf, dbl: scan.dbl, unhid: scan.unhid, nest: scan.nest, btn: scan.btn })}`], state: check.snapshot });
-                if (issues.length <= 6) await T.shot(page, `issue-scan-step-${i}`).catch(() => {});
+                const issue = { step: i, action: name, failures: [`scan ${JSON.stringify({ ovf: scan.ovf, dbl: scan.dbl, unhid: scan.unhid, nest: scan.nest, btn: scan.btn })}`], state: check.snapshot, detail: scan.detail };
+                issues.push(issue);
+                if (issues.length <= 6) issue.screenshot = await T.shot(page, `${shotPrefix}-issue-scan-step-${i}`).catch(() => null);
             }
         }
     }
-    const perf = await page.evaluate(() => ({ longTasks: window.__ag2BatchPerf?.longTasks || [], layoutShifts: window.__ag2BatchPerf?.layoutShifts || [] }));
+    const perf = await page.evaluate(() => window.__ag2BatchPerf);
     const newErrors = T.errors(page).filter(x => !baselineErrors.has(x));
     const report = {
-        seed, steps: stepsArg, viewportMode: T.cfg.phone ? 'phone' : 'desktop', boot, elapsedMs: Date.now() - t0,
+        seed, steps, reduced: T.cfg.reduced, settleMs, replay: arg('replay'), baselineErrors: [...baselineErrors],
+        viewportMode: T.cfg.phone ? 'phone' : 'desktop', boot, elapsedMs: Date.now() - t0,
         actions: Object.fromEntries(actions.map(([n]) => [n, trace.filter(x => x.action === n).length])),
         issueCount: issues.length, issues, newErrors, samples, perf: {
             longTasks: perf.longTasks, longTaskCount: perf.longTasks.length, longTaskMaxMs: Math.max(0, ...perf.longTasks),
             layoutShiftCount: perf.layoutShifts.length, layoutShiftTotal: perf.layoutShifts.reduce((a, b) => a + b, 0),
+            events: perf.events,
         }, trace,
     };
     mkdirSync(reportDir, { recursive: true });
     const path = `${reportDir}/batch-${report.viewportMode}-${seed}.json`;
     writeFileSync(path, JSON.stringify(report, null, 2));
-    return { path, seed, steps: stepsArg, elapsedMs: report.elapsedMs, actions: report.actions, issueCount: issues.length,
+    return { path, seed, steps, elapsedMs: report.elapsedMs, actions: report.actions, issueCount: issues.length,
         issues: issues.slice(0, 12), newErrors, perf: report.perf, fixtureGuard: 'handled by tools/ag2/run.mjs' };
 }
