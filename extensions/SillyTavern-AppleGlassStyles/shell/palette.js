@@ -64,6 +64,10 @@ function stopToastLayer() {
 }
 
 export const isOpen = () => !!dlg?.open;
+// ST puts nested popups in the top layer. Focus is a browser-maintained indicator of
+// its active modal, unlike DOM order (dialogs may be reused).
+export const isCovered = () => !!dlg?.open && !!document.activeElement?.closest('dialog[open]')
+    && document.activeElement.closest('dialog[open]') !== dlg;
 
 // ------------------------------------------------------------------ matching
 

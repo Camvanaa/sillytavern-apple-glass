@@ -226,6 +226,7 @@ function watchPanels() {
             const open = el.classList.contains('openDrawer');
             if (open === /\bopenDrawer\b/.test(r.oldValue || '')) continue;
             const m = settingsModule();
+            if (m?.isNavigating()) continue; // stale ST completions are drained by settings
             if (m?.isOpen()) m.sync(el.id, open);
             else if (open) openSettings(null); // desktop window / phone sheet (§5.9)
         }

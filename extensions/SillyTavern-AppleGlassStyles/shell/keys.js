@@ -49,6 +49,7 @@ function onKey(e) {
     const pal = paletteModule();
 
     if (is(e, 'k', 'KeyK')) {
+        if (pal?.isCovered()) return;
         if (!e.shiftKey && !mac && mdOwnsCtrlK(e.target)) return; // ST: insert inline code
         if (!pal?.isOpen() && stLayerUp()) return;                // not on top of an ST popup
         e.preventDefault();
@@ -91,6 +92,7 @@ const vis = sel => { try { return $(sel).is(':visible'); } catch { return false;
 
 function onEsc(e) {
     const pal = paletteModule();
+    if (pal?.isCovered() || (e.target instanceof HTMLSelectElement && e.target.matches(':open'))) return;
     if (pal?.isOpen()) { e.preventDefault(); e.stopImmediatePropagation(); pal.close(); return; }
     if (isMenuOpen()) return;                 // menu.js closes it (document capture, stops ST)
     if (settingsModule()?.isOpen()) return;   // settings.js's own window handler

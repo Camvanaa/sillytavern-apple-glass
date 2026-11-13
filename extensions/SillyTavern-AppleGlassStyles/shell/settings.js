@@ -51,6 +51,27 @@ let isOpenNow = false;
 let cur = null;
 let switching = 0;
 let queue = Promise.resolve();
+let intent = 0;
+let pending = 0;
+// Includes ST's non-cancellable delay, and its stale-open compensation. Never reset queue.
+export const isNavigating = () => pending > 0;
+function enqueue(task) {
+    pending++;
+    queue = queue.then(task).catch(e => console.error('[AG2] settings navigation failed', e)).finally(() => pending--);
+    return queue;
+}
+function navigation(task) {
+    const ticket = ++intent, frame = root;
+    const valid = () => ticket === intent && frame === root && isOpenNow;
+    return enqueue(() => valid() && task(valid));
+}
+async function switchPanel(id, opened, valid) {
+    await toggleDrawer(id, opened);
+    // ST may finish opening after close/unmount. Drain it under the same lock before
+    // the next intent runs; the drawer observer must not adopt this obsolete completion.
+    if (opened && !valid()) await toggleDrawer(id, false);
+    return valid();
+}
 let closeTimer = 0;
 let opener = null;
 let version = '';
@@ -495,11 +516,10 @@ export function open(page = null) {
 
 /** Phone sheet: back to the list level (closes the page's ST drawer). Serialised like go(). */
 export function list(opt = {}) {
-    queue = queue.then(() => listNow(opt)).catch(e => console.error('[AG2] settings list failed', e));
-    return queue;
+    return navigation(valid => listNow(opt, valid));
 }
 
-async function listNow({ focus = false } = {}) {
+async function listNow({ focus = false } = {}, valid) {
     if (!isOpenNow) return;
     const was = cur;
     clearTimeout(closeTimer);
@@ -509,7 +529,8 @@ async function listNow({ focus = false } = {}) {
         searchMod?.clearHit();
         detachSpy();
         delete document.body.dataset.ag2Anchors;
-        for (const id of openPanels()) await toggleDrawer(id, false);
+        for (const id of openPanels()) if (!await switchPanel(id, false, valid)) return;
+        if (!valid()) return;
         renderBody(null);
         cur = null;
         delete document.body.dataset.ag2Set;
@@ -518,6 +539,7 @@ async function listNow({ focus = false } = {}) {
     } finally {
         switching--;
     }
+    if (!valid()) return;
     if (focus) (root.querySelector(`.ag2-set-nav [data-page="${was}"]`) || root.querySelector('.ag2-set-done'))?.focus({ preventScroll: true });
     ensureFocus();
 }
@@ -563,11 +585,10 @@ function dragDismiss(handle) {
 
 /** Serialised: ST's drawer switch waits animation_duration, so clicks queue up instead of racing. */
 export function go(page, opt = {}) {
-    queue = queue.then(() => goNow(page, opt)).catch(e => console.error('[AG2] settings page switch failed', e));
-    return queue;
+    return navigation(valid => goNow(page, opt, valid));
 }
 
-async function goNow(page, { focus = false } = {}) {
+async function goNow(page, { focus = false } = {}, valid) {
     if (!isOpenNow || !PAGE[page]) return;
     const p = PAGE[page];
     clearTimeout(closeTimer);
@@ -578,18 +599,20 @@ async function goNow(page, { focus = false } = {}) {
         searchMod?.clearHit();
         if (p.panel) {
             // doNavbarIconClick closes every other unpinned drawer and opens this one.
-            await toggleDrawer(p.panel, true);
-            for (const id of openPanels()) if (id !== p.panel) await toggleDrawer(id, false); // pinned leftovers
+            if (!await switchPanel(p.panel, true, valid)) return;
+            for (const id of openPanels()) if (id !== p.panel && !await switchPanel(id, false, valid)) return;
             renderBody(null);
             paintRanges(document.getElementById(p.panel));
         } else {
-            for (const id of openPanels()) await toggleDrawer(id, false);
+            for (const id of openPanels()) if (!await switchPanel(id, false, valid)) return;
+            if (!valid()) return;
             renderBody(page);
         }
         if (cur === page) renderAnchors(page);
     } finally {
         switching--;
     }
+    if (!valid()) return;
     if (focus) root.querySelector(phoneMode ? '.ag2-set-back' : `.ag2-set-item[data-page="${page}"]`)?.focus({ preventScroll: true });
     ensureFocus();
 }
@@ -615,7 +638,7 @@ function setCurrent(page) {
  * drawer and nothing replaced it, the window closes too.
  */
 export function sync(id, opened) {
-    if (!isOpenNow || switching) return;
+    if (!isOpenNow || switching || pending) return;
     if (opened) {
         const page = pageOfPanel(id);
         if (page && page !== cur) go(page);
@@ -633,6 +656,8 @@ export function sync(id, opened) {
 export async function close() {
     activeDragCleanup?.();
     if (!isOpenNow) return;
+    const ticket = ++intent, previousOpener = opener;
+    opener = null;
     isOpenNow = false;
     clearTimeout(closeTimer);
     window.removeEventListener('keydown', onKey, true);
@@ -646,22 +671,25 @@ export async function close() {
     delete document.body.dataset.ag2Anchors;
     // Drawers close first (synchronous class flip inside doNavbarIconClick) while the window
     // CSS still positions them, so nothing flashes at ST's default drawer spot.
-    const ids = openPanels();
-    const pending = ids.map(id => toggleDrawer(id, false));
+    // Keep all host toggles serial, including close while a host open is awaiting delay.
+    const drained = enqueue(async () => {
+        for (const id of openPanels()) await toggleDrawer(id, false);
+    });
     document.body.classList.remove('ag2-set-open', 'ag2-sheet-drag');
     delete document.body.dataset.ag2Set;
     dim.hidden = true;
     root.hidden = true;
     root.dataset.level = 'list';
     clearSearch();
-    await Promise.all(pending);
-    if (opener?.isConnected) opener.focus({ preventScroll: true });
-    opener = null;
+    await drained;
+    if (ticket === intent && !isOpenNow && previousOpener?.isConnected) previousOpener.focus({ preventScroll: true });
 }
 
 /** Shell teardown: nodes and listeners go; ST drawers stay as they are (the theme may have
  *  been switched from inside 通用, where the user keeps working in the classic drawer). */
 export function unmount() {
+    intent++;
+    searchSeq++;
     activeDragCleanup?.();
     isOpenNow = false;
     clearTimeout(closeTimer);
@@ -736,6 +764,7 @@ function onFocus(e) {
 
 function onKey(e) {
     if (!isOpenNow || e.isComposing) return;
+    if (e.target instanceof HTMLSelectElement && e.target.matches(':open')) return;
     if (stLayerUp() || isMenuOpen()) return; // their own Esc runs first (one layer per press)
     if (e.key === 'Tab') {
         const items = focusItems();
