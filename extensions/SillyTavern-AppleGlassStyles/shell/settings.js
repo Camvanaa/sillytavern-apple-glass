@@ -19,10 +19,10 @@
 // the sheet below the head (same CSS variables as the window). Drag the grabber / head down
 // to dismiss.
 
-import { ctx, h, guard, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar } from './util.js?v=202611130024';
-import { icon } from './icons.js?v=202611130024';
-import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=202611130024';
-import { isMenuOpen } from './menu.js?v=202611130024';
+import { ctx, h, guard, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar } from './util.js?v=20261113QA01';
+import { icon } from './icons.js?v=20261113QA01';
+import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261113QA01';
+import { isMenuOpen } from './menu.js?v=20261113QA01';
 
 const PAGES = [
     { id: 'api', name: '连接', icon: 'plug', tile: 'green', group: 0, lead: '选择 API 来源，填写地址、密钥和模型。' },
@@ -55,6 +55,7 @@ let closeTimer = 0;
 let opener = null;
 let version = '';
 let phoneMode = false; // the sheet form, fixed for one open (a width change closes it)
+let lastFocus = null;
 const stEvents = [];
 
 export const isOpen = () => isOpenNow;
@@ -76,6 +77,7 @@ function build() {
     root.setAttribute('role', 'dialog');
     root.setAttribute('aria-modal', 'true');
     root.setAttribute('aria-labelledby', 'ag2-set-title');
+    root.tabIndex = -1; // fallback for an empty/loading logical focus domain
     let groups = '';
     for (let g = 0; g <= 3; g++) {
         groups += `<div class="ag2-set-grp${g === 3 ? ' ag2-set-grp-end' : ''}">` + PAGES.filter(p => p.group === g).map(p => `
@@ -153,7 +155,7 @@ let results = [];
 
 const loadSearch = async () => {
     if (!searchMod) {
-        searchMod = await import('./search.js?v=202611130024');
+        searchMod = await import('./search.js?v=20261113QA01');
         searchMod.init(PAGES.map(({ id, name, lead }) => ({ id, name, lead })));
     }
     return searchMod;
@@ -318,6 +320,7 @@ const PIN_OFF = ['wheel', 'touchstart', 'pointerdown', 'keydown'];
 
 function renderAnchors(page) {
     const bar = root.querySelector('.ag2-anchors');
+    const focusedLabel = bar.contains(document.activeElement) ? document.activeElement.textContent : null;
     // a re-render on the same page (ST settings events fire often) keeps the clicked
     // capsule pinned when its label still exists
     const keep = document.body.dataset.ag2Anchors === page && anchorPin != null ? anchorList[anchorPin]?.label : null;
@@ -340,7 +343,15 @@ function renderAnchors(page) {
         anchorList = [];
         return;
     }
-    bar.innerHTML = anchorList.map((a, i) => `<button type="button" class="ag2-anchor" data-i="${i}">${escHtml(a.label)}</button>`).join('');
+    // SETTINGS_UPDATED can arrive while keyboard focus is on a capsule. Keep unchanged
+    // buttons instead of detaching the focused node on every status refresh.
+    const buttons = [...bar.querySelectorAll('.ag2-anchor')];
+    if (buttons.length !== anchorList.length || buttons.some((b, i) => b.textContent !== anchorList[i].label)) {
+        bar.innerHTML = anchorList.map((a, i) => `<button type="button" class="ag2-anchor" data-i="${i}">${escHtml(a.label)}</button>`).join('');
+        if (focusedLabel != null && !stLayerUp() && !isMenuOpen()) {
+            ([...bar.children].find(b => b.textContent === focusedLabel) || bar.firstElementChild)?.focus({ preventScroll: true });
+        }
+    }
     bar.hidden = false;
     document.body.dataset.ag2Anchors = page;
     anchorScroller = document.querySelector(def.scroll);
@@ -472,6 +483,7 @@ export function open(page = null) {
         root.hidden = false;
         window.addEventListener('keydown', onKey, true);
         window.addEventListener('resize', onResize);
+        document.addEventListener('focusin', onFocus, true);
         document.addEventListener('input', onPanelInput, true);
         document.addEventListener('change', onPanelInput, true);
         updateNavStatus();
@@ -506,6 +518,7 @@ async function listNow({ focus = false } = {}) {
         switching--;
     }
     if (focus) (root.querySelector(`.ag2-set-nav [data-page="${was}"]`) || root.querySelector('.ag2-set-done'))?.focus({ preventScroll: true });
+    ensureFocus();
 }
 
 /** Phone sheet: drag the grabber / a head down to dismiss (both sheet and drawer follow). */
@@ -563,6 +576,7 @@ async function goNow(page, { focus = false } = {}) {
         switching--;
     }
     if (focus) root.querySelector(phoneMode ? '.ag2-set-back' : `.ag2-set-item[data-page="${page}"]`)?.focus({ preventScroll: true });
+    ensureFocus();
 }
 
 function setCurrent(page) {
@@ -607,6 +621,8 @@ export async function close() {
     clearTimeout(closeTimer);
     window.removeEventListener('keydown', onKey, true);
     window.removeEventListener('resize', onResize);
+    document.removeEventListener('focusin', onFocus, true);
+    lastFocus = null;
     document.removeEventListener('input', onPanelInput, true);
     document.removeEventListener('change', onPanelInput, true);
     searchMod?.clearHit();
@@ -634,6 +650,8 @@ export function unmount() {
     clearTimeout(closeTimer);
     window.removeEventListener('keydown', onKey, true);
     window.removeEventListener('resize', onResize);
+    document.removeEventListener('focusin', onFocus, true);
+    lastFocus = opener = null;
     document.removeEventListener('input', onPanelInput, true);
     document.removeEventListener('change', onPanelInput, true);
     searchMod?.clearHit();
@@ -663,12 +681,55 @@ function stLayerUp() {
     return !!document.querySelector('dialog[open]')
         || !!document.querySelector('.select2-container--open')
         || visible('#shadow_popup') || visible('#dialogue_popup') || visible('#character_popup')
-        || visible('#select_chat_popup') || visible('#curEditTextarea') || visible('#dialogue_del_mes_cancel');
+        || visible('#select_chat_popup') || visible('#curEditTextarea') || visible('#dialogue_del_mes_cancel')
+        || visible('.autoComplete, .ui-autocomplete, [role="menu"], [popover]:popover-open');
+}
+
+// The ST drawer is a sibling of our section, not a descendant. Keep a logical domain
+// rather than inert-ing body children (which would disable the very page being edited).
+const FOCUSABLE = 'a[href], button, input, select, textarea, summary, [tabindex], [contenteditable="true"]';
+function focusScopes() {
+    const panel = PAGE[cur]?.panel && document.getElementById(PAGE[cur].panel);
+    return [root, panel?.classList.contains('openDrawer') ? panel : null].filter(Boolean);
+}
+function inFocusDomain(el) {
+    return el instanceof HTMLElement && visibleEl(el) && !el.closest('[inert], [hidden]')
+        && focusScopes().some(scope => scope.contains(el));
+}
+function focusItems() {
+    return focusScopes().flatMap(scope => [...scope.querySelectorAll(FOCUSABLE)])
+        .filter(el => el.tabIndex >= 0 && !el.matches(':disabled') && inFocusDomain(el))
+        // Preserve native radio-group tab stops and positive tabindex ordering.
+        .filter(el => !el.matches('input[type="radio"][name]') || !el.name
+            || !focusScopes().some(scope => [...scope.querySelectorAll('input[type="radio"]')]
+                .some(r => r.name === el.name && r.form === el.form && r.checked && r !== el && inFocusDomain(r))))
+        .sort((a, b) => (a.tabIndex || Infinity) - (b.tabIndex || Infinity));
+}
+function ensureFocus() {
+    if (!isOpenNow || switching || stLayerUp() || isMenuOpen()) return;
+    if (inFocusDomain(document.activeElement)) return;
+    const next = inFocusDomain(lastFocus) ? lastFocus : focusItems()[0] || root;
+    next?.focus({ preventScroll: true });
+}
+function onFocus(e) {
+    if (!isOpenNow || stLayerUp() || isMenuOpen()) return;
+    if (inFocusDomain(e.target)) lastFocus = e.target;
+    else ensureFocus();
 }
 
 function onKey(e) {
-    if (e.key !== 'Escape' || !isOpenNow || e.isComposing) return;
+    if (!isOpenNow || e.isComposing) return;
     if (stLayerUp() || isMenuOpen()) return; // their own Esc runs first (one layer per press)
+    if (e.key === 'Tab') {
+        const items = focusItems();
+        const i = items.indexOf(document.activeElement);
+        const index = i < 0 ? (e.shiftKey ? items.length - 1 : 0) : (i + (e.shiftKey ? -1 : 1) + items.length) % items.length;
+        const next = items[index] || root;
+        e.preventDefault();
+        next?.focus();
+        return;
+    }
+    if (e.key !== 'Escape') return;
     const a = document.activeElement;
     const q = root.querySelector('.ag2-set-search input');
     e.preventDefault();
