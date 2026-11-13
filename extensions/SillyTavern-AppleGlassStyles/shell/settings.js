@@ -19,10 +19,10 @@
 // the sheet below the head (same CSS variables as the window). Drag the grabber / head down
 // to dismiss.
 
-import { ctx, h, guard, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar } from './util.js?v=20261113QA01';
-import { icon } from './icons.js?v=20261113QA01';
-import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261113QA01';
-import { isMenuOpen } from './menu.js?v=20261113QA01';
+import { ctx, h, guard, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar } from './util.js?v=20261113QA02';
+import { icon } from './icons.js?v=20261113QA02';
+import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261113QA02';
+import { isMenuOpen } from './menu.js?v=20261113QA02';
 
 const PAGES = [
     { id: 'api', name: '连接', icon: 'plug', tile: 'green', group: 0, lead: '选择 API 来源，填写地址、密钥和模型。' },
@@ -56,6 +56,7 @@ let opener = null;
 let version = '';
 let phoneMode = false; // the sheet form, fixed for one open (a width change closes it)
 let lastFocus = null;
+let activeDragCleanup = null;
 const stEvents = [];
 
 export const isOpen = () => isOpenNow;
@@ -155,7 +156,7 @@ let results = [];
 
 const loadSearch = async () => {
     if (!searchMod) {
-        searchMod = await import('./search.js?v=20261113QA01');
+        searchMod = await import('./search.js?v=20261113QA02');
         searchMod.init(PAGES.map(({ id, name, lead }) => ({ id, name, lead })));
     }
     return searchMod;
@@ -524,25 +525,39 @@ async function listNow({ focus = false } = {}) {
 /** Phone sheet: drag the grabber / a head down to dismiss (both sheet and drawer follow). */
 function dragDismiss(handle) {
     handle?.addEventListener('pointerdown', e => {
-        if (!phoneMode || e.button > 0 || e.target.closest('button, input, a, select, textarea')) return;
+        if (!isOpenNow || !phoneMode || !e.isPrimary || e.button > 0 || activeDragCleanup
+            || e.target.closest('button, input, a, select, textarea')) return;
+        const pointerId = e.pointerId;
         const y0 = e.clientY;
         const t0 = performance.now();
         let dy = 0;
         const style = document.body.style;
         document.body.classList.add('ag2-sheet-drag');
-        const move = ev => { dy = Math.max(0, ev.clientY - y0); style.setProperty('--ag2-sheet-dy', dy + 'px'); };
-        const up = () => {
+        const move = ev => {
+            if (ev.pointerId !== pointerId) return;
+            dy = Math.max(0, ev.clientY - y0); style.setProperty('--ag2-sheet-dy', dy + 'px');
+        };
+        const cleanup = () => {
             window.removeEventListener('pointermove', move);
             window.removeEventListener('pointerup', up);
-            window.removeEventListener('pointercancel', up);
+            window.removeEventListener('pointercancel', cancel);
+            window.removeEventListener('blur', cleanup);
             document.body.classList.remove('ag2-sheet-drag');
             style.removeProperty('--ag2-sheet-dy');
+            activeDragCleanup = null;
+        };
+        const cancel = ev => { if (ev.pointerId === pointerId) cleanup(); };
+        const up = ev => {
+            if (ev.pointerId !== pointerId) return;
+            cleanup();
             const v = dy / Math.max(1, performance.now() - t0); // px/ms
             if (dy > 120 || (dy > 40 && v > 0.6)) close();
         };
+        activeDragCleanup = cleanup;
         window.addEventListener('pointermove', move);
         window.addEventListener('pointerup', up);
-        window.addEventListener('pointercancel', up);
+        window.addEventListener('pointercancel', cancel);
+        window.addEventListener('blur', cleanup);
     });
 }
 
@@ -616,6 +631,7 @@ export function sync(id, opened) {
 }
 
 export async function close() {
+    activeDragCleanup?.();
     if (!isOpenNow) return;
     isOpenNow = false;
     clearTimeout(closeTimer);
@@ -646,6 +662,7 @@ export async function close() {
 /** Shell teardown: nodes and listeners go; ST drawers stay as they are (the theme may have
  *  been switched from inside 通用, where the user keeps working in the classic drawer). */
 export function unmount() {
+    activeDragCleanup?.();
     isOpenNow = false;
     clearTimeout(closeTimer);
     window.removeEventListener('keydown', onKey, true);

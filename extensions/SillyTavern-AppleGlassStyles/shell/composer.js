@@ -14,9 +14,9 @@
 // Every action is a click on ST's own control (`#option_*`, `#attachFile`, the model
 // <select>), as ST's core does it.
 
-import { icon } from './icons.js?v=20261113QA01';
-import { openMenu, closeMenu, positionPopover } from './menu.js?v=20261113QA01';
-import { ctx, h, guard, clickSt, toggleDrawer, openSettings, busy, onlineStatus } from './util.js?v=20261113QA01';
+import { icon } from './icons.js?v=20261113QA02';
+import { openMenu, closeMenu, positionPopover } from './menu.js?v=20261113QA02';
+import { ctx, h, guard, clickSt, toggleDrawer, openSettings, busy, onlineStatus } from './util.js?v=20261113QA02';
 import { showBookmarksButtons } from '../../../../bookmarks.js';
 
 const NO_CONN_TEXT = '未连接 API — 点此连接';
