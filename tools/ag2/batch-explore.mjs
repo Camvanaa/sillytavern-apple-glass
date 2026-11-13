@@ -61,7 +61,12 @@ async function snapshot(page) {
             if (e.scrollWidth > e.clientWidth + 2 && !['#chat'].includes(e.id))
                 overflow.push(`${e.id || e.className}:${e.scrollWidth}>${e.clientWidth}`);
             const r = e.getBoundingClientRect();
-            if (r.left < -2 || r.right > innerWidth + 2) overflow.push(`${e.id || e.className}:x=${Math.round(r.left)}..${Math.round(r.right)}`);
+            // The phone sidebar intentionally slides left while a chat is pushed in. It is
+            // not a viewport leak when it is already non-interactive; keep genuine visible
+            // shell/panel escapes reportable.
+            const intentionalPhoneSlide = e.id === 'ag2-sidebar' && body.classList.contains('ag2-phone')
+                && body.dataset.ag2Ph === 'chat' && (getComputedStyle(e).pointerEvents === 'none' || Number(getComputedStyle(e).opacity) < .05);
+            if (!intentionalPhoneSlide && (r.left < -2 || r.right > innerWidth + 2)) overflow.push(`${e.id || e.className}:x=${Math.round(r.left)}..${Math.round(r.right)}`);
         }
         const openDrawers = [...document.querySelectorAll('.drawer-content.openDrawer')].filter(vis).map(e => e.id || 'drawer');
         const settingsOpen = body.classList.contains('ag2-set-open');
