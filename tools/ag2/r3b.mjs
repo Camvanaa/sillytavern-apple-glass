@@ -99,6 +99,23 @@ async function phone(T) {
     const after = await page.evaluate(() => document.body.classList.contains('ag2-insp-open'));
     await T.shot(page, 'phone-inspector-esc-post');
     out.esc = { before, after, errors: T.errors(page) };
+
+    // Settings sheet keeps its existing page → list → chat Esc order.
+    await page.click('#ag2-ph-back');
+    await T.sleep(300);
+    await page.click('#ag2-tabbar [data-tab="settings"]');
+    await T.sleep(350);
+    const setOpen = await page.evaluate(() => ({ open: document.body.classList.contains('ag2-set-open'), level: document.querySelector('#ag2-settings')?.dataset.level || null }));
+    await page.click('#ag2-settings .ag2-set-item[data-page="api"]');
+    await T.sleep(400);
+    const setPage = await page.evaluate(() => ({ open: document.body.classList.contains('ag2-set-open'), level: document.querySelector('#ag2-settings')?.dataset.level || null }));
+    await page.keyboard.press('Escape');
+    await T.sleep(300);
+    const setList = await page.evaluate(() => ({ open: document.body.classList.contains('ag2-set-open'), level: document.querySelector('#ag2-settings')?.dataset.level || null }));
+    await page.keyboard.press('Escape');
+    await T.sleep(300);
+    const setClosed = await page.evaluate(() => ({ open: document.body.classList.contains('ag2-set-open'), level: document.querySelector('#ag2-settings')?.dataset.level || null }));
+    out.settingsEsc = { setOpen, setPage, setList, setClosed };
     return out;
 }
 
