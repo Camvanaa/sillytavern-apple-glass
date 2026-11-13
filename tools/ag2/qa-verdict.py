@@ -21,7 +21,10 @@ def walk(value, path):
             p = f"{path}.{k}"
             if k in ("ok", "backOk", "wrapOk") and v is False:
                 require(False, p, v)
-            if k in ("windowAdopted", "panelInWin", "onlyCurrent", "inspectorHidden"):
+            if k in ("windowAdopted", "onlyCurrent", "inspectorHidden"):
+                require(v is True, p, v)
+            if k == "panelInWin" and (v is not None or path.endswith(".ag2Again")):
+                # Shell-only look/about pages have no external ST panel to measure.
                 require(v is True, p, v)
             if k in ("ovf", "dbl", "unhid", "nest", "btn") and isinstance(v, (int, float)):
                 require(v == 0, p, v)
