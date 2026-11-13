@@ -49,7 +49,7 @@ export default async function(T) {
     };
     await popup(); await page.evaluate(()=>toastr.info('普通 ST dialog',null,{timeOut:0})); await T.sleep(300);
     await checkToasts('ordinary-dialog',t=>t.popup&&t.filter==='none');
-    await shot('nested-dialog-toast');
+    await shot('ordinary-dialog-toast');
     await page.locator('dialog.popup[open] .popup-button-ok').click(); await T.sleep(300);
     await page.evaluate(()=>toastr.clear());
     await page.keyboard.press('Control+k'); await T.sleep(400); await popup();
