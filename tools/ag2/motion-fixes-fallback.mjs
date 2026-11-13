@@ -18,7 +18,9 @@ export default async function(T){
     const s=page.locator('#bg-sort');
     const style=await s.evaluate(e=>({appearance:getComputedStyle(e).appearance,scheme:getComputedStyle(e).colorScheme}));
     assert.equal(style.scheme,'dark');assert.equal(style.appearance==='base-select',!fallback);
-    await s.focus();const before=await s.inputValue();await page.keyboard.press('ArrowDown');
+    await s.focus();const before=await s.inputValue();
+    if(!fallback)await s.click();
+    await page.keyboard.press('ArrowDown');
     if(!fallback)await page.keyboard.press('Enter');
     const after=await s.inputValue();assert.notEqual(before,after);
     await s.click();await T.shot(page,id+'-picker',{animations:'allow'});await page.keyboard.press('Escape');

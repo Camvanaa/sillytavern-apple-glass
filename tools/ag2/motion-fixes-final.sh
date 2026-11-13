@@ -25,7 +25,7 @@ for mode in normal st os; do
 done
 run life-media-only motion-fixes-life --part media-only --phone
 run fallback motion-fixes-fallback --part fallback
-timeout 600 xvfb-run -a -s '-screen 0 1600x1000x24' node tools/ag2/run.mjs tools/ag2/motion-fixes-fallback.mjs --headed --classic-scrollbars --phase motion-fixes --shots /opt/server-agent/workspace/st-testdata/redesign >"$OUT/headed.json" 2>"$OUT/headed.err"
+TMPDIR=/tmp/opencode timeout 600 xvfb-run -a -e /tmp/opencode/motion-xvfb.log -s '-screen 0 1600x1000x24' node tools/ag2/run.mjs tools/ag2/motion-fixes-fallback.mjs --headed --classic-scrollbars --phase motion-fixes --shots /opt/server-agent/workspace/st-testdata/redesign >"$OUT/headed.json" 2>"$OUT/headed.err"
 rc=$?; echo "headed exit $rc" | tee -a "$OUT/exits.log"; [ "$rc" = 0 ] || failed=1
 run qa-desktop qa-fixes --tag final
 run qa-phone qa-fixes --phone --tag final

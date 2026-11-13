@@ -128,6 +128,7 @@ export default async function(T) {
         // Neutral in-memory options exercise the real Select2 plugin's highlighted/
         // selected rows even when this fixture has no active world book results.
         await open('look');
+        await page.mouse.move(0,0); // prior wheel pointer must not hover-select a newly opened row
         await page.evaluate(()=>{
             const s=document.createElement('select');s.id='mf-select2';s.innerHTML=Array.from({length:40},(_,i)=>`<option value="${i}">中性 Select2 选项 ${i}</option>`).join('');
             document.querySelector('.ag2-set-body').prepend(s);$(s).select2({width:'100%'});$(s).select2('open');
@@ -135,6 +136,7 @@ export default async function(T) {
         await page.waitForSelector('.select2-dropdown');
         const selected=page.locator('.select2-results__option--highlighted');
         await selected.waitFor();
+        assert.equal(await selected.textContent(),'中性 Select2 选项 0');
         out.checks.select2Style=await selected.evaluate(e=>({radius:getComputedStyle(e).borderRadius,bg:getComputedStyle(e).backgroundColor,blur:getComputedStyle(e.closest('.select2-dropdown')).backdropFilter}));
         assert.equal(out.checks.select2Style.radius,'7px');assert.equal(out.checks.select2Style.blur,'none');
         await shot('select2-highlighted-neutral');
