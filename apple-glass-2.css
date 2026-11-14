@@ -348,7 +348,7 @@ html body.ag2 :is(#ag2-shell, #ag2-layer) :focus {
 }
 
 /* Focus ring only for keyboard use (§8): 3px accent */
-html body.ag2 :is(#ag2-shell, #ag2-layer) :focus-visible {
+html body.ag2 :is(#ag2-shell, #ag2-layer, #ag2-settings) :focus-visible {
     outline: 3px solid var(--ag2-accent) !important;
     outline-offset: 1px;
 }
@@ -789,7 +789,7 @@ html body.ag2 #ag2-shell .ag2-cap {
 
 html body.ag2 #ag2-title {
     left: calc(var(--ag2-sheld-left) + var(--ag2-inset));
-    max-width: calc(100vw - var(--ag2-sheld-left) - var(--ag2-sheld-right) - 330px);
+    max-width: calc(100vw - var(--ag2-sheld-left) - var(--ag2-sheld-right) - var(--ag2-tools-w, 232px) - 30px);
     padding: 0 10px 0 6px;
     gap: 2px;
 }
@@ -874,7 +874,15 @@ html body.ag2 #ag2-tools {
     right: calc(var(--ag2-sheld-right) + var(--ag2-inset));
     padding: 0 6px;
     gap: 2px;
+    /* Leave a readable title at narrow desktop widths, even with long translations.
+       chrome.js measures this constrained capsule rather than guessing a label width. */
+    max-width: max(128px, calc(100vw - var(--ag2-sheld-left) - var(--ag2-sheld-right) - var(--ag2-insp-cover, 0px) - 180px));
 }
+
+html body.ag2 #ag2-shell .ag2-tool { min-width: 0; }
+html body.ag2 #ag2-shell .ag2-tool > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+html body.ag2 #ag2-shell .ag2-tool > svg,
+html body.ag2 #ag2-tools > :is(.ag2-cap-sep, .ag2-insp-toggle) { flex-shrink: 0; }
 
 html body.ag2 #ag2-shell .ag2-tool {
     position: relative;
@@ -1657,6 +1665,8 @@ html body.ag2.immersive-mode:not(#_):not(#__) #ap-jump-latest {
     html body.ag2:not(#_):not(#__) #chat .mes .mes_buttons {
         display: flex;
         position: relative;
+        flex-wrap: wrap;
+        max-width: 330px;
         transition: opacity var(--ag2-dur) ease;
     }
 
@@ -1738,18 +1748,20 @@ html body.ag2.immersive-mode:not(#_):not(#__) #ap-jump-latest {
         color: var(--ag2-l1) !important;
     }
 
-    /* “更多” = ST's own .extraMesButtons as a popover above the row. Solid fill: no
-       backdrop-filter on messages (§5.10, AG Dark §18a). z 10 keeps it above the
-       following messages (#chat is the stacking context). */
-    html body.ag2:not(.expandMessageActions):not(#_):not(#__) #chat .mes .mes_buttons > .extraMesButtons {
-        position: absolute !important;
-        left: 0;
-        bottom: calc(100% + 6px);
-        z-index: 10;
+    /* ST owns display/visible/opacity and its two-stage fade. Expansion takes a
+       full flex line in normal flow so neither this text nor the next message is
+       covered. The grid's acts row grows with it, including at the chat bottom. */
+    html body.ag2:not(.expandMessageActions):not(#_):not(#__) #chat .mes:not(.smallSysMes) .mes_buttons > .extraMesButtons {
+        position: static !important;
+        order: 99;
+        flex-basis: 100%;
         flex-wrap: wrap !important;
+        justify-content: flex-start;
         gap: 2px;
-        width: max-content;
-        max-width: 330px;
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
         padding: 5px !important;
         border-radius: 14px;
         background: rgba(44, 44, 51, 0.97) !important;
@@ -1761,6 +1773,8 @@ html body.ag2.immersive-mode:not(#_):not(#__) #ap-jump-latest {
         display: flex !important;
         order: 7;
         gap: 2px;
+        flex-wrap: wrap;
+        min-width: 0;
     }
 
     /* swipe capsule ‹ 2/3 › — ST's own three nodes; last message only (ST's rule) */
@@ -2305,6 +2319,16 @@ html body.ag2.immersive-mode:not(#_):not(#__) #ap-jump-latest {
 
     /* “更多” opens below the bar, centred (it would cover the receipt above it) */
     html body.ag2:not(.expandMessageActions):not(#_):not(#__):not(#___) #chat .mes.smallSysMes .mes_buttons > .extraMesButtons {
+        position: absolute !important;
+        z-index: 10;
+        flex-wrap: wrap !important;
+        gap: 2px;
+        width: max-content;
+        padding: 5px !important;
+        border-radius: 14px;
+        background: rgba(44, 44, 51, 0.97) !important;
+        box-shadow: var(--ag2-rim), var(--ag2-sh2) !important;
+        overflow: visible !important;
         top: calc(100% + 6px);
         bottom: auto;
         left: 50%;
@@ -5409,7 +5433,7 @@ html body.ag2.ag2-insp-open {
     }
 
     html body.ag2.ag2-insp-open #ag2-title {
-        max-width: calc(100vw - var(--ag2-sheld-left) - var(--ag2-sheld-right) - var(--ag2-insp-cover) - 330px);
+        max-width: calc(100vw - var(--ag2-sheld-left) - var(--ag2-sheld-right) - var(--ag2-insp-cover) - var(--ag2-tools-w, 232px) - 30px);
     }
 
     html body.ag2.ag2-insp-open #ag2-shell .ag2-insp-toggle {
@@ -7544,7 +7568,11 @@ html body.ag2:not(#_):not(#__) #movingDivs > .drawer-content:not(#floatingPrompt
         /* the 外观 › 行宽 column still applies when the phone layout is wide (tablet) */
         padding-left: max(14px, var(--ag2-safe-l), calc((100% - var(--ag2-read-width)) / 2)) !important;
         padding-right: max(14px, var(--ag2-safe-r), calc((100% - var(--ag2-read-width)) / 2)) !important;
-        padding-bottom: calc(var(--ag2-dock-h, 112px) + 12px) !important;
+        padding-bottom: calc(var(--ag2-dock-h, 112px) + 36px) !important;
+        /* The measured dock includes QR and a growing composer. Fade only the last
+           24px before its top; bottom padding keeps the final line fully readable. */
+        -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--ag2-fade-top), #000 calc(100% - var(--ag2-dock-h, 112px) - 24px), transparent calc(100% - var(--ag2-dock-h, 112px)));
+        mask-image: linear-gradient(to bottom, transparent 0, #000 var(--ag2-fade-top), #000 calc(100% - var(--ag2-dock-h, 112px) - 24px), transparent calc(100% - var(--ag2-dock-h, 112px)));
         border: 0 !important;
     }
 
@@ -7561,6 +7589,11 @@ html body.ag2:not(#_):not(#__) #movingDivs > .drawer-content:not(#floatingPrompt
        meta column paints over the last one */
     html body.ag2.ag2-phone:not(#_):not(#__) #chat .mes .mes_buttons {
         min-width: max-content;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #chat .mes:not(.smallSysMes) .mes_buttons:has(> .extraMesButtons.visible),
+    html body.ag2.ag2-phone.expandMessageActions:not(#_):not(#__) #chat .mes:not(.smallSysMes) .mes_buttons {
+        min-width: 0;
     }
 
     html body.ag2.ag2-phone:not(#_):not(#__) #chat .mes .mes_buttons > * {
@@ -7672,6 +7705,10 @@ html body.ag2:not(#_):not(#__) #movingDivs > .drawer-content:not(#floatingPrompt
         display: none !important;
     }
 
+    html body.ag2.ag2-phone.ag2-insp-open:not(#_):not(#__) :is(#ag2-title, #ag2-ph-back, #ag2-ph-more) {
+        visibility: hidden;
+    }
+
     /* --- list page: the sidebar, full screen, opaque (no blur layer) --- */
     html body.ag2.ag2-phone:not(#_):not(#__) #ag2-sidebar {
         inset: 0;
@@ -7754,6 +7791,9 @@ html body.ag2:not(#_):not(#__) #movingDivs > .drawer-content:not(#floatingPrompt
     html body.ag2.ag2-phone:not(#_):not(#__) #ag2-sidebar .ag2-side-list {
         padding: 0 8px calc(var(--ag2-ph-bottom) + 84px);
         overscroll-behavior: contain;
+        /* 64px tabbar, with a 16px fade above it; existing 84px padding clears both. */
+        -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--ag2-ph-bottom) - 80px), transparent calc(100% - var(--ag2-ph-bottom) - 64px));
+        mask-image: linear-gradient(to bottom, #000 calc(100% - var(--ag2-ph-bottom) - 80px), transparent calc(100% - var(--ag2-ph-bottom) - 64px));
     }
 
     html body.ag2.ag2-phone:not(#_):not(#__) #ag2-sidebar .ag2-sec {
@@ -8679,6 +8719,34 @@ html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body,
 
 /* Keep native select semantics/events; only ordinary single-selects opt in. */
 @supports (appearance: base-select) {
+    /* Explicit standard selectedcontent is supplied only in the active settings page.
+       The UA's implicit selected label is not author-styleable in Chromium. */
+    html body.ag2:not(#_):not(#__) select > button.ag2-select-button {
+        display: block;
+        flex: 1;
+        min-width: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+        color: inherit;
+        font: inherit;
+        text-align: inherit;
+    }
+    html body.ag2:not(#_):not(#__) select > .ag2-select-button > selectedcontent {
+        display: block;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+    html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible) {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
     html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible),
     html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible)::picker(select) {
         appearance: base-select !important;
@@ -8734,7 +8802,27 @@ html body.ag2:not(#_):not(#__) .select2-dropdown {
 }
 html body.ag2:not(#_):not(#__) .select2-results__option {
     border-radius: 7px;
+    padding: 6px 10px 6px 30px;
+    position: relative;
+}
+/* ST dims every selectable row, separately from its disabled brightness filter. */
+html body.ag2:not(#_):not(#__) .select2-results__option--selectable:not([aria-disabled="true"]):not(.select2-results__option--disabled) {
+    opacity: 1;
+}
+html body.ag2:not(#_):not(#__) .select2-dropdown .select2-search__field {
     padding: 6px 10px;
+    border: 1px solid var(--ag2-sep-strong);
+    border-radius: 8px;
+    background: var(--ag2-f5);
+    color: var(--ag2-l1);
+    color-scheme: dark;
+}
+html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) :is(a, button):focus-visible,
+html body.ag2:not(#_):not(#__) #ag2-settings :is(.ag2-set-back, .ag2-set-done):focus-visible,
+html body.ag2:not(#_):not(#__) .select2-dropdown .select2-search__field:focus-visible {
+    outline: 2px solid var(--ag2-accent) !important;
+    outline-offset: 2px;
+    border-radius: 8px;
 }
 html body.ag2:not(#_):not(#__) .select2-results__option[aria-selected="true"] {
     background: var(--ag2-f2);

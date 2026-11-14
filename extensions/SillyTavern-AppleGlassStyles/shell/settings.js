@@ -19,10 +19,10 @@
 // the sheet below the head (same CSS variables as the window). Drag the grabber / head down
 // to dismiss.
 
-import { ctx, h, guard, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar, nativeSelectOpen } from './util.js?v=20261113MF04';
-import { icon } from './icons.js?v=20261113MF04';
-import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261113MF04';
-import { isMenuOpen } from './menu.js?v=20261113MF04';
+import { ctx, h, guard, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar, nativeSelectOpen } from './util.js?v=20261114VF01';
+import { icon } from './icons.js?v=20261114VF01';
+import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261114VF01';
+import { isMenuOpen } from './menu.js?v=20261114VF01';
 
 const PAGES = [
     { id: 'api', name: '连接', icon: 'plug', tile: 'green', group: 0, lead: '选择 API 来源，填写地址、密钥和模型。' },
@@ -80,6 +80,56 @@ let lastFocus = null;
 let activeDragCleanup = null;
 let dragging = false;
 const stEvents = [];
+let selectObserver = null;
+const selectButtons = new Set();
+
+function clearSelects() {
+    selectObserver?.disconnect();
+    selectObserver = null;
+    for (const button of selectButtons) button.remove();
+    selectButtons.clear();
+}
+
+function watchSelects(container) {
+    clearSelects();
+    if (!container || !CSS.supports('appearance', 'base-select') || !('HTMLSelectedContentElement' in window)) return;
+    const enhance = () => {
+        for (const button of selectButtons) {
+            if (!button.isConnected || !button.parentElement.matches('select:not([multiple]):not([size]):not(.select2-hidden-accessible)')) {
+                button.remove();
+                selectButtons.delete(button);
+            }
+        }
+        for (const select of container.querySelectorAll('select:not([multiple]):not([size]):not(.select2-hidden-accessible)')) {
+            if (getComputedStyle(select).appearance !== 'base-select') continue;
+            let button = select.querySelector(':scope > button');
+            if (button && !selectButtons.has(button)) continue; // respect another owner's custom select
+            if (!button) {
+                button = h('button', 'ag2-select-button');
+                button.type = 'button';
+                button.tabIndex = -1; // native select remains the single focus stop
+                button.append(document.createElement('selectedcontent'));
+                selectButtons.add(button);
+                select.prepend(button);
+            }
+            // UA handles value changes. Also mirror labels updated in-place by ST.
+            const chosen = button.firstElementChild, option = select.selectedOptions[0];
+            const html = option?.innerHTML || '';
+            if (chosen.innerHTML !== html) chosen.innerHTML = html;
+        }
+    };
+    enhance();
+    selectObserver = new MutationObserver(records => {
+        const relevant = records.some(r => {
+            const target = r.target.nodeType === Node.ELEMENT_NODE ? r.target : r.target.parentElement;
+            if (target?.closest('selectedcontent')) return false; // the UA's own value mirror
+            if (target?.closest('select')) return true;
+            return [...r.addedNodes, ...r.removedNodes].some(n => n.nodeType === Node.ELEMENT_NODE && (n.matches('select') || n.querySelector('select')));
+        });
+        if (relevant) enhance();
+    });
+    selectObserver.observe(container, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['multiple', 'size', 'class'] });
+}
 
 export const isOpen = () => isOpenNow;
 export const currentPage = () => cur;
@@ -178,7 +228,7 @@ let results = [];
 
 const loadSearch = async () => {
     if (!searchMod) {
-        searchMod = await import('./search.js?v=20261113MF04');
+        searchMod = await import('./search.js?v=20261114VF01');
         searchMod.init(PAGES.map(({ id, name, lead }) => ({ id, name, lead })));
     }
     return searchMod;
@@ -522,6 +572,7 @@ export function list(opt = {}) {
 
 async function listNow({ focus = false } = {}, valid) {
     if (!isOpenNow) return;
+    clearSelects();
     const was = cur;
     clearTimeout(closeTimer);
     switching++;
@@ -666,6 +717,7 @@ async function goNow(page, { focus = false } = {}, valid) {
             renderBody(page);
         }
         if (cur === page) renderAnchors(page);
+        if (valid()) watchSelects(p.panel ? document.getElementById(p.panel) : root.querySelector('.ag2-set-body'));
     } finally {
         switching--;
     }
@@ -711,6 +763,7 @@ export function sync(id, opened) {
 }
 
 export async function close() {
+    clearSelects();
     activeDragCleanup?.();
     if (!isOpenNow) return;
     const ticket = ++intent, previousOpener = opener;
@@ -745,6 +798,7 @@ export async function close() {
 /** Shell teardown: nodes and listeners go; ST drawers stay as they are (the theme may have
  *  been switched from inside 通用, where the user keeps working in the classic drawer). */
 export function unmount() {
+    clearSelects();
     intent++;
     searchSeq++;
     activeDragCleanup?.();

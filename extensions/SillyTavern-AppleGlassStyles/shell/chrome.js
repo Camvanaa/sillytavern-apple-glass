@@ -1,13 +1,14 @@
 // Apple Glass 2 shell — title capsule, tool capsule, welcome page (DESIGN §5.2, §5.10).
 
-import { icon } from './icons.js?v=20261113MF04';
-import { openMenu } from './menu.js?v=20261113MF04';
-import { ctx, h, guard, thumb, fmtTime, clickSt, openEntry, openSettings, newAssistantChat, setInspector, modCombo, isPhone } from './util.js?v=20261113MF04';
+import { icon } from './icons.js?v=20261114VF01';
+import { openMenu } from './menu.js?v=20261114VF01';
+import { ctx, h, guard, thumb, fmtTime, clickSt, openEntry, openSettings, newAssistantChat, setInspector, modCombo, isPhone } from './util.js?v=20261114VF01';
 import { showBookmarksButtons } from '../../../../bookmarks.js';
-import { getRecent, isLoaded, openRightMenu, row, rowKeys } from './sidebar.js?v=20261113MF04';
+import { getRecent, isLoaded, openRightMenu, row, rowKeys, avatarEl } from './sidebar.js?v=20261114VF01';
 
 let title = null, tools = null, welcome = null;
 let generating = false;
+let toolsSize = null;
 
 export function mount(shell, api) {
     // Title capsule: [expand-sidebar] [avatar · name / subtitle ⌄]
@@ -72,9 +73,17 @@ export function mount(shell, api) {
     rowKeys(welcome);
     rowKeys(title); // the title trigger is a two-line div[role=button]
     shell.append(title, tools, welcome);
+    toolsSize = new ResizeObserver(() => {
+        const width = tools?.getBoundingClientRect().width || 0;
+        if (width) shell.style.setProperty('--ag2-tools-w', `${width}px`);
+    });
+    toolsSize.observe(tools);
 }
 
 export function unmount() {
+    toolsSize?.disconnect();
+    toolsSize = null;
+    title?.parentElement?.style.removeProperty('--ag2-tools-w');
     title?.remove(); tools?.remove(); welcome?.remove();
     title = tools = welcome = null;
 }
@@ -167,9 +176,7 @@ export function renderWelcome() {
         b.dataset.idx = String(all.indexOf(e));
         b.title = `${e.name} · ${e.file_name.replace(/\.jsonl$/, '')}`;
         const head = h('span', 'ag2-wel-card-head');
-        const img = h('img', 'ag2-av ag2-av-32'); img.alt = ''; img.loading = 'lazy'; img.draggable = false;
-        img.src = e.group ? (e.groupAvatar || thumb('avatar', e.members?.[0])) : thumb('avatar', e.avatar);
-        head.append(img, h('span', 'ag2-row-name', e.name), h('span', 'ag2-row-time', fmtTime(e.last_mes)));
+        head.append(avatarEl(e, 32), h('span', 'ag2-row-name', e.name), h('span', 'ag2-row-time', fmtTime(e.last_mes)));
         b.append(head, h('span', 'ag2-wel-card-text', e.text || `${e.chat_items || 0} 条消息`));
         frag.append(b);
     }

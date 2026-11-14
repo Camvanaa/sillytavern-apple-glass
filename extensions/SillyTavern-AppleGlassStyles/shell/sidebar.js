@@ -2,14 +2,14 @@
 // Header · search (opens the ⌘K command palette, P4) · segments 对话/角色/群组 ·
 // list · footer (connection, persona, settings).
 
-import { icon } from './icons.js?v=20261113MF04';
-import { openMenu } from './menu.js?v=20261113MF04';
-import { local, isPinned, setPinned, renamePin, pinList } from './store.js?v=20261113MF04';
+import { icon } from './icons.js?v=20261114VF01';
+import { openMenu } from './menu.js?v=20261114VF01';
+import { local, isPinned, setPinned, renamePin, pinList } from './store.js?v=20261114VF01';
 import {
     ctx, h, toast, guard, fmtTime, ageDays, summary, stem, thumb, charIndex, toggleDrawer, clickSt,
     openSettings, openEntry, openCharacter, openGroup, renameEntry, deleteEntry, getCurrentChatId, personaAvatar, onlineStatus, isDesktop, setInspector,
     openPalette, modKeyLabel, modCombo,
-} from './util.js?v=20261113MF04';
+} from './util.js?v=20261114VF01';
 
 const SEGMENTS = [['chats', '对话'], ['chars', '角色'], ['groups', '群组']];
 let root = null;
@@ -212,7 +212,7 @@ function section(frag, title) {
     frag.append(h('div', 'ag2-sec', title));
 }
 
-function avatarEl(e, size) {
+export function avatarEl(e, size) {
     if (e.group && !e.groupAvatar) {
         const st = h('span', `ag2-av ag2-av-${size} ag2-av-stack`);
         const m = (e.members || []).slice(0, 2);
