@@ -1,11 +1,14 @@
 // Named states are legible without an emoji font. Preserve values and restore on teardown.
-import { openMenu, closeMenu } from './menu.js?v=20261114VF07';
+import { openMenu, closeMenu } from './menu.js?v=20261114VF08';
 let cleanup = null;
 export function mount() {
     unmount();
     const list = document.getElementById('world_popup_entries_list');
     if (!list) return;
     const originals = new Map();
+    const activationTitle = document.querySelector('#wiTopBlock .inline-drawer-header [data-i18n="Click to expand"]');
+    const activationOriginal = activationTitle?.textContent;
+    if (activationTitle) activationTitle.textContent = '全局激活设置';
     const toolbar = document.getElementById('world_editor_select')?.parentElement;
     const more = document.createElement('button');
     more.type = 'button';
@@ -51,6 +54,7 @@ export function mount() {
     render();
     cleanup = () => {
         observer.disconnect();
+        if (activationTitle?.textContent === '全局激活设置') activationTitle.textContent = activationOriginal;
         if (document.getElementById('ag2-worldbook-menu')) closeMenu();
         more.removeEventListener('click', show);
         more.remove();
