@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { writeFileSync, mkdirSync } from 'node:fs';
-const ROOT = '/opt/server-agent/workspace/st-testdata/redesign/motion-fixes';
+const ROOT = process.env.AG2_EVIDENCE_ROOT || '/opt/server-agent/workspace/st-testdata/redesign/motion-fixes';
 
 export default async function(T) {
     const mode = T.cfg.part || 'normal', view = T.cfg.phone ? 'phone' : 'desktop';

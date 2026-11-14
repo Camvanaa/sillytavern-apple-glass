@@ -1,0 +1,9 @@
+export default async function(T){
+ const p=await T.newPage({phone:true});await T.prepare(p);await T.boot(p,{ag2:true});
+ await p.evaluate(async()=>{const b=document.querySelector('#ag2-shell').dataset.build,u=await import(`/scripts/extensions/third-party/SillyTavern-AppleGlassStyles/shell/util.js?v=${b}`);window.vs=await u.loadSettings();await vs.open('ai');});
+ const c=await p.context().newCDPSession(p);await c.send('DOM.enable');await c.send('CSS.enable');const {root}=await c.send('DOM.getDocument',{depth:0});const {nodeId}=await c.send('DOM.querySelector',{nodeId:root.nodeId,selector:'#settings_preset_openai'});const {node}=await c.send('DOM.describeNode',{nodeId,depth:2,pierce:true});const chosen=node.shadowRoots[0].children.find(e=>e.attributes?.includes('-internal-select-inner-element'));const obj=await c.send('DOM.resolveNode',{backendNodeId:chosen.backendNodeId});const {nodeId:inner}=await c.send('DOM.requestNode',{objectId:obj.object.objectId});const rules=await c.send('CSS.getMatchedStylesForNode',{nodeId:inner});const results=[];
+ for(const css of ['/* baseline */','select::-internal-select-inner-element {text-overflow:ellipsis!important;overflow:hidden!important;}','select {display:block!important;}','select {display:inline-block!important;}','select {display:block!important;text-overflow:ellipsis!important;}']){
+  const el=await p.addStyleTag({content:css});results.push({css,ua:(await c.send('Runtime.callFunctionOn',{objectId:obj.object.objectId,functionDeclaration:'function(){const c=getComputedStyle(this);return {display:c.display,white:c.whiteSpace,overflow:c.overflow,textOverflow:c.textOverflow,h:this.clientHeight,sh:this.scrollHeight,w:this.clientWidth,sw:this.scrollWidth}}',returnByValue:true})).result.value});await el.evaluate(e=>e.remove());
+ }
+ return {ok:true,rules,results};
+}
