@@ -45,6 +45,11 @@ export default async function(T){
   assert.equal(await p.evaluate(()=>document.body.classList.contains('expandMessageActions')),true);
   out.persistent=[];
   for(const style of [0,1,2,3,4,5,6]){sel=style===2?'#chat .mes.last_mes':`#chat .mes[mesid="${mid}"]`;await p.evaluate(v=>$('#chat_display').val(String(v)).trigger('change'),style);await T.sleep(250);await p.locator(sel).scrollIntoViewIfNeeded();const f=await facts();out.persistent.push({style,...f});save();assert.equal(f.display,'flex');assert.ok(f.extra.top>=f.text.bottom&&(!f.after||f.extra.bottom<=f.after.top));assert.ok(f.sw<=f.cw+1);}
+  await p.evaluate(()=>{const c=document.querySelector('#chat');c.scrollTop=c.scrollHeight;});
+  await p.locator('#chat .mes.last_mes .mes_text').click();
+  out.persistentBottom=await p.locator('#chat .mes.last_mes .extraMesButtons').evaluate(e=>({rect:e.getBoundingClientRect(),dock:document.querySelector('#form_sheld').getBoundingClientRect(),buttons:[...e.children].filter(b=>b.getBoundingClientRect().width).map(b=>{const r=b.getBoundingClientRect();return {rect:r,hit:b.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2))};})}));
+  assert.ok(out.persistentBottom.rect.bottom<=out.persistentBottom.dock.top,'persistent bottom scrolls fully clear of dock');
+  assert.ok(out.persistentBottom.buttons.every(b=>b.hit),'persistent actions reachable');
   await shot('persistent');
  }
  if(part==='controls'){

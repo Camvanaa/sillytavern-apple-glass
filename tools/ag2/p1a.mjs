@@ -22,7 +22,8 @@ async function clickRow(page, nameText, sub) {
     const n = await rows.count();
     for (let i = 0; i < n; i++) {
         const t = await rows.nth(i).innerText();
-        if (!sub || t.includes(sub)) { await rows.nth(i).click(); return true; }
+        const title = await rows.nth(i).getAttribute('title') || '';
+        if (!sub || t.includes(sub) || title.includes(sub)) { await rows.nth(i).click(); return true; }
     }
     return false;
 }
@@ -59,7 +60,7 @@ async function funcBody(T, page, out) {
     sw.mira = await waitChat(page, s => s.char === 'ag2_Mira.png' && s.n > 1);
     await clickRow(page, '旅店老板 Aldric', '钟楼的路');
     sw.aldric2 = await waitChat(page, s => s.chat === '旅店老板 Aldric - 钟楼的路');
-    await clickRow(page, '旅店老板 Aldric', '晚安');
+    if (!await clickRow(page, '旅店老板 Aldric', '旅店老板 Aldric - 2026-11-06@19h00m00s')) throw new Error('neutral long-chat row missing');
     sw.aldric1 = await waitChat(page, s => s.chat === '旅店老板 Aldric - 2026-11-06@19h00m00s' && s.n > 40);
     await clickRow(page, '旅途同伴');
     sw.group = await waitChat(page, s => s.group === 'ag2group01' && s.n > 1);
@@ -77,7 +78,7 @@ async function funcBody(T, page, out) {
 
     // Switch during generation: held mock response keeps ST generating
     const g = out.genGuard = {};
-    await clickRow(page, '旅店老板 Aldric', '晚安');
+    if (!await clickRow(page, '旅店老板 Aldric', '旅店老板 Aldric - 2026-11-06@19h00m00s')) throw new Error('neutral long-chat row missing');
     await waitChat(page, s => s.chat === '旅店老板 Aldric - 2026-11-06@19h00m00s' && s.n > 40);
     page.__gen.delayMs = 7000;
     await page.fill('#send_textarea', '（测试）生成中切换');

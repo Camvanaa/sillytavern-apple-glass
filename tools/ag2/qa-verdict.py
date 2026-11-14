@@ -19,6 +19,8 @@ def walk(value, path):
     if isinstance(value, dict):
         for k, v in value.items():
             p = f"{path}.{k}"
+            if k == "ERROR" or (k == "timeout" and v is True):
+                require(False, p, v)
             if k in ("ok", "backOk", "wrapOk") and v is False:
                 require(False, p, v)
             if k in ("windowAdopted", "onlyCurrent", "inspectorHidden"):
