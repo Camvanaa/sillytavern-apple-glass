@@ -8975,6 +8975,7 @@ html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .ag2-prompt-trig
 
 html body.ag2 .ag2-preset-more { display: none !important; }
 html body.ag2 .ag2-worldbook-more { display: none !important; }
+html body.ag2 :is(.ag2-wi-summary, .ag2-wi-entry-more, .ag2-wi-label, .ag2-wi-active) { display: none !important; }
 
 html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .ag2-prompt-trigger-hint {
     margin-top: 6px;
@@ -10735,6 +10736,907 @@ html body.ag2:not(#_):not(#__) #movingDivs > .drawer-content:not(#floatingPrompt
         background-color: transparent !important;
         box-shadow: none !important;
         color: var(--ag2-l2) !important;
+    }
+
+    /* 世界书 phone: iOS inset-grouped sections on a near-black page. Section
+       labels sit outside the gray groups; rows put the label left and the value,
+       switch or chevron on one right edge. Native controls stay in the DOM. */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__):has(#WorldInfo.openDrawer) #ag2-settings {
+        background: rgb(10, 10, 12) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo {
+        --ag2-wi-surface: rgb(28, 28, 31);
+        --ag2-wi-fill: rgba(118, 118, 128, 0.18);
+        --ag2-wi-inset: 16px;
+        --ag2-wi-row: 46px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo.ag2-worldbook-enhanced > .flex-container:has(> h3) {
+        display: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wi-holder {
+        margin: 0 !important;
+        padding-top: 8px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo.ag2-worldbook-enhanced #wi-holder::before,
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo.ag2-worldbook-enhanced #world_popup::before {
+        content: '全局';
+        display: block;
+        padding: 0 var(--ag2-wi-inset) 7px;
+        color: var(--ag2-l2);
+        font: 400 13px / 18px var(--ag2-font);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo.ag2-worldbook-enhanced #world_popup::before {
+        content: '当前世界书';
+        grid-column: 1 / -1;
+        grid-row: 1;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock {
+        flex-direction: column !important;
+        flex-wrap: nowrap !important;
+        gap: 0 !important;
+        margin: 0 0 30px !important;
+        border-radius: 22px !important;
+        background: var(--ag2-wi-surface) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock > .range-block {
+        width: 100%;
+        margin: 0 !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock > .range-block + .range-block {
+        background: linear-gradient(var(--ag2-sep), var(--ag2-sep)) no-repeat var(--ag2-wi-inset) 0 / calc(100% - var(--ag2-wi-inset)) .5px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock > #WIMultiSelector {
+        flex-direction: column !important;
+        flex-wrap: nowrap !important;
+        align-items: stretch !important;
+        gap: 6px !important;
+        padding: 10px var(--ag2-wi-inset) !important;
+    }
+
+    /* Active books: a disclosure row summarising every selection; the native
+       multi-select is revealed beneath it, never overlaid. */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock > #WIMultiSelector:has(> .ag2-wi-active):not(:has(.select2-hidden-accessible)) {
+        gap: 0 !important;
+        padding: 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock > #WIMultiSelector:has(> .ag2-wi-active):not(:has(.select2-hidden-accessible)) > :is(.range-block-title, .range-block-range) {
+        display: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock > #WIMultiSelector.ag2-wi-active-open:has(> .ag2-wi-active):not(:has(.select2-hidden-accessible)) > .range-block-range {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 var(--ag2-wi-inset) 14px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock > #WIMultiSelector:has(.select2-hidden-accessible) > .ag2-wi-active {
+        display: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock > #WIMultiSelector > .ag2-wi-active {
+        display: flex !important;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        min-width: 0;
+        min-height: var(--ag2-wi-row);
+        margin: 0;
+        padding: 0 var(--ag2-wi-inset);
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        background: none;
+        color: var(--ag2-l1);
+        text-align: left;
+        font: 400 17px / 22px var(--ag2-font);
+        cursor: pointer;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock > #WIMultiSelector > .ag2-wi-active:focus-visible {
+        outline: 2px solid var(--ag2-accent);
+        outline-offset: -3px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock > #WIMultiSelector > .ag2-wi-active:active {
+        background: var(--ag2-f3);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock > #WIMultiSelector > .ag2-wi-active::after {
+        content: '';
+        flex: none;
+        width: 7px;
+        height: 7px;
+        margin-right: 2px;
+        border-top: 2px solid var(--ag2-l4);
+        border-right: 2px solid var(--ag2-l4);
+        transform: rotate(45deg);
+        transition: transform var(--ag2-dur) var(--ag2-ease);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock > #WIMultiSelector > .ag2-wi-active[aria-expanded="true"]::after {
+        transform: translateY(-2px) rotate(135deg);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock > #WIMultiSelector .ag2-wi-active-label {
+        flex: none;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock > #WIMultiSelector .ag2-wi-active-value {
+        display: flex;
+        flex: 1 1 auto;
+        justify-content: flex-end;
+        gap: 5px;
+        min-width: 0;
+        color: var(--ag2-l2);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock > #WIMultiSelector .ag2-wi-active-name {
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock > #WIMultiSelector .ag2-wi-active-count {
+        flex: none;
+        white-space: nowrap;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock > #WIMultiSelector > .ag2-wi-active.is-empty .ag2-wi-active-value {
+        color: var(--ag2-l3);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #WIMultiSelector .range-block-title small {
+        color: var(--ag2-l2) !important;
+        font: 400 13px / 18px var(--ag2-font) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #WIMultiSelector select:not(.select2-hidden-accessible) {
+        color-scheme: dark;
+        field-sizing: content;
+        box-sizing: border-box;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: 236px !important;
+        padding: 4px 0 !important;
+        overflow-y: auto !important;
+        border-radius: 10px !important;
+        background: var(--ag2-wi-fill) !important;
+        box-shadow: none !important;
+        color: var(--ag2-l1) !important;
+        font: 400 17px / 22px var(--ag2-font) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #WIMultiSelector select:not(.select2-hidden-accessible) > option {
+        padding: 10px 12px !important;
+        color: var(--ag2-l1);
+        margin: 0 4px;
+        border-radius: 8px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #WIMultiSelector select:not(.select2-hidden-accessible):focus {
+        outline: none !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock > #WIMultiSelector:has(select:focus-visible) > .ag2-wi-active .ag2-wi-active-label {
+        color: var(--ag2-accent);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #WIMultiSelector select:not(.select2-hidden-accessible) > option:checked {
+        background: linear-gradient(rgba(10, 132, 255, 0.32), rgba(10, 132, 255, 0.32)) !important;
+        color: var(--ag2-l1) !important;
+    }
+
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock .inline-drawer-header {
+        min-height: var(--ag2-wi-row) !important;
+        padding: 0 var(--ag2-wi-inset) !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock .inline-drawer-header b {
+        font-weight: 400 !important;
+        font-size: 17px !important;
+        color: var(--ag2-l1);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock .inline-drawer-header > .inline-drawer-icon,
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .inline-drawer-content .inline-drawer-header > .inline-drawer-icon {
+        width: 14px !important;
+        height: 14px !important;
+        font-size: 0 !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        margin: 0 0 0 auto !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock .inline-drawer-header > .inline-drawer-icon::before,
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .inline-drawer-content .inline-drawer-header > .inline-drawer-icon::before,
+    html body.ag2.ag2-phone #WorldInfo .ag2-wi-summary::after {
+        content: '' !important;
+        width: 7px;
+        height: 7px;
+        border-top: 2px solid var(--ag2-l4);
+        border-right: 2px solid var(--ag2-l4);
+        transform: rotate(45deg);
+        transition: transform var(--ag2-dur) var(--ag2-ease);
+        flex: none;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock .inline-drawer-header > .inline-drawer-icon.up::before,
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .inline-drawer-content .inline-drawer-header > .inline-drawer-icon.up::before {
+        transform: translateY(-2px) rotate(135deg);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock .inline-drawer-content {
+        padding: 4px var(--ag2-wi-inset) 16px !important;
+    }
+
+    /* 当前世界书 · search · entries · pager footer share one grid so the pager
+       can follow the list it describes. */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo.ag2-worldbook-enhanced #world_popup {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) auto 36px;
+        align-items: center;
+        column-gap: 6px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo.ag2-worldbook-enhanced #world_popup > .flex-container:has(#world_editor_select) {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        min-height: var(--ag2-wi-row);
+        margin: 0 0 14px !important;
+        padding: 0 6px 0 4px !important;
+        gap: 4px !important;
+        border-radius: 22px;
+        background: var(--ag2-wi-surface);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo.ag2-worldbook-enhanced #world_editor_select {
+        height: var(--ag2-wi-row) !important;
+        background-color: transparent !important;
+        box-shadow: none !important;
+        color: var(--ag2-l1) !important;
+        font-size: 17px !important;
+        font-weight: 400 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo.ag2-worldbook-enhanced .ag2-worldbook-more {
+        height: 36px;
+        min-width: 52px;
+        padding: 0 10px;
+        background: transparent;
+        color: var(--ag2-accent);
+        font: 400 17px / 1 var(--ag2-font);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo.ag2-worldbook-enhanced #world_popup > .flex-container:has(#world_info_search) {
+        display: contents !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo.ag2-worldbook-enhanced #world_popup :is(#world_info_search, #world_info_sort_order, #world_popup_new) {
+        grid-row: 3;
+        align-self: center;
+        height: 36px !important;
+        min-height: 36px !important;
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo.ag2-worldbook-enhanced #world_info_search {
+        grid-column: 1;
+        padding: 0 10px 0 32px !important;
+        border-radius: 10px !important;
+        background: var(--ag2-wi-fill) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") no-repeat 10px 50% !important;
+        box-shadow: none !important;
+        color: var(--ag2-l1) !important;
+        font: 400 16px / 36px var(--ag2-font) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo.ag2-worldbook-enhanced #world_info_sort_order {
+        grid-column: 2;
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: 132px;
+        padding: 0 4px 0 8px !important;
+        background-color: transparent !important;
+        box-shadow: none !important;
+        color: var(--ag2-accent) !important;
+        font: 400 16px / 36px var(--ag2-font) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo.ag2-worldbook-enhanced #world_popup_new {
+        grid-column: 3;
+        width: 36px !important;
+        min-width: 36px !important;
+        padding: 0 !important;
+        border-radius: 18px !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        color: var(--ag2-accent) !important;
+        font-size: 20px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo.ag2-worldbook-enhanced #world_refresh {
+        display: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo.ag2-worldbook-enhanced #world_popup_entries_list {
+        grid-column: 1 / -1;
+        grid-row: 4;
+        min-width: 0;
+        margin-top: 12px !important;
+        border-radius: 22px !important;
+        background: var(--ag2-wi-surface) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo.ag2-worldbook-enhanced #world_popup_entries_list:empty {
+        display: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo.ag2-worldbook-enhanced #world_info_pagination {
+        grid-column: 1 / -1;
+        grid-row: 5;
+        margin: 6px 0 0 !important;
+        padding: 0 6px 0 var(--ag2-wi-inset);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_info_pagination .paginationjs {
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        min-height: 32px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_info_pagination .paginationjs-nav {
+        color: var(--ag2-l3) !important;
+        font-size: 13px !important;
+        font-weight: 400 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_info_pagination .paginationjs-pages:not(:has(li:not(.disabled))) {
+        visibility: hidden;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_info_pagination .paginationjs-size-changer select {
+        height: 32px !important;
+        min-height: 32px !important;
+        background-color: transparent !important;
+        box-shadow: none !important;
+        color: var(--ag2-l3) !important;
+        font-size: 13px !important;
+    }
+
+    /* Collapsed entry: one tappable row (title · state · chevron). */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry + .world_entry {
+        background-image: linear-gradient(var(--ag2-sep), var(--ag2-sep));
+        background-size: calc(100% - var(--ag2-wi-inset)) .5px;
+        background-position: var(--ag2-wi-inset) 0;
+        background-repeat: no-repeat;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry > form.wi-card-entry > .inline-drawer > .inline-drawer-header:has(.inline-drawer-toggle.down) > :not(.ag2-wi-summary) {
+        display: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry > form.wi-card-entry > .inline-drawer > .inline-drawer-header:has(.inline-drawer-toggle.down) {
+        padding: 0 !important;
+        gap: 0 !important;
+        min-height: var(--ag2-wi-row) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .inline-drawer-header:has(.inline-drawer-toggle.down) > .ag2-wi-summary {
+        display: flex !important;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        min-width: 0;
+        min-height: var(--ag2-wi-row);
+        margin: 0;
+        padding: 0 var(--ag2-wi-inset);
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        background: none;
+        color: var(--ag2-l1);
+        text-align: left;
+        font: 400 17px / 22px var(--ag2-font);
+        cursor: pointer;
+    }
+
+    html body.ag2.ag2-phone #WorldInfo .ag2-wi-summary-title {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    html body.ag2.ag2-phone #WorldInfo .ag2-wi-summary.is-off .ag2-wi-summary-title {
+        color: var(--ag2-l2);
+    }
+
+    html body.ag2.ag2-phone #WorldInfo .ag2-wi-summary-status {
+        flex: none;
+        color: var(--ag2-l2);
+        font-size: 17px;
+        font-weight: 400;
+    }
+
+    html body.ag2.ag2-phone #WorldInfo .ag2-wi-summary::after {
+        margin: 0 2px 0 0;
+    }
+
+    html body.ag2.ag2-phone #WorldInfo .ag2-wi-summary:focus-visible {
+        outline: 2px solid var(--ag2-accent);
+        outline-offset: -3px;
+    }
+
+    html body.ag2.ag2-phone #WorldInfo .ag2-wi-summary:active {
+        background: var(--ag2-f3) !important;
+    }
+
+    /* Expanded entry: title row, then label/value rows on one right edge. */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry > form.wi-card-entry > .inline-drawer > .inline-drawer-header:has(.inline-drawer-toggle.up) {
+        display: block !important;
+        padding: 8px var(--ag2-wi-inset) 0 !important;
+        min-height: 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry > form.wi-card-entry > .inline-drawer > .inline-drawer-header:has(.inline-drawer-toggle.up) > :is(i.menu_button, .ag2-wi-summary) {
+        display: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry > form.wi-card-entry > .inline-drawer > .inline-drawer-header:has(.inline-drawer-toggle.up) .world_entry_thin_controls {
+        display: grid !important;
+        grid-template-columns: 28px minmax(0, 1fr) 36px;
+        grid-auto-rows: auto;
+        align-items: center !important;
+        gap: 0 8px !important;
+        padding: 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry > form.wi-card-entry > .inline-drawer > .inline-drawer-header:has(.inline-drawer-toggle.up) .world_entry_thin_controls > .inline-drawer-toggle {
+        grid-area: 1 / 1;
+        width: 28px !important;
+        height: 44px !important;
+        justify-content: flex-start;
+        color: var(--ag2-accent) !important;
+        font-size: 15px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry > form.wi-card-entry > .inline-drawer > .inline-drawer-header:has(.inline-drawer-toggle.up) .WIEntryTitleAndStatus > .flex-container {
+        grid-area: 1 / 2;
+        min-width: 0;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry > form.wi-card-entry > .inline-drawer > .inline-drawer-header:has(.inline-drawer-toggle.up) textarea[name="comment"] {
+        height: 40px !important;
+        min-height: 40px !important;
+        padding: 9px 12px !important;
+        border-radius: 10px !important;
+        background: var(--ag2-wi-fill) !important;
+        box-shadow: none !important;
+        font: 600 17px / 22px var(--ag2-font) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry > form.wi-card-entry > .inline-drawer > .inline-drawer-header:has(.inline-drawer-toggle.up) .ag2-wi-entry-more {
+        grid-area: 1 / 3;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        justify-self: end;
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        border: 0;
+        border-radius: 18px;
+        background: transparent;
+        color: var(--ag2-accent);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry > form.wi-card-entry > .inline-drawer > .inline-drawer-header:has(.inline-drawer-toggle.up) .ag2-wi-label {
+        display: flex !important;
+        align-items: center;
+        grid-column: 1 / -1;
+        min-height: 44px;
+        background: linear-gradient(var(--ag2-sep), var(--ag2-sep)) no-repeat 0 0 / 100% .5px;
+        color: var(--ag2-l1);
+        font: 400 17px / 22px var(--ag2-font);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry > form.wi-card-entry > .inline-drawer > .inline-drawer-header:has(.inline-drawer-toggle.up) .ag2-wi-label-on {
+        grid-row: 2;
+        margin-top: 8px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry > form.wi-card-entry > .inline-drawer > .inline-drawer-header:has(.inline-drawer-toggle.up) .ag2-wi-label-type {
+        grid-row: 3;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry > form.wi-card-entry > .inline-drawer > .inline-drawer-header:has(.inline-drawer-toggle.up) .killSwitch {
+        grid-area: 2 / 2 / 3 / 4;
+        justify-self: end;
+        position: relative;
+        z-index: 1;
+        width: 42px !important;
+        height: 26px !important;
+        margin-top: 8px;
+        border-radius: 13px;
+        background: var(--ag2-f2);
+        font-size: 0 !important;
+        transition: background-color var(--ag2-dur) ease;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry > form.wi-card-entry > .inline-drawer > .inline-drawer-header:has(.inline-drawer-toggle.up) .killSwitch::before {
+        content: '' !important;
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        transition: transform var(--ag2-dur) var(--ag2-ease);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry > form.wi-card-entry > .inline-drawer > .inline-drawer-header:has(.inline-drawer-toggle.up) .killSwitch.fa-toggle-on {
+        background: var(--ag2-green);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry > form.wi-card-entry > .inline-drawer > .inline-drawer-header:has(.inline-drawer-toggle.up) .killSwitch.fa-toggle-on::before {
+        transform: translateX(16px);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry > form.wi-card-entry > .inline-drawer > .inline-drawer-header:has(.inline-drawer-toggle.up) .killSwitch:focus-visible {
+        outline: 2px solid var(--ag2-accent);
+        outline-offset: 2px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry > form.wi-card-entry > .inline-drawer > .inline-drawer-header:has(.inline-drawer-toggle.up) :is(select[name="entryStateSelector"], .WIEnteryHeaderControls select) {
+        width: auto !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        max-height: 36px !important;
+        padding: 0 18px 0 8px !important;
+        background-color: transparent !important;
+        background-position: 100% 50% !important;
+        box-shadow: none !important;
+        color: var(--ag2-l2) !important;
+        font: 400 17px / 36px var(--ag2-font) !important;
+        text-align: right;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry > form.wi-card-entry > .inline-drawer > .inline-drawer-header:has(.inline-drawer-toggle.up) select[name="entryStateSelector"] {
+        grid-area: 3 / 2 / 4 / 4;
+        justify-self: end;
+        position: relative;
+        z-index: 1;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry > form.wi-card-entry > .inline-drawer > .inline-drawer-header:has(.inline-drawer-toggle.up) .WIEnteryHeaderControls {
+        grid-column: 1 / -1;
+        grid-row: 4;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0 !important;
+        padding: 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry > form.wi-card-entry > .inline-drawer > .inline-drawer-header:has(.inline-drawer-toggle.up) .WIEnteryHeaderControls > .world_entry_form_control {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 12px !important;
+        width: 100%;
+        min-height: 44px;
+        background: linear-gradient(var(--ag2-sep), var(--ag2-sep)) no-repeat 0 0 / 100% .5px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry > form.wi-card-entry > .inline-drawer > .inline-drawer-header:has(.inline-drawer-toggle.up) .WIEntryHeaderTitleMobile {
+        flex: none;
+        color: var(--ag2-l1) !important;
+        font: 400 17px / 22px var(--ag2-font) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry > form.wi-card-entry > .inline-drawer > .inline-drawer-header:has(.inline-drawer-toggle.up) .WIEnteryHeaderControls input {
+        box-sizing: border-box;
+        width: 76px !important;
+        height: 32px !important;
+        min-height: 32px !important;
+        max-height: 32px !important;
+        padding: 0 10px !important;
+        border-radius: 8px !important;
+        background: var(--ag2-wi-fill) !important;
+        box-shadow: none !important;
+        font: 400 17px / 32px var(--ag2-font) !important;
+        text-align: right;
+    }
+
+    /* Expanded entry body: left-aligned captions, one field rhythm. */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .inline-drawer-outlet {
+        padding: 6px var(--ag2-wi-inset) 18px !important;
+        background: linear-gradient(var(--ag2-sep), var(--ag2-sep)) no-repeat var(--ag2-wi-inset) 0 / calc(100% - 2 * var(--ag2-wi-inset)) .5px;
+        gap: 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .world_entry_edit > .flex-container {
+        gap: 18px !important;
+        margin: 12px 0 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .world_entry_edit > .flex-container:has(> [name="contentAndCharFilterBlock"]) {
+        flex-direction: column !important;
+        flex-wrap: nowrap !important;
+        align-items: stretch !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .world_entry_edit .commentContainer:empty {
+        display: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .world_entry_edit small:not(.displayNone) {
+        display: block;
+        margin: 0 0 6px !important;
+        padding: 0 4px !important;
+        color: var(--ag2-l2) !important;
+        font: 400 13px / 18px var(--ag2-font) !important;
+        text-align: left !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .world_entry_edit .world_entry_form_control {
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry [name="keywordsAndLogicBlock"] {
+        gap: 14px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .world_entry_edit :is(input.text_pole, textarea.text_pole, select.text_pole):not([name="content"]) {
+        box-sizing: border-box;
+        height: 44px !important;
+        min-height: 44px !important;
+        border-radius: 10px !important;
+        background-color: var(--ag2-wi-fill) !important;
+        box-shadow: none !important;
+        font-size: 16px !important;
+        line-height: 22px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .world_entry_edit textarea.text_pole:not([name="content"]) {
+        field-sizing: content;
+        height: auto !important;
+        max-height: 132px !important;
+        padding: 11px 36px 11px 12px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .world_entry_edit .switch_input_type_icon {
+        top: auto !important;
+        bottom: 12px !important;
+        right: 10px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry [name="perEntryOverridesBlock"] {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px 10px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry [name="perEntryOverridesBlock"] > .world_entry_form_control {
+        min-width: 0;
+        width: auto !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry [name="perEntryOverridesBlock"] :is(input, select) {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry [name="perEntryOverridesBlock"] > .world_entry_form_control:has(> :is([name="automationId"], [name="delayUntilRecursionLevel"], [name="outletName"])) {
+        grid-column: 1 / -1;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry > form.wi-card-entry > .inline-drawer > .inline-drawer-header:has(.inline-drawer-toggle.up) .WIEnteryHeaderControls > .world_entry_form_control:has(> input[name="depth"]:is(:disabled, [style*="visibility: hidden"], [style*="display: none"])) {
+        display: none !important;
+    }
+
+    /* Content: caption + token count, the editor, then the recursion switches
+       as one inset group. Wrappers flatten; the controls are not moved. */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry [name="contentAndCharFilterBlock"] > .world_entry_form_control {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 0;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry [name="contentAndCharFilterBlock"] > .world_entry_form_control > label,
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry [name="contentAndCharFilterBlock"] > .world_entry_form_control > label > small:not(.displayNone),
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry [name="contentAndCharFilterBlock"] > .world_entry_form_control > label > small > span,
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry [name="contentAndCharFilterBlock"] > .world_entry_form_control > label > small > span > div.flex-container > .flexFlowColumn {
+        display: contents !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry [name="contentAndCharFilterBlock"] > .world_entry_form_control > label > small > span > span:first-child {
+        grid-area: 1 / 1;
+        gap: 2px !important;
+        padding-left: 4px;
+        color: var(--ag2-l2);
+        font: 400 13px / 18px var(--ag2-font);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry [name="contentAndCharFilterBlock"] > .world_entry_form_control > label > small > span > span:nth-child(2) {
+        grid-area: 1 / 2;
+        padding-right: 4px;
+        color: var(--ag2-l3);
+        font: 400 13px / 18px var(--ag2-font);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry [name="contentAndCharFilterBlock"] > .world_entry_form_control > label > small > span > span:first-child .editor_maximize {
+        width: 36px !important;
+        height: 36px !important;
+        color: var(--ag2-accent) !important;
+        opacity: 1 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry [name="contentAndCharFilterBlock"] textarea[name="content"] {
+        grid-area: 2 / 1 / 3 / 3;
+        margin: 2px 0 0 !important;
+        padding: 12px !important;
+        border-radius: 12px !important;
+        background: var(--ag2-wi-fill) !important;
+        box-shadow: none !important;
+        font-size: 16px !important;
+        line-height: 24px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry [name="contentAndCharFilterBlock"] > .world_entry_form_control > label > small > span > div.flex-container {
+        grid-area: 3 / 1 / 4 / 3;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0 !important;
+        margin-top: 14px;
+        border-radius: 12px;
+        background: var(--ag2-wi-fill);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry [name="contentAndCharFilterBlock"] label.checkbox {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between;
+        gap: 12px !important;
+        min-height: 44px;
+        margin: 0 !important;
+        padding: 8px 12px;
+        cursor: pointer;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry [name="contentAndCharFilterBlock"] .flexFlowColumn:not(:first-child) > label.checkbox,
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry [name="contentAndCharFilterBlock"] label.checkbox + label.checkbox {
+        background: linear-gradient(var(--ag2-sep), var(--ag2-sep)) no-repeat 12px 0 / calc(100% - 12px) .5px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry [name="contentAndCharFilterBlock"] label.checkbox > span {
+        order: 0;
+        min-width: 0;
+        color: var(--ag2-l1);
+        font: 400 16px / 21px var(--ag2-font);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry [name="contentAndCharFilterBlock"] label.checkbox > input[type="checkbox"] {
+        -webkit-appearance: none;
+        appearance: none;
+        order: 1;
+        position: relative;
+        flex: none !important;
+        display: block !important;
+        width: 42px !important;
+        height: 26px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 13px !important;
+        background: var(--ag2-f2) !important;
+        box-shadow: inset 0 0 0 .5px rgba(255, 255, 255, 0.05) !important;
+        transition: background-color var(--ag2-dur) ease !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry [name="contentAndCharFilterBlock"] label.checkbox > input[type="checkbox"]::before {
+        content: '' !important;
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 22px !important;
+        height: 22px !important;
+        border-radius: 50%;
+        background: #fff !important;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3) !important;
+        clip-path: none !important;
+        transform: none !important;
+        transition: transform var(--ag2-dur) var(--ag2-ease) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry [name="contentAndCharFilterBlock"] label.checkbox > input[type="checkbox"]:checked {
+        background: var(--ag2-green) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry [name="contentAndCharFilterBlock"] label.checkbox > input[type="checkbox"]:checked::before {
+        transform: translateX(16px) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry [name="contentAndCharFilterBlock"] label.checkbox > input[type="checkbox"]:focus-visible {
+        outline: 2px solid var(--ag2-accent) !important;
+        outline-offset: 2px;
+    }
+
+    /* Inclusion group / timing / filters / extra sources. */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .world_entry_edit > .flexGap10 {
+        gap: 14px 10px !important;
+        margin-top: 14px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .world_entry_edit .flexGap10 > div > .justifySpaceBetween {
+        align-items: center !important;
+        min-height: 26px;
+        margin-bottom: 6px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .world_entry_edit .flexGap10 > div > .justifySpaceBetween:has(label.checkbox_label) {
+        min-height: 36px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .world_entry_edit .flexGap10 > div > .justifySpaceBetween small {
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .world_entry_edit .flexGap10 label.checkbox_label {
+        gap: 8px !important;
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .world_entry_edit select[multiple] {
+        border-radius: 12px !important;
+        background-color: var(--ag2-wi-fill) !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .world_entry_edit > .inline-drawer {
+        margin: 22px 0 0 !important;
+        border-radius: 12px !important;
+        background: var(--ag2-wi-fill) !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .world_entry_edit > .inline-drawer > .inline-drawer-header {
+        min-height: 44px !important;
+        padding: 0 12px !important;
+        background: transparent !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .world_entry_edit > .inline-drawer > .inline-drawer-header strong {
+        color: var(--ag2-l1);
+        font: 400 16px / 21px var(--ag2-font);
     }
 
     /* --- 人设: one column; the six actions keep one row, the picker goes under them --- */

@@ -1,5 +1,5 @@
 // Compact phone preset actions; dispatch to the existing controls without moving them.
-import { openMenu, closeMenu } from './menu.js?v=20261114VF08';
+import { openMenu, closeMenu } from './menu.js?v=20261114VF09';
 
 let cleanup = null;
 export function mount() {

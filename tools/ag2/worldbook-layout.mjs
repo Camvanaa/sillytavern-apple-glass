@@ -11,7 +11,7 @@ export default async function(T) {
     await T.sleep(700);
     const entry = page.locator('#world_popup_entries_list .world_entry').first();
     if (T.cfg.phone) assert.equal(await entry.locator('.WIEnteryHeaderControls').isVisible(), false);
-    await entry.locator('.inline-drawer-toggle').first().click(); await T.sleep(300);
+    await entry.locator(T.cfg.phone ? '.ag2-wi-summary' : '.inline-drawer-toggle').first().click(); await T.sleep(300);
     assert.equal(await entry.locator('.WIEnteryHeaderControls').isVisible(), true);
     await entry.locator('select[name="position"]').selectOption({ value: '4' });
     assert.equal(await entry.locator('input[name="depth"]').isVisible(), true);
