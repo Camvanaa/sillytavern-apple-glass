@@ -3649,6 +3649,8 @@ html body.ag2:not(#_):not(#__) #ag2-settings .ag2-range {
     -webkit-appearance: none;
     appearance: none;
     cursor: pointer;
+    opacity: 1 !important;
+    filter: none !important;
 }
 
 html body.ag2:not(#_):not(#__) #ag2-settings .ag2-range::-webkit-slider-runnable-track {
@@ -3812,14 +3814,14 @@ html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-close:focus-visible {
         --mainFontSize: 13.5px;
     }
 
-    /* h3 / h4 → group titles 12/640 grey */
+    /* Group titles stay distinct from disabled controls and supporting text. */
     html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) :is(h3, h4) {
         margin-top: 14px !important;
         margin-bottom: 6px !important;
         padding: 0 2px !important;
         border: 0 !important;
         background: none !important;
-        color: var(--ag2-l3) !important;
+        color: var(--ag2-l2) !important;
         font-size: 12px !important;
         font-weight: 640 !important;
         letter-spacing: 0.02em !important;
@@ -5794,6 +5796,21 @@ html body.ag2.reduced-motion:not(#_):not(#__):not(#___) .ag2-hit {
         min-height: 32px;
         padding: 0 4px !important;
     }
+
+    /* Adjacent drawers inside one extension must not collapse their margins,
+       unlike drawers isolated in separate plugin wrappers. */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #rm_extensions_block .sd_settings {
+        display: flow-root;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #rm_extensions_block .sd_settings > .inline-drawer + .inline-drawer {
+        margin-top: 12px !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #rm_extensions_block #memory_settings > .inline-drawer > .inline-drawer-header {
+        padding-top: 5px !important;
+        padding-bottom: 5px !important;
+    }
 }
 /* == /5.5e == */
 
@@ -7160,7 +7177,7 @@ html body.ag2.ag2-insp-open {
     }
 
     @media (min-width: 1001px) {
-        html body.ag2:not(#_):not(#__) #floatingPrompt {
+        html body.ag2:not(#_):not(#__) :is(#floatingPrompt, #cfgConfig, #logprobsViewer) {
             width: 390px !important;
         }
     }
@@ -7378,6 +7395,19 @@ html body.ag2.ag2-insp-open {
     html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) :is(input, select, textarea, button, a, [role="button"]):focus-visible {
         outline: 2px solid var(--ag2-accent) !important;
         outline-offset: 2px;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#floatingPrompt, #cfgConfig, #logprobsViewer) small {
+        opacity: 1 !important;
+        color: var(--ag2-l2) !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #character_popup :is(h4, .standoutHeader) {
+        color: var(--ag2-l2) !important;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) input[type="range"] {
+        border-radius: 10px !important;
     }
 
     /* menus anchored in the inspector: above ST's z-3005 layer, below its popups (4000+) */
@@ -8545,7 +8575,8 @@ html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .completion_prom
 
 html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .completion_prompt_manager_popup_entry_form_control .text_muted {
     margin-top: 4px;
-    color: var(--ag2-l3);
+    color: var(--ag2-l2);
+    opacity: 1;
     font-size: 11.5px;
     line-height: 1.4;
 }
@@ -8558,16 +8589,22 @@ html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .completion_prom
     margin-top: 14px !important;
     padding-top: 10px !important;
     box-shadow: inset 0 0.5px 0 var(--ag2-sep);
+    position: sticky;
+    bottom: -18px;
+    z-index: 2;
+    padding-bottom: 12px !important;
+    background: var(--ag2-solid-window);
 }
 
 html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .completion_prompt_manager_popup_entry_form_footer > a.menu_button {
     display: inline-flex;
     align-items: center !important;
     justify-content: center !important;
-    width: 34px !important;
-    height: 34px !important;
-    padding: 0 !important;
-    border-radius: 50% !important;
+    width: auto !important;
+    min-width: 68px;
+    height: 36px !important;
+    padding: 0 14px !important;
+    border-radius: 10px !important;
     font-size: 14px !important;
 }
 
@@ -8578,6 +8615,109 @@ html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup #completion_prom
 
 html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup #completion_prompt_manager_popup_entry_form_save:hover {
     background-color: var(--ag2-accent-hover) !important;
+}
+
+/* ST intentionally uses visibility for conditional fields. Collapse only those
+   known blocks, keeping their original values and native change/save handlers. */
+html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup :is(#completion_prompt_manager_depth_block, #completion_prompt_manager_order_block, #completion_prompt_manager_forbid_overrides_block)[style*="visibility: hidden"] {
+    display: none !important;
+}
+
+html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .completion_prompt_manager_popup_entry_form > .flex-container {
+    flex-wrap: wrap;
+}
+
+html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .completion_prompt_manager_popup_entry_form_control:has(> #completion_prompt_manager_popup_entry_form_injection_trigger) {
+    flex: 1 0 100% !important;
+}
+
+html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .ag2-prompt-native,
+html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .ag2-prompt-native ~ .select2-container {
+    display: none !important;
+}
+
+html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .ag2-prompt-triggers {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+}
+
+html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .ag2-prompt-triggers label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    margin: 0;
+    padding: 6px 8px;
+    border-radius: 8px;
+    background: var(--ag2-f4);
+    color: var(--ag2-l2);
+    font-size: 13px;
+    cursor: pointer;
+}
+
+html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .ag2-prompt-triggers label:has(:checked) {
+    background: var(--ag2-accent-soft);
+    color: var(--ag2-l1);
+    box-shadow: inset 0 0 0 1px var(--ag2-accent);
+}
+
+html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .ag2-prompt-triggers input {
+    appearance: none !important;
+    width: 16px !important;
+    height: 16px !important;
+    margin: 0 !important;
+    flex: none;
+    accent-color: var(--ag2-accent);
+    position: relative;
+    border: 1px solid var(--ag2-l3) !important;
+    border-radius: 4px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .ag2-prompt-triggers input:checked {
+    background: var(--ag2-accent) !important;
+    border-color: var(--ag2-accent) !important;
+}
+
+html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .ag2-prompt-triggers input:checked::before {
+    content: "";
+    position: absolute;
+    display: block;
+    box-sizing: content-box;
+    width: 4px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    left: 5px;
+    top: 1px;
+    transform: rotate(45deg);
+    transform-origin: center;
+    clip-path: none;
+    box-shadow: none;
+}
+
+html body.ag2 .ag2-preset-more { display: none !important; }
+
+html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .ag2-prompt-trigger-hint {
+    margin-top: 6px;
+    font: 12px / 1.4 var(--ag2-font);
+    color: var(--ag2-l2);
+}
+
+html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .completion_prompt_manager_popup_entry_form_control:has(> .ag2-prompt-triggers) > .text_muted {
+    display: none;
+}
+
+html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .completion_prompt_manager_popup_entry_form_footer > a:has(.ag2-prompt-action-label)::before {
+    display: none;
+}
+
+html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .ag2-prompt-action-label {
+    font: 550 13px / 1 var(--ag2-font);
+    /* ST reads event.target.dataset.pmPrompt on the original action element. */
+    pointer-events: none;
 }
 
 /* --- #shadow_select_chat_popup > #select_chat_popup (切换聊天文件, z 4100) --- */
@@ -8808,6 +8948,106 @@ html body.ag2:not(#_):not(#__) #movingDivs > .drawer-content:not(#floatingPrompt
         min-height: 200px;
         height: 30dvh;
         flex: none;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #completion_prompt_manager_popup .completion_prompt_manager_popup_entry_form > .flex-container > .completion_prompt_manager_popup_entry_form_control:has(> #completion_prompt_manager_popup_entry_form_injection_position) {
+        flex-basis: 100%;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #completion_prompt_manager_popup .ag2-prompt-triggers label {
+        min-height: 44px;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #completion_prompt_manager_popup .completion_prompt_manager_popup_entry_form_footer {
+        bottom: calc(-20px - var(--ag2-safe-b));
+        padding-bottom: calc(12px + var(--ag2-safe-b)) !important;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #completion_prompt_manager_popup .completion_prompt_manager_popup_entry_form_footer > a.menu_button {
+        min-height: 44px;
+    }
+
+    /* Give the selected preset its own full-width row; native actions stay in place. */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #openai_api-presets > div {
+        display: flex;
+        flex-direction: column;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #openai_api-presets .title_restorable {
+        display: contents;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #openai_api-presets .title_restorable > strong {
+        order: -2;
+        margin-bottom: 8px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #openai_api-presets .flex-container:has(> #settings_preset_openai) {
+        display: contents;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #settings_preset_openai {
+        order: -1;
+        flex: none !important;
+        width: 100% !important;
+        margin: 0 0 8px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #openai_api-presets :is(.title_restorable > .flex-container, #settings_preset_openai + .flex-container) {
+        margin: 0 !important;
+        gap: 8px !important;
+        justify-content: flex-end;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #openai_api-presets.ag2-preset-enhanced .title_restorable > .flex-container,
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #openai_api-presets.ag2-preset-enhanced [data-preset-manager-rename="openai"] {
+        display: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #openai_api-presets .ag2-preset-more {
+        display: inline-flex !important;
+        font: 500 13px / 1 var(--ag2-font);
+        padding: 0 14px !important;
+        width: auto !important;
+        height: 40px !important;
+        border-radius: 10px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement h3 {
+        white-space: nowrap;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement > .flex-container > .flex-container:first-child > .flex1 {
+        flex-basis: 100%;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement .persona_management_left_column > .flex-container {
+        display: grid !important;
+        grid-template-columns: auto minmax(0, 1fr) 40px;
+        gap: 8px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #persona_search_bar {
+        grid-column: 2 / 4;
+        width: 100% !important;
+        min-width: 0;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement #persona_sort_order {
+        grid-column: 1 / 3;
+        width: 100% !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #persona_grid_toggle {
+        grid-column: 3;
+        grid-row: 2;
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #persona_pagination_container {
+        grid-column: 1 / -1;
+        grid-row: 3;
+        width: 100%;
     }
 
     html body.ag2.ag2-phone:not(#_):not(#__) #character_popup i.editor_maximize {

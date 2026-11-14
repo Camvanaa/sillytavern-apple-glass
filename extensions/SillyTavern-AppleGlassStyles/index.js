@@ -19,7 +19,7 @@ const NATIVE_CLASSES = ['bubblechat', 'documentstyle'];
 const THEME_NAMES = ['Apple Glass Dark', 'Apple Glass 2'];
 const AG2_THEME = 'Apple Glass 2';
 // Keep in sync with BUILD in shell/index.js (tools/ag2/bump-build.sh updates both).
-const SHELL_BUILD = '20261114VF03';
+const SHELL_BUILD = '20261114VF04';
 const STYLE_KEY = 'apGlass.chatStyle';
 
 function themeActive() {

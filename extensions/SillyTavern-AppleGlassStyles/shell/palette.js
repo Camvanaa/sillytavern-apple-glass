@@ -10,14 +10,14 @@
 // Matching: substring first (prefix / word start rank higher), then in-order subsequence;
 // matched characters are bold + underlined. Every action goes through ST's own entry points.
 
-import { icon } from './icons.js?v=20261114VF03';
+import { icon } from './icons.js?v=20261114VF04';
 import { world_names, selected_world_info, METADATA_KEY } from '../../../../world-info.js';
 import {
     ctx, h, guard, toast, thumb, fmtTime, summary, stem, clickSt, openEntry, openCharacter, openGroup,
     openSettings, loadSettings, setInspector, isInspectorOpen, isDesktop, modKeyLabel, modCombo, getShellApi,
-} from './util.js?v=20261114VF03';
-import { getRecent, openRightMenu } from './sidebar.js?v=20261114VF03';
-import { closeMenu } from './menu.js?v=20261114VF03';
+} from './util.js?v=20261114VF04';
+import { getRecent, openRightMenu } from './sidebar.js?v=20261114VF04';
+import { closeMenu } from './menu.js?v=20261114VF04';
 import { fixToastrForDialogs } from '../../../../../scripts/popup.js';
 
 const GROUPS = {
