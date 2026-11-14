@@ -19,10 +19,10 @@
 // the sheet below the head (same CSS variables as the window). Drag the grabber / head down
 // to dismiss.
 
-import { ctx, h, guard, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar, nativeSelectOpen, paintRanges, paintOneRange } from './util.js?v=20261114VF09';
-import { icon } from './icons.js?v=20261114VF09';
-import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261114VF09';
-import { isMenuOpen } from './menu.js?v=20261114VF09';
+import { ctx, h, guard, closeSelect2s, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar, nativeSelectOpen, paintRanges, paintOneRange } from './util.js?v=20261114VF10';
+import { icon } from './icons.js?v=20261114VF10';
+import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261114VF10';
+import { isMenuOpen } from './menu.js?v=20261114VF10';
 
 const PAGES = [
     { id: 'api', name: '连接', icon: 'plug', tile: 'green', group: 0, lead: '选择 API 来源，填写地址、密钥和模型。' },
@@ -228,7 +228,7 @@ let results = [];
 
 const loadSearch = async () => {
     if (!searchMod) {
-        searchMod = await import('./search.js?v=20261114VF09');
+        searchMod = await import('./search.js?v=20261114VF10');
         searchMod.init(PAGES.map(({ id, name, lead }) => ({ id, name, lead })));
     }
     return searchMod;
@@ -564,6 +564,7 @@ export function list(opt = {}) {
 async function listNow({ focus = false } = {}, valid) {
     if (!isOpenNow) return;
     clearSelects();
+    closeSelect2s();
     const was = cur;
     clearTimeout(closeTimer);
     switching++;
@@ -694,6 +695,7 @@ async function goNow(page, { focus = false } = {}, valid) {
     switching++;
     try {
         if (phoneMode) root.dataset.level = 'page'; // pushed over the list (§5.9)
+        closeSelect2s();
         setCurrent(page);
         searchMod?.clearHit();
         if (p.panel) {
@@ -755,6 +757,7 @@ export function sync(id, opened) {
 
 export async function close() {
     clearSelects();
+    closeSelect2s();
     activeDragCleanup?.();
     if (!isOpenNow) return;
     const ticket = ++intent, previousOpener = opener;
@@ -790,6 +793,7 @@ export async function close() {
  *  been switched from inside 通用, where the user keeps working in the classic drawer). */
 export function unmount() {
     clearSelects();
+    closeSelect2s();
     intent++;
     searchSeq++;
     activeDragCleanup?.();

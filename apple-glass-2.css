@@ -11639,6 +11639,597 @@ html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_en
         font: 400 16px / 21px var(--ag2-font);
     }
 
+    /* 通用 / 外观 / 生成参数 phone: the near-black page and neutral grouped
+       surfaces of the worldbook page. Only these pages; values and controls stay native. */
+    html body.ag2.ag2-phone.ag2-set-open:is([data-ag2-set="user"], [data-ag2-set="look"], [data-ag2-set="ai"], [data-ag2-set="about"], [data-ag2-set="ext"]):not(#_):not(#__) #ag2-settings {
+        background: rgb(10, 10, 12) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:is([data-ag2-set="look"], [data-ag2-set="about"]):not(#_):not(#__) #ag2-settings .ag2-set-body,
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#user-settings-block, #left-nav-panel, #rm_extensions_block) {
+        --ag2-f5: rgb(28, 28, 31);
+        --ag2-g-inset: 16px;
+    }
+
+    /* 外观: 17px row titles, quiet value select. */
+    html body.ag2.ag2-phone.ag2-set-open:is([data-ag2-set="look"], [data-ag2-set="about"]):not(#_):not(#__) #ag2-settings .ag2-set-group {
+        border-radius: 22px;
+        box-shadow: none;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:is([data-ag2-set="look"], [data-ag2-set="about"]):not(#_):not(#__) #ag2-settings .ag2-set-row {
+        padding: 10px var(--ag2-g-inset);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:is([data-ag2-set="look"], [data-ag2-set="about"]):not(#_):not(#__) #ag2-settings .ag2-set-row + .ag2-set-row::before {
+        left: var(--ag2-g-inset);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:is([data-ag2-set="look"], [data-ag2-set="about"]):not(#_):not(#__) #ag2-settings .ag2-set-lab {
+        font-size: 17px;
+        font-weight: 400;
+        line-height: 22px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:is([data-ag2-set="look"], [data-ag2-set="about"]):not(#_):not(#__) #ag2-settings .ag2-set-val {
+        font-size: 17px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:is([data-ag2-set="look"], [data-ag2-set="about"]):not(#_):not(#__) #ag2-settings .ag2-set-lab small {
+        font-size: 13px;
+        line-height: 18px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:is([data-ag2-set="look"], [data-ag2-set="about"]):not(#_):not(#__) #ag2-settings .ag2-set-gtitle {
+        margin: 26px var(--ag2-g-inset) 7px;
+        color: var(--ag2-l2);
+        font-size: 13px;
+        font-weight: 400;
+        letter-spacing: 0;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:is([data-ag2-set="look"], [data-ag2-set="about"]):not(#_):not(#__) #ag2-settings .ag2-set-body > .ag2-set-gtitle:first-child {
+        margin-top: 6px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:is([data-ag2-set="look"], [data-ag2-set="about"]):not(#_):not(#__) #ag2-settings .ag2-select-wrap {
+        flex: none;
+        max-width: 50%;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:is([data-ag2-set="look"], [data-ag2-set="about"]):not(#_):not(#__) #ag2-settings .ag2-select-wrap > .ag2-select {
+        height: 32px !important;
+        min-height: 32px !important;
+        padding: 0 20px 0 6px !important;
+        border: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        color: var(--ag2-l2) !important;
+        font: 400 17px / 32px var(--ag2-font) !important;
+        text-align: right;
+        text-align-last: right;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:is([data-ag2-set="look"], [data-ag2-set="about"]):not(#_):not(#__) #ag2-settings .ag2-select-wrap > svg {
+        right: 0 !important;
+        color: var(--ag2-l3);
+    }
+
+    /* 通用: inset-grouped sections. Section titles sit above the surface; the
+       surface is painted by ::before so a native <h4> inside the block can stay. */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block [name="MiscellaneousToggles"] {
+        display: block !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block :is(
+        #UI-presets-block,
+        [name="AvatarAndChatDisplay"],
+        [name="FontBlurChatWidthBlock"],
+        [name="themeToggles"],
+        [name="CharacterHandlingToggles"],
+        [name="MiscellaneousToggles"],
+        [name="ChatMessageHandlingToggles"],
+        [name="STscriptToggles"],
+        [name="themeElements"] > .inline-drawer,
+        [name="AutoCompleteToggle"]
+    ) {
+        position: relative;
+        isolation: isolate;
+        margin: 0 0 30px !important;
+        padding: 0 var(--ag2-g-inset) !important;
+        border-radius: 22px !important;
+        background: none !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block :is(
+        #UI-presets-block,
+        [name="AvatarAndChatDisplay"],
+        [name="FontBlurChatWidthBlock"],
+        [name="themeToggles"],
+        [name="CharacterHandlingToggles"],
+        [name="MiscellaneousToggles"],
+        [name="ChatMessageHandlingToggles"],
+        [name="STscriptToggles"],
+        [name="themeElements"] > .inline-drawer,
+        [name="AutoCompleteToggle"]
+    )::before {
+        content: '';
+        position: absolute;
+        inset: var(--ag2-g-head, 0px) 0 0;
+        z-index: -1;
+        border-radius: 22px;
+        background: var(--ag2-f5);
+        pointer-events: none;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block :is(#UI-presets-block, [name="CharacterHandlingToggles"], [name="MiscellaneousToggles"], [name="ChatMessageHandlingToggles"], [name="STscriptToggles"]) {
+        --ag2-g-head: 34px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block :is(#UI-presets-block, [name="CharacterHandlingToggles"], [name="MiscellaneousToggles"], [name="ChatMessageHandlingToggles"], [name="STscriptToggles"]) > h4:first-child {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between;
+        box-sizing: border-box;
+        height: 34px;
+        margin: 0 !important;
+        padding: 0 0 7px !important;
+        color: var(--ag2-l2) !important;
+        font: 400 13px / 18px var(--ag2-font) !important;
+        letter-spacing: 0 !important;
+        text-transform: none !important;
+        align-self: stretch;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block :is(#UI-presets-block, [name="CharacterHandlingToggles"], [name="MiscellaneousToggles"], [name="ChatMessageHandlingToggles"], [name="STscriptToggles"]) > h4:first-child > span {
+        align-self: flex-end;
+        color: inherit !important;
+        font: inherit !important;
+    }
+
+    /* Header actions (UI 主题 import/export/delete) are tinted glyphs, not filled discs. */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block #UI-presets-block > h4 .menu_button {
+        width: 34px !important;
+        min-width: 34px !important;
+        height: 30px !important;
+        min-height: 30px !important;
+        padding: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        color: var(--ag2-accent) !important;
+        font-size: 15px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block #UI-presets-block > h4 #ui-preset-delete-button {
+        color: var(--ag2-red, #ff453a) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block #UI-presets-block > .flex-container {
+        min-height: 46px;
+        gap: 4px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block #UI-presets-block > .flex-container > .menu_button {
+        width: 36px !important;
+        min-width: 36px !important;
+        height: 36px !important;
+        padding: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        color: var(--ag2-accent) !important;
+    }
+
+    /* Rows share one rhythm: 44px+, 17px primary text, inset hairlines. */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block :is(
+        [name="AvatarAndChatDisplay"] > .flex-container,
+        [name="CharacterHandlingToggles"] > .flex-container:has(> select),
+        #examples-behavior-block,
+        [name="ChatMessageHandlingToggles"] > div:has(> #image_overswipe),
+        [name="ChatMessageHandlingToggles"] > .flex-container:has(> #send_on_enter),
+        #UI-presets-block > .flex-container
+    ) {
+        flex-wrap: nowrap !important;
+        min-height: 46px;
+        padding: 0 !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block :is([name="AvatarAndChatDisplay"], [name="CharacterHandlingToggles"], [name="ChatMessageHandlingToggles"], [name="themeToggles"], [name="MiscellaneousToggles"], [name="STscriptToggles"]) > * + *:not(h4),
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block [name="FontBlurChatWidthBlock"] > * + *,
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block :is([name="themeToggles"], [name="MiscellaneousToggles"], [name="ChatMessageHandlingToggles"]) > label.checkbox_label + label.checkbox_label {
+        box-shadow: inset 0 0.5px 0 var(--ag2-sep) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block :is(
+        [name="AvatarAndChatDisplay"] > .flex-container,
+        [name="CharacterHandlingToggles"] > .flex-container:has(> select),
+        #examples-behavior-block,
+        [name="ChatMessageHandlingToggles"] > div:has(> #image_overswipe),
+        [name="ChatMessageHandlingToggles"] > .flex-container:has(> #send_on_enter)
+    ) > :is(span, label, small):first-child,
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block :is(
+        [name="AvatarAndChatDisplay"] > .flex-container,
+        [name="CharacterHandlingToggles"] > .flex-container:has(> select),
+        #examples-behavior-block,
+        [name="ChatMessageHandlingToggles"] > div:has(> #image_overswipe)
+    ) > :first-child small {
+        flex: 1 1 auto !important;
+        min-width: 0;
+        color: var(--ag2-l1) !important;
+        font: 400 17px / 22px var(--ag2-font) !important;
+    }
+
+    /* Value selects read as iOS detail text + chevron, not filled boxes. */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block :is(
+        [name="AvatarAndChatDisplay"] > .flex-container,
+        [name="CharacterHandlingToggles"] > .flex-container:has(> select),
+        #examples-behavior-block,
+        [name="ChatMessageHandlingToggles"] > div:has(> #image_overswipe),
+        [name="ChatMessageHandlingToggles"] > .flex-container:has(> #send_on_enter)
+    ) > select {
+        flex: 0 1 auto !important;
+        width: auto !important;
+        max-width: 60% !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        padding: 0 18px 0 8px !important;
+        background-color: transparent !important;
+        background-position: 100% 50% !important;
+        box-shadow: none !important;
+        color: var(--ag2-l2) !important;
+        font: 400 17px / 36px var(--ag2-font) !important;
+        text-align: right;
+        text-align-last: right;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block #UI-presets-block select#themes {
+        flex: 1 1 auto !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        padding: 0 20px 0 0 !important;
+        background-color: transparent !important;
+        background-position: 100% 50% !important;
+        box-shadow: none !important;
+        color: var(--ag2-l1) !important;
+        font: 400 17px / 36px var(--ag2-font) !important;
+    }
+
+    /* Switch rows */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block label.checkbox_label {
+        min-height: 46px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        gap: 12px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block label.checkbox_label > :is(small, span, div):not(.fa-solid):not(.note-link-span) {
+        color: var(--ag2-l1);
+        font-size: 17px !important;
+        font-weight: 400 !important;
+        line-height: 22px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block label.checkbox_label > :is(small, span, div) :is(small, span):not(.fa-solid):not(.note-link-span) {
+        font-size: inherit !important;
+    }
+
+    /* Numeric parameters: title + compact value on one line, track below. */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block [name="FontBlurChatWidthBlock"] > .flexBasis48p,
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block [name="ChatMessageHandlingToggles"] > .flex-container:first-of-type > .flexBasis48p {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center !important;
+        gap: 2px 12px !important;
+        padding: 10px 0 8px !important;
+        border-radius: 0 !important;
+        background: none !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block [name="FontBlurChatWidthBlock"] > .flexBasis48p > small,
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block [name="ChatMessageHandlingToggles"] > .flex-container:first-of-type > .flexBasis48p > small:first-child {
+        grid-area: 1 / 1;
+        color: var(--ag2-l1) !important;
+        font: 400 17px / 22px var(--ag2-font) !important;
+        text-align: left !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block :is([name="FontBlurChatWidthBlock"], [name="ChatMessageHandlingToggles"]) .flexBasis48p input[type="number"] {
+        grid-area: 1 / 2;
+        box-sizing: border-box;
+        width: 72px !important;
+        height: 32px !important;
+        min-height: 32px !important;
+        margin: 0 !important;
+        padding: 0 10px !important;
+        border-radius: 8px !important;
+        background: rgba(118, 118, 128, 0.18) !important;
+        box-shadow: none !important;
+        font: 400 17px / 32px var(--ag2-font) !important;
+        text-align: right !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block :is([name="FontBlurChatWidthBlock"], [name="ChatMessageHandlingToggles"]) .flexBasis48p input[type="range"] {
+        grid-area: 2 / 1 / 3 / 3;
+        width: 100% !important;
+        margin: 6px 0 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block [name="ChatMessageHandlingToggles"] > .flex-container:first-of-type > .flexBasis48p > small:last-child {
+        grid-area: 3 / 1 / 4 / 3;
+        color: var(--ag2-l3) !important;
+        font: 400 13px / 18px var(--ag2-font) !important;
+        text-align: left !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block [name="FontBlurChatWidthBlock"] > div:has(> #chat_width_slider)::after {
+        grid-area: 3 / 1 / 4 / 3;
+        color: var(--ag2-l3);
+        font-size: 13px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block [name="ChatMessageHandlingToggles"] > .flex-container:first-of-type {
+        flex-direction: column !important;
+        gap: 0 !important;
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block [name="FontBlurChatWidthBlock"] > .flexBasis48p + .flexBasis48p,
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block [name="ChatMessageHandlingToggles"] > .flex-container:first-of-type > .flexBasis48p + .flexBasis48p {
+        box-shadow: inset 0 0.5px 0 var(--ag2-sep) !important;
+    }
+
+    /* Disclosure rows: regular-weight title and a quiet chevron, no inner card. */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block .inline-drawer {
+        margin: 0 !important;
+        border-radius: 0 !important;
+        background: none !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block :is([name="themeElements"] > .inline-drawer, [name="AutoCompleteToggle"]) {
+        border-radius: 22px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block .inline-drawer > .inline-drawer-header {
+        min-height: 46px !important;
+        padding: 0 !important;
+        background: none !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block .inline-drawer > .inline-drawer-header b {
+        color: var(--ag2-l1);
+        font: 400 17px / 22px var(--ag2-font) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block .inline-drawer > .inline-drawer-header > .inline-drawer-icon {
+        width: 14px !important;
+        height: 14px !important;
+        font-size: 0 !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block .inline-drawer > .inline-drawer-header > .inline-drawer-icon::before {
+        content: '' !important;
+        width: 7px;
+        height: 7px;
+        border-top: 2px solid var(--ag2-l4);
+        border-right: 2px solid var(--ag2-l4);
+        transform: rotate(45deg);
+        transition: transform var(--ag2-dur) var(--ag2-ease);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block .inline-drawer > .inline-drawer-header > .inline-drawer-icon.up::before {
+        transform: translateY(-2px) rotate(135deg);
+    }
+
+    /* 杂项 actions: three tinted text buttons on one row. */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block [name="MiscellaneousToggles"] > .flex-container:has(> #reload_chat) {
+        gap: 0 18px !important;
+        min-height: 46px;
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block [name="MiscellaneousToggles"] > .flex-container:has(> #reload_chat) > .menu_button {
+        height: 46px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block [name="MiscellaneousToggles"] > .flex-container:has(> #reload_chat) > .menu_button > small {
+        color: var(--ag2-accent) !important;
+        font: 400 17px / 22px var(--ag2-font) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block #CustomCSS-block > h4 {
+        min-height: 46px;
+        margin: 0 !important;
+        box-shadow: inset 0 0.5px 0 var(--ag2-sep);
+        color: var(--ag2-l1) !important;
+        font: 400 17px / 22px var(--ag2-font) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block #customCSS {
+        margin: 0 0 var(--ag2-g-inset) !important;
+        border-radius: 12px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block [name="STscriptToggles"] > div > label {
+        min-height: 30px;
+        align-items: flex-end !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block :is(#movingUIreset, #movingui-preset-save-button, #CustomCSS-block > h4 .menu_button) {
+        background: transparent !important;
+        box-shadow: none !important;
+        color: var(--ag2-accent) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block #movingUIreset > span {
+        color: inherit !important;
+        font: 400 17px / 22px var(--ag2-font) !important;
+    }
+
+    /* 扩展: each column of extension drawers is one inset group of rows. */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_extensions_block :is(#extensions_settings, #extensions_settings2) {
+        gap: 0 !important;
+        margin: 0 0 30px !important;
+        padding: 0 var(--ag2-g-inset) !important;
+        border-radius: 22px;
+        background: var(--ag2-f5);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_extensions_block :is(#extensions_settings, #extensions_settings2):not(:has(.inline-drawer)) {
+        display: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_extensions_block :is(#extensions_settings, #extensions_settings2) :is(> *, > .extension_container > *):has(> .inline-drawer) {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_extensions_block :is(#extensions_settings, #extensions_settings2) .inline-drawer:not(.inline-drawer .inline-drawer) {
+        margin: 0 !important;
+        border-radius: 0 !important;
+        background: none !important;
+        box-shadow: inset 0 0.5px 0 var(--ag2-sep) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_extensions_block :is(#extensions_settings, #extensions_settings2) .inline-drawer:not(.inline-drawer .inline-drawer) > .inline-drawer-header {
+        min-height: 46px !important;
+        padding: 0 !important;
+        background: none !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_extensions_block :is(#extensions_settings, #extensions_settings2) .inline-drawer:not(.inline-drawer .inline-drawer) > .inline-drawer-header :is(b, strong) {
+        color: var(--ag2-l1);
+        font: 400 17px / 22px var(--ag2-font) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_extensions_block > .extensions_block > .flex-container:first-child {
+        margin: 0 0 30px !important;
+        padding: 8px var(--ag2-g-inset) 12px !important;
+        border-radius: 22px !important;
+        background: var(--ag2-f5) !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_extensions_block > .extensions_block > .flex-container:first-child label.checkbox_label > span {
+        font: 400 17px / 22px var(--ag2-font) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_extensions_block > .extensions_block > .flex-container:first-child .menu_button {
+        padding: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        color: var(--ag2-accent) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_extensions_block > .extensions_block > .flex-container:first-child .menu_button > span {
+        color: inherit !important;
+        font: 400 17px / 22px var(--ag2-font) !important;
+    }
+
+    /* Top: 语言 / 版本 / 帐户 as three rows of one group. */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block > .flex-container.flexFlowColumn:first-child {
+        gap: 0 !important;
+        margin: 0 0 30px !important;
+        padding: 0 var(--ag2-g-inset) !important;
+        border-radius: 22px !important;
+        background: var(--ag2-f5) !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block [name="userSettingsRowOne"] {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block #UI-language-block {
+        justify-content: space-between;
+        min-height: 46px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block #UI-language-block > span {
+        font: 400 17px / 22px var(--ag2-font) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block #ui_language_select {
+        flex: 0 1 auto !important;
+        width: auto !important;
+        min-width: 0 !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        padding: 0 18px 0 8px !important;
+        background-color: transparent !important;
+        background-position: 100% 50% !important;
+        box-shadow: none !important;
+        color: var(--ag2-l2) !important;
+        font: 400 17px / 36px var(--ag2-font) !important;
+        text-align: right;
+        text-align-last: right;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block #version_display {
+        display: flex !important;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 46px;
+        margin: 0 !important;
+        box-shadow: inset 0 0.5px 0 var(--ag2-sep);
+        color: var(--ag2-l2);
+        font: 400 17px / 22px var(--ag2-font) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block #version_display::before {
+        content: '版本';
+        color: var(--ag2-l1);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block [name="UserSettingsRowTwo"],
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block #account_controls {
+        width: 100%;
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block #account_button {
+        justify-content: flex-start !important;
+        gap: 10px !important;
+        width: 100% !important;
+        height: 46px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        box-shadow: inset 0 0.5px 0 var(--ag2-sep) !important;
+        color: var(--ag2-l1) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block #account_button > span {
+        flex: 1;
+        color: var(--ag2-l1) !important;
+        font: 400 17px / 22px var(--ag2-font) !important;
+        text-align: left;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block #account_button::after {
+        content: '';
+        width: 7px;
+        height: 7px;
+        margin-right: 4px;
+        border-top: 2px solid var(--ag2-l4);
+        border-right: 2px solid var(--ag2-l4);
+        transform: rotate(45deg);
+    }
+
     /* --- 人设: one column; the six actions keep one row, the picker goes under them --- */
     html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement #persona_sort_order {
         min-width: 112px;
