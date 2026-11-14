@@ -4838,6 +4838,84 @@ html body.ag2.reduced-motion:not(#_):not(#__):not(#___) .ag2-hit {
     }
 
     /* entry rows: ST's bordered form around the card drew a second frame */
+    /* Inclusion/timing controls need their own rows before character filters. */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .flexGap10:has(> div > .range-block-range > input[name="group"]) {
+        display: grid !important;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px 12px !important;
+        margin-top: 12px;
+        padding-top: 10px;
+        box-shadow: inset 0 0.5px 0 var(--ag2-sep);
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .flexGap10 > div:has(> .range-block-range > input[name="group"]) {
+        grid-column: 1 / -1;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .flexGap10 > div:has(> .range-block-range > :is(input, select)) {
+        min-width: 0;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .flexGap10:has(> div > .range-block-range > select[name="characterFilter"]) {
+        margin-top: 12px;
+        gap: 12px !important;
+        align-items: flex-start;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .flexGap10:has(> div > .range-block-range > select[name="characterFilter"]) > div > .justifySpaceBetween {
+        min-height: 36px;
+        align-items: center;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry :is(label[for="groupOverride"], label[for="character_exclusion"]) {
+        flex: 0 0 auto !important;
+        width: auto !important;
+        gap: 10px !important;
+        white-space: nowrap;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry label[for="__invisible"] {
+        display: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .flexGap10:has(> div > .range-block-range > input[name="group"]) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .flexGap10:has(> div > .range-block-range > select[name="characterFilter"]) {
+        flex-direction: column;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .flexGap10 > div:has(> .range-block-range > select:is([name="characterFilter"], [name="triggers"])) {
+        width: 100%;
+        flex: none;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry select[multiple]:is([name="characterFilter"], [name="triggers"]) {
+        box-sizing: border-box;
+        width: 100% !important;
+        height: 156px !important;
+        min-height: 156px !important;
+        max-height: 156px !important;
+        flex: none !important;
+        padding: 6px !important;
+        border-radius: 10px !important;
+        background: var(--ag2-f4) !important;
+        color: var(--ag2-l1) !important;
+        font-size: 16px !important;
+        color-scheme: dark;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry select[multiple]:is([name="characterFilter"], [name="triggers"]) option {
+        padding: 7px 8px;
+        min-height: 32px;
+        white-space: normal;
+        border-radius: 6px;
+    }
+
     html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry > .wi-card-entry {
         margin: 0 0 6px !important;
         padding: 0 !important;
@@ -7479,6 +7557,37 @@ html body.ag2.ag2-insp-open {
         color: var(--ag2-accent-hover);
     }
 
+    html body.ag2:not(#_):not(#__) #logprobsViewer .logprobs_empty_state:has(.ag2-logprobs-settings) {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        text-align: left;
+        padding: 16px !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #logprobsViewer .logprobs_empty_state p {
+        margin: 0;
+        color: var(--ag2-l1);
+        line-height: 1.6;
+    }
+
+    html body.ag2:not(#_):not(#__) #logprobsViewer p.ag2-logprobs-hint {
+        color: var(--ag2-l2);
+        font-size: 12px;
+    }
+
+    html body.ag2:not(#_):not(#__) #logprobsViewer .ag2-logprobs-settings {
+        border: 0;
+        border-radius: 9px;
+        min-height: 40px;
+        padding: 8px 14px;
+        color: var(--ag2-accent-hover);
+        background: var(--ag2-accent-soft);
+        font: 550 13px / 1.4 var(--ag2-font);
+        cursor: pointer;
+    }
+
     html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) :is(input, select, textarea, button, a, [role="button"]):focus-visible {
         outline: 2px solid var(--ag2-accent) !important;
         outline-offset: 2px;
@@ -9196,7 +9305,7 @@ html body.ag2:not(#_):not(#__) #movingDivs > .drawer-content:not(#floatingPrompt
     }
 
     html body.ag2.ag2-phone:not(#_):not(#__) :is(#ANClose, #CFGClose, #logprobsViewerClose) {
-        position: relative;
+        position: relative !important;
     }
 
     html body.ag2.ag2-phone:not(#_):not(#__) :is(#ANClose, #CFGClose, #logprobsViewerClose)::after {
