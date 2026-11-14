@@ -45,6 +45,17 @@
     if (seen.has(e)) continue; seen.add(e);
     if (e.closest('#chat .mes_text') || !vis(e)) continue;
     const r = e.getBoundingClientRect();
+    // A customizable select's first button is UA-inert, not an independent capsule.
+    // Check its actual chosen-content clipping rather than Range glyph extents (which
+    // deliberately include the hidden tail of an ellipsized selected value).
+    const select = e.parentElement, chosen = e.querySelector(':scope > selectedcontent');
+    if (e.tagName === 'BUTTON' && select?.matches('select:not([multiple]):not([size])') && select.firstElementChild === e && chosen && getComputedStyle(select).appearance === 'base-select') {
+      const c = getComputedStyle(chosen), q = chosen.getBoundingClientRect(), s = select.getBoundingClientRect();
+      const valid = e.tabIndex === -1 && c.whiteSpace === 'nowrap' && c.textOverflow === 'ellipsis' && c.overflowX === 'hidden'
+        && chosen.scrollHeight <= chosen.clientHeight + 1 && q.left >= s.left && q.right <= s.right && q.top >= s.top && q.bottom <= s.bottom;
+      if (!valid) bad.push({ sel: sel(e), why: 'invalid-selectedcontent', w: r.width, h: r.height });
+      continue;
+    }
     if (!onScreen(r) && !e.closest('.drawer-content, .inline-drawer-content, #right-nav-panel, #left-nav-panel')) continue;
     const txt = (e.tagName === 'INPUT' ? e.value : e.innerText || '').replace(/\s+/g, ' ').trim();
     if ([...txt].length < 2) continue;

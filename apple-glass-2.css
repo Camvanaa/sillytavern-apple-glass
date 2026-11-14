@@ -1775,6 +1775,8 @@ html body.ag2.immersive-mode:not(#_):not(#__) #ap-jump-latest {
         gap: 2px;
         flex-wrap: wrap;
         min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
     }
 
     /* swipe capsule ‹ 2/3 › — ST's own three nodes; last message only (ST's rule) */
