@@ -5590,9 +5590,8 @@ html body.ag2.reduced-motion:not(#_):not(#__):not(#___) .ag2-hit {
         box-shadow: inset 0 0.5px 0 var(--ag2-sep);
     }
 
-    /* Two-column slider sub-cards in 通用 */
+    /* Two-column chat-handling slider sub-cards in 通用 */
     html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block :is(
-        [name="FontBlurChatWidthBlock"],
         [name="ChatMessageHandlingToggles"] > .flex-container:first-of-type
     ) {
         gap: 8px !important;
@@ -5600,7 +5599,6 @@ html body.ag2.reduced-motion:not(#_):not(#__):not(#___) .ag2-hit {
     }
 
     html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block :is(
-        [name="FontBlurChatWidthBlock"],
         [name="ChatMessageHandlingToggles"] > .flex-container:first-of-type
     ) > .flexBasis48p {
         box-sizing: border-box;
@@ -5614,6 +5612,48 @@ html body.ag2.reduced-motion:not(#_):not(#__):not(#___) .ag2-hit {
     }
 
     /* Auxiliary glyphs inside switch rows (flask / desktop / mobile / markdown / warning) */
+    /* Appearance parameters share one quiet surface instead of four nested cards. */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block [name="FontBlurChatWidthBlock"] {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block [name="FontBlurChatWidthBlock"] > .flexBasis48p {
+        display: grid !important;
+        grid-template-columns: minmax(120px, 1fr) minmax(100px, 1fr) 64px;
+        align-items: center !important;
+        flex: none !important;
+        gap: 6px 14px !important;
+        min-width: 0;
+        padding: 10px 0 !important;
+        border-radius: 0 !important;
+        background: none !important;
+        box-shadow: inset 0 -0.5px 0 var(--ag2-sep) !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block [name="FontBlurChatWidthBlock"] > .flexBasis48p:last-child {
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block [name="FontBlurChatWidthBlock"] > .flexBasis48p > small {
+        text-align: left;
+        color: var(--ag2-l2);
+        opacity: 1;
+        font-size: 13px;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block [name="FontBlurChatWidthBlock"] > .flexBasis48p > input {
+        margin: 0 !important;
+        width: 100% !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block [name="FontBlurChatWidthBlock"] > div:has(> #chat_width_slider)::after {
+        grid-column: 1 / -1;
+        text-align: left;
+        margin: 0;
+    }
+
     html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) label.checkbox_label :is(.fa-flask, .fa-desktop, .fa-mobile-screen-button, .fa-markdown, .fa-circle-exclamation, .fa-exclamation-triangle) {
         margin-left: 2px;
         color: var(--ag2-l3) !important;
@@ -5761,6 +5801,53 @@ html body.ag2.reduced-motion:not(#_):not(#__):not(#___) .ag2-hit {
     html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock > .range-block .inline-drawer {
         background: rgba(255, 255, 255, 0.03) !important;
         box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.055) !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #wiSliders {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px 18px !important;
+        align-items: start;
+        padding: 10px 0;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #wiSliders > div:has(> input[type="range"]) {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) 64px;
+        gap: 6px 8px !important;
+        min-width: 0;
+        align-items: center !important;
+        padding: 0 0 8px;
+        box-shadow: inset 0 -0.5px 0 var(--ag2-sep);
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #wiSliders > div > small {
+        grid-column: 1;
+        grid-row: 1;
+        color: var(--ag2-l2);
+        opacity: 1;
+        font-size: 12.5px;
+        text-align: left;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #wiSliders input[type="number"] {
+        grid-column: 2;
+        grid-row: 1;
+        width: 64px !important;
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #wiSliders input[type="range"] {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        width: 100% !important;
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #wiSliders > div:has(> #world_info_character_strategy) {
+        grid-column: 1 / -1;
+        align-items: stretch !important;
+        gap: 6px;
     }
 
     html body.ag2.ag2-set-open:not(#_):not(#__) #PersonaManagement :is(.persona_management_left_column, .persona_management_current_persona) {
@@ -8968,6 +9055,38 @@ html body.ag2:not(#_):not(#__) #movingDivs > .drawer-content:not(#floatingPrompt
     }
 
     /* Give the selected preset its own full-width row; native actions stay in place. */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block [name="FontBlurChatWidthBlock"] > .flexBasis48p {
+        grid-template-columns: minmax(0, 1fr) 64px;
+        gap: 4px 12px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block [name="FontBlurChatWidthBlock"] > .flexBasis48p > input[type="number"] {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block [name="FontBlurChatWidthBlock"] > .flexBasis48p > input[type="range"] {
+        grid-column: 1 / -1;
+        grid-row: 2;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiSliders {
+        grid-template-columns: minmax(0, 1fr);
+        width: 100%;
+        flex: 1 0 100%;
+        gap: 6px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiSliders > div:has(> input[type="range"]) {
+        gap: 0 8px !important;
+        padding-bottom: 6px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #wiSliders input[type="range"] {
+        height: 16px !important;
+        min-height: 16px !important;
+    }
+
     html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #openai_api-presets > div {
         display: flex;
         flex-direction: column;
@@ -9197,15 +9316,15 @@ html body.ag2:not(#_):not(#__) #movingDivs > .drawer-content:not(#floatingPrompt
     }
 
     html body.ag2.ag2-phone:not(#_):not(#__) #chat {
-        padding-top: calc(var(--ag2-safe-t) + 62px) !important;
+        padding-top: calc(var(--ag2-safe-t) + 72px) !important;
         /* the 外观 › 行宽 column still applies when the phone layout is wide (tablet) */
         padding-left: max(14px, var(--ag2-safe-l), calc((100% - var(--ag2-read-width)) / 2)) !important;
         padding-right: max(14px, var(--ag2-safe-r), calc((100% - var(--ag2-read-width)) / 2)) !important;
         padding-bottom: calc(var(--ag2-dock-h, 112px) + 36px) !important;
         /* The measured dock includes QR and a growing composer. Fade only the last
            24px before its top; bottom padding keeps the final line fully readable. */
-        -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--ag2-fade-top), #000 calc(100% - var(--ag2-dock-h, 112px) - 24px), transparent calc(100% - var(--ag2-dock-h, 112px)));
-        mask-image: linear-gradient(to bottom, transparent 0, #000 var(--ag2-fade-top), #000 calc(100% - var(--ag2-dock-h, 112px) - 24px), transparent calc(100% - var(--ag2-dock-h, 112px)));
+        -webkit-mask-image: linear-gradient(to bottom, transparent 0, transparent calc(var(--ag2-fade-top) - 6px), #000 calc(var(--ag2-fade-top) + 10px), #000 calc(100% - var(--ag2-dock-h, 112px) - 24px), transparent calc(100% - var(--ag2-dock-h, 112px)));
+        mask-image: linear-gradient(to bottom, transparent 0, transparent calc(var(--ag2-fade-top) - 6px), #000 calc(var(--ag2-fade-top) + 10px), #000 calc(100% - var(--ag2-dock-h, 112px) - 24px), transparent calc(100% - var(--ag2-dock-h, 112px)));
         border: 0 !important;
     }
 

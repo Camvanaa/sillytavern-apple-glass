@@ -1,10 +1,10 @@
 // Apple Glass 2 shell — title capsule, tool capsule, welcome page (DESIGN §5.2, §5.10).
 
-import { icon } from './icons.js?v=20261114VF04';
-import { openMenu } from './menu.js?v=20261114VF04';
-import { ctx, h, guard, thumb, fmtTime, clickSt, openEntry, openSettings, newAssistantChat, setInspector, modCombo, isPhone, isFloatingOpen } from './util.js?v=20261114VF04';
+import { icon } from './icons.js?v=20261114VF05';
+import { openMenu } from './menu.js?v=20261114VF05';
+import { ctx, h, guard, thumb, fmtTime, clickSt, openEntry, openSettings, newAssistantChat, setInspector, modCombo, isPhone, isFloatingOpen } from './util.js?v=20261114VF05';
 import { showBookmarksButtons } from '../../../../bookmarks.js';
-import { getRecent, isLoaded, openRightMenu, row, rowKeys, avatarEl } from './sidebar.js?v=20261114VF04';
+import { getRecent, isLoaded, openRightMenu, row, rowKeys, avatarEl } from './sidebar.js?v=20261114VF05';
 
 let title = null, tools = null, welcome = null;
 let generating = false;
