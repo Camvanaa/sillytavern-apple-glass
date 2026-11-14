@@ -3891,6 +3891,7 @@ html body.ag2:not(#_):not(#__) #ag2-settings .ag2-set-close:focus-visible {
         min-width: 42px;
         margin-top: 0 !important;
         margin-bottom: 0 !important;
+        margin-right: 0 !important;
         padding: 0 !important;
         border: 0 !important;
         border-radius: 13px !important;
@@ -4856,6 +4857,13 @@ html body.ag2.reduced-motion:not(#_):not(#__):not(#___) .ag2-hit {
         min-width: 0;
     }
 
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .flexGap10 > div > .justifySpaceBetween {
+        align-items: center !important;
+        min-height: 36px;
+        gap: 8px;
+        margin: 0 0 6px !important;
+    }
+
     html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .flexGap10:has(> div > .range-block-range > select[name="characterFilter"]) {
         margin-top: 12px;
         gap: 12px !important;
@@ -4875,6 +4883,26 @@ html body.ag2.reduced-motion:not(#_):not(#__):not(#___) .ag2-hit {
         margin: 0 !important;
         padding: 0 !important;
         box-shadow: none !important;
+        min-height: 36px;
+        align-items: center !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry :is(label[for="groupOverride"], label[for="character_exclusion"]) > span {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry :is(label[for="groupOverride"], label[for="character_exclusion"]) > input {
+        margin: 0 !important;
+        align-self: center;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry :is(label[for="groupOverride"], label[for="character_exclusion"]) {
+        margin-left: auto !important;
+        margin-right: 0 !important;
+        width: auto !important;
+        min-width: 0 !important;
+        justify-content: flex-end !important;
     }
 
     html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry label[for="__invisible"] {
@@ -4897,9 +4925,9 @@ html body.ag2.reduced-motion:not(#_):not(#__):not(#___) .ag2-hit {
     html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry select[multiple]:is([name="characterFilter"], [name="triggers"]) {
         box-sizing: border-box;
         width: 100% !important;
-        height: 156px !important;
-        min-height: 156px !important;
-        max-height: 156px !important;
+        height: 132px !important;
+        min-height: 132px !important;
+        max-height: 132px !important;
         flex: none !important;
         padding: 6px !important;
         border-radius: 10px !important;
@@ -4910,8 +4938,8 @@ html body.ag2.reduced-motion:not(#_):not(#__):not(#___) .ag2-hit {
     }
 
     html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry select[multiple]:is([name="characterFilter"], [name="triggers"]) option {
-        padding: 7px 8px;
-        min-height: 32px;
+        padding: 5px 8px;
+        min-height: 28px;
         white-space: normal;
         border-radius: 6px;
     }
@@ -5275,9 +5303,16 @@ html body.ag2.reduced-motion:not(#_):not(#__):not(#___) .ag2-hit {
        (ST pads the caption row by 7em on both sides, which matched nothing) */
     html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEntryTitleAndStatus > select {
         flex: none;
-        width: 52px !important;
-        min-width: 52px !important;
+        width: 84px !important;
+        min-width: 84px !important;
         margin: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .WIEntryTitleAndStatus > select {
+        padding-left: 8px !important;
+        padding-right: 22px !important;
+        font-size: 12px !important;
+        font-weight: 500 !important;
     }
 
     html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEnteryHeaderControls {
@@ -5324,7 +5359,7 @@ html body.ag2.reduced-motion:not(#_):not(#__):not(#___) .ag2-hit {
     }
 
     html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #WIEntryHeaderTitlesPC > small:nth-child(2) {
-        width: 52px !important;
+        width: 84px !important;
     }
 
     html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #WIEntryHeaderTitlesPC > small:nth-child(3) {
@@ -8895,6 +8930,7 @@ html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .ag2-prompt-trig
 }
 
 html body.ag2 .ag2-preset-more { display: none !important; }
+html body.ag2 .ag2-worldbook-more { display: none !important; }
 
 html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .ag2-prompt-trigger-hint {
     margin-top: 6px;
@@ -10298,81 +10334,162 @@ html body.ag2:not(#_):not(#__) #movingDivs > .drawer-content:not(#floatingPrompt
         flex: 1 1 100%;
     }
 
-    /* entry rows: title line, position, the three numbers, then the row's actions */
+    /* The mobile toolbar gives the selected book and search first priority. */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo.ag2-worldbook-enhanced :is(#world_create_button, #world_import_button, #world_popup_export, #world_popup_name_button, #world_duplicate, #world_popup_delete, #OpenAllWIEntries, #CloseAllWIEntries, #world_backfill_memos, #world_apply_current_sorting),
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo.ag2-worldbook-enhanced #world_popup > .flex-container > small {
+        display: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo.ag2-worldbook-enhanced .ag2-worldbook-more {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        order: 0;
+        height: 40px;
+        min-width: 56px;
+        border: 0;
+        border-radius: 10px;
+        background: var(--ag2-f3);
+        color: var(--ag2-l1);
+        font: 500 14px / 1 var(--ag2-font);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo.ag2-worldbook-enhanced #world_popup > .flex-container:has(#world_info_search) {
+        display: grid !important;
+        grid-template-columns: 40px minmax(0, 1fr) 100px 40px;
+        gap: 8px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo.ag2-worldbook-enhanced #world_popup :is(#world_popup_new, #world_info_search, #world_info_sort_order, #world_refresh) {
+        order: 0;
+        width: 100% !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo.ag2-worldbook-enhanced #world_info_pagination {
+        grid-column: 1 / -1;
+    }
+
+    /* One shared leading edge for title, position and numeric controls. Flatten
+       only layout wrappers, keeping native fields and delegation in place. */
     html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .inline-drawer-header {
         flex-wrap: wrap;
         gap: 8px !important;
         padding: 10px 12px !important;
     }
 
-    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .world_entry_thin_controls {
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .inline-drawer-header .world_entry_thin_controls {
+        display: grid !important;
+        grid-template-columns: 24px 28px minmax(0, 1fr) 48px;
+        gap: 8px 6px !important;
         flex: 1 1 100%;
-        align-items: flex-start !important;
+        align-items: center !important;
+        min-width: 0;
     }
 
-    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .world_entry_thin_controls > .inline-drawer-toggle {
-        width: 28px;
-        height: 40px;
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .inline-drawer-header .world_entry_thin_controls > .inline-drawer-toggle {
+        width: 24px;
+        height: 36px;
         font-size: 14px !important;
     }
 
     html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .killSwitch {
-        width: 32px;
-        height: 40px;
-        font-size: 22px;
+        width: 28px;
+        height: 36px;
+        font-size: 20px;
     }
 
-    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .world_entry_thin_controls > .flex-container {
-        flex: 1 1 0;
-        gap: 8px;
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .inline-drawer-header .world_entry_thin_controls > .flex-container {
+        display: contents !important;
     }
 
     html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEntryTitleAndStatus {
-        flex: 1 1 100%;
-        flex-wrap: nowrap;
-        gap: 8px;
+        display: contents !important;
     }
 
     html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEntryTitleAndStatus > .flex-container {
         min-width: 0;
+        grid-column: 3;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEntryTitleAndStatus > select {
+        grid-column: 4;
+        width: 48px !important;
+        min-width: 0 !important;
+        height: 36px !important;
+        min-height: 36px !important;
     }
 
     html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry textarea[name="comment"] {
-        height: 40px !important;
-        min-height: 40px;
-        border-radius: 10px !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        border-radius: 8px !important;
         font-size: 16px !important;
-        line-height: 40px !important;
+        line-height: 20px !important;
+        padding: 8px 10px !important;
     }
 
     html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEnteryHeaderControls {
-        flex: 1 1 100%;
-        flex-wrap: wrap;
-        gap: 8px;
+        display: grid !important;
+        grid-column: 1 / -1;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 8px 12px !important;
+        width: 100%;
+        padding-top: 4px;
     }
 
     html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEnteryHeaderControls > [name="PositionBlock"] {
-        flex: 1 1 100%;
+        grid-column: 1 / -1;
+        display: grid !important;
+        grid-template-columns: 44px minmax(0, 1fr);
+        align-items: center;
+        gap: 8px;
     }
 
     html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEnteryHeaderControls > [name="PositionBlock"] > select {
         width: 100% !important;
+        min-width: 0 !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        font-size: 14px !important;
+        border-radius: 8px !important;
     }
 
     html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEnteryHeaderControls > .world_entry_form_control:not([name="PositionBlock"]) {
-        flex: 1 1 0;
-        flex-wrap: nowrap;
+        grid-column: span 3;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between;
+        gap: 6px !important;
         min-width: 0;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEnteryHeaderControls:has(input[name="depth"]:not(:disabled)) > .world_entry_form_control:not([name="PositionBlock"]) {
+        grid-column: span 2;
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEnteryHeaderControls:has(input[name="depth"]:not(:disabled)) > .world_entry_form_control > input {
+        width: 100% !important;
     }
 
     html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEnteryHeaderControls > .world_entry_form_control > input {
         box-sizing: border-box;
-        width: 100% !important;
-        max-width: none !important;
+        width: 64px !important;
+        max-width: 100% !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        border-radius: 8px !important;
     }
 
     html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEntryHeaderTitleMobile {
-        font-size: 12.5px;
+        font-size: 12px;
+        margin: 0;
+        color: var(--ag2-l2);
+        white-space: nowrap;
     }
 
     html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .inline-drawer-header > i.menu_button {
@@ -10381,6 +10498,81 @@ html body.ag2:not(#_):not(#__) #movingDivs > .drawer-content:not(#floatingPrompt
 
     html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .inline-drawer-header > i.move_entry_button {
         margin-left: auto !important;
+    }
+
+    /* A closed entry is a list item, not a full form. Expansion reveals the
+       native position, numbers and actions together without removing values. */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry > .wi-card-entry > .inline-drawer > .inline-drawer-header:has(.inline-drawer-toggle.down) .WIEnteryHeaderControls,
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry > .wi-card-entry > .inline-drawer > .inline-drawer-header:has(.inline-drawer-toggle.down) > i.menu_button {
+        display: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry > .wi-card-entry > .inline-drawer > .inline-drawer-header:has(.inline-drawer-toggle.down) textarea[name="comment"]:not(:focus) {
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .inline-drawer-header .world_entry_thin_controls {
+        grid-template-columns: 24px 28px minmax(0, 1fr) 72px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .WIEntryTitleAndStatus > select {
+        width: 72px !important;
+        height: 32px !important;
+        min-height: 32px !important;
+        padding: 0 20px 0 8px !important;
+        font-size: 12px !important;
+        font-weight: 500 !important;
+        line-height: 32px !important;
+        background-color: var(--ag2-f5) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .WIEnteryHeaderControls > .world_entry_form_control > :is(input, select) {
+        height: 40px !important;
+        min-height: 40px !important;
+        max-height: 40px !important;
+        line-height: 40px !important;
+        font-weight: 400 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .WIEnteryHeaderControls > [name="PositionBlock"] > select {
+        font-size: 16px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry textarea[name="comment"] {
+        height: 40px !important;
+        min-height: 40px !important;
+        padding: 10px !important;
+        font-weight: 500 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry :is(.WIEntryHeaderTitleMobile, .world_entry_edit small:not(.displayNone)) {
+        font-size: 12.5px !important;
+        font-weight: 400 !important;
+        line-height: 1.4 !important;
+        color: var(--ag2-l2);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .world_entry_edit .flexGap10 > div > .justifySpaceBetween {
+        margin-bottom: 8px !important;
+        min-height: 20px;
+        flex-shrink: 0;
+        justify-content: space-between !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .world_entry_edit .flexGap10 > div > .justifySpaceBetween:has(label.checkbox_label) {
+        min-height: 44px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .world_entry_edit .flexGap10:has(select[name="characterFilter"]) {
+        margin-top: 16px;
+        gap: 16px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_entries_list .world_entry .inline-drawer-header > i.menu_button {
+        background: transparent !important;
+        color: var(--ag2-l2) !important;
+        box-shadow: none !important;
     }
 
     /* --- 人设: one column; the six actions keep one row, the picker goes under them --- */
@@ -10442,10 +10634,10 @@ html body.ag2:not(#_):not(#__) #movingDivs > .drawer-content:not(#floatingPrompt
         font-size: 11px !important;
     }
 
-    /* 世界书 entry (collapsed): ST hides the depth input unless Position is @D; on phones the
-       “深度:” caption above it stayed visible above an empty space */
-    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEnteryHeaderControls > .world_entry_form_control:has(> input[name="depth"][style*="display: none"]) > .WIEntryHeaderTitleMobile {
-        opacity: 0.35;
+    /* Native @D mode uses visibility:hidden, not display:none. Collapse its whole
+       cell only while inapplicable, and restore it for every depth/role choice. */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo .world_entry .WIEnteryHeaderControls > .world_entry_form_control:has(> input[name="depth"]:is(:disabled, [style*="visibility: hidden"], [style*="display: none"])) {
+        display: none !important;
     }
 
     /* 世界书 entry (expanded): stack the keyword fields and the content / recursion row */

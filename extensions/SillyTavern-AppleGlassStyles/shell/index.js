@@ -7,19 +7,20 @@
 // class and listener it added and reloads the current chat.
 // Any exception during enable → automatic teardown + one toastr.
 
-export const BUILD = '20261114VF06';
+export const BUILD = '20261114VF07';
 
-import { local, importStPinsOnce, applyAppearance, clearAppearance } from './store.js?v=20261114VF06';
-import { ctx, h, toggleDrawer, SET_PANELS, settingsModule, openSettings, isDesktop, INSP_ID, inspectorModule, loadInspector, setInspector, setShellApi, paletteModule, PHONE_MQ, loadPhone, phoneModule, isFloatingOpen, closeOtherFloating, paintOneRange, paintRanges } from './util.js?v=20261114VF06';
-import { closeMenu } from './menu.js?v=20261114VF06';
-import * as sidebar from './sidebar.js?v=20261114VF06';
-import * as chrome from './chrome.js?v=20261114VF06';
-import * as reading from './reading.js?v=20261114VF06';
-import * as composer from './composer.js?v=20261114VF06';
-import * as keys from './keys.js?v=20261114VF06';
-import * as prompt from './prompt.js?v=20261114VF06';
-import * as presets from './presets.js?v=20261114VF06';
-import * as logprobs from './logprobs.js?v=20261114VF06';
+import { local, importStPinsOnce, applyAppearance, clearAppearance } from './store.js?v=20261114VF07';
+import { ctx, h, toggleDrawer, SET_PANELS, settingsModule, openSettings, isDesktop, INSP_ID, inspectorModule, loadInspector, setInspector, setShellApi, paletteModule, PHONE_MQ, loadPhone, phoneModule, isFloatingOpen, closeOtherFloating, paintOneRange, paintRanges } from './util.js?v=20261114VF07';
+import { closeMenu } from './menu.js?v=20261114VF07';
+import * as sidebar from './sidebar.js?v=20261114VF07';
+import * as chrome from './chrome.js?v=20261114VF07';
+import * as reading from './reading.js?v=20261114VF07';
+import * as composer from './composer.js?v=20261114VF07';
+import * as keys from './keys.js?v=20261114VF07';
+import * as prompt from './prompt.js?v=20261114VF07';
+import * as presets from './presets.js?v=20261114VF07';
+import * as logprobs from './logprobs.js?v=20261114VF07';
+import * as worldbook from './worldbook.js?v=20261114VF07';
 
 const BODY_CLASSES = ['ag2', 'ag2-welcome', 'ag2-side-collapsed', 'ag2-ready', 'ag2-wand-open', 'ag2-set-open', 'ag2-insp-open', 'ag2-phone', 'ag2-kb'];
 let on = false;
@@ -155,6 +156,7 @@ export function enable({ appReady = false } = {}) {
         prompt.mount();
         presets.mount();
         logprobs.mount();
+        worldbook.mount();
 
         if (appIsReady()) onReady();
     } catch (e) {
@@ -370,6 +372,7 @@ export function disable({ reload = true } = {}) {
     try { prompt.unmount(); } catch { /* */ }
     try { presets.unmount(); } catch { /* */ }
     try { logprobs.unmount(); } catch { /* */ }
+    try { worldbook.unmount(); } catch { /* */ }
     try { paletteModule()?.unmount(); } catch { /* */ }
     setShellApi(null);
     try { closeMenu(); } catch { /* */ }

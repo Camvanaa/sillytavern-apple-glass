@@ -11,8 +11,8 @@
 // Never fires while an IME is composing, on auto-repeat of the palette key, or on top of an
 // ST popup. One window-capture listener, added on enable and removed on teardown.
 
-import { isMac, openPalette, paletteModule, settingsModule, setInspector, isDesktop, getShellApi, ctx, INSP_ID, stLayerUp, nativeSelectOpen } from './util.js?v=20261114VF06';
-import { isMenuOpen } from './menu.js?v=20261114VF06';
+import { isMac, openPalette, paletteModule, settingsModule, setInspector, isDesktop, getShellApi, ctx, INSP_ID, stLayerUp, nativeSelectOpen } from './util.js?v=20261114VF07';
+import { isMenuOpen } from './menu.js?v=20261114VF07';
 
 let mounted = false;
 
