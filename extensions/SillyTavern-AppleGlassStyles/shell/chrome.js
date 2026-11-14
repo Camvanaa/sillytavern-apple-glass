@@ -1,10 +1,10 @@
 // Apple Glass 2 shell — title capsule, tool capsule, welcome page (DESIGN §5.2, §5.10).
 
-import { icon } from './icons.js?v=20261114VF02';
-import { openMenu } from './menu.js?v=20261114VF02';
-import { ctx, h, guard, thumb, fmtTime, clickSt, openEntry, openSettings, newAssistantChat, setInspector, modCombo, isPhone } from './util.js?v=20261114VF02';
+import { icon } from './icons.js?v=20261114VF03';
+import { openMenu } from './menu.js?v=20261114VF03';
+import { ctx, h, guard, thumb, fmtTime, clickSt, openEntry, openSettings, newAssistantChat, setInspector, modCombo, isPhone, isFloatingOpen } from './util.js?v=20261114VF03';
 import { showBookmarksButtons } from '../../../../bookmarks.js';
-import { getRecent, isLoaded, openRightMenu, row, rowKeys, avatarEl } from './sidebar.js?v=20261114VF02';
+import { getRecent, isLoaded, openRightMenu, row, rowKeys, avatarEl } from './sidebar.js?v=20261114VF03';
 
 let title = null, tools = null, welcome = null;
 let generating = false;
@@ -154,7 +154,17 @@ export function updateTitle() {
     if (tools) {
         tools.querySelector('[data-act="wi"]').classList.toggle('ag2-has', !!world);
         tools.querySelector('[data-act="an"]').classList.toggle('ag2-has', !!String(c.chatMetadata?.note_prompt ?? '').trim());
+        syncFloating();
     }
+}
+
+export function syncFloating() {
+    const an = tools?.querySelector('[data-act="an"]');
+    if (!an) return;
+    const open = isFloatingOpen('an');
+    an.classList.toggle('ag2-on', open);
+    an.setAttribute('aria-pressed', String(open));
+    an.setAttribute('aria-controls', 'floatingPrompt');
 }
 
 function greeting() {

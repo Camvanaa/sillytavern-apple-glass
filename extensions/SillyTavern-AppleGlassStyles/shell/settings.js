@@ -19,10 +19,10 @@
 // the sheet below the head (same CSS variables as the window). Drag the grabber / head down
 // to dismiss.
 
-import { ctx, h, guard, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar, nativeSelectOpen } from './util.js?v=20261114VF02';
-import { icon } from './icons.js?v=20261114VF02';
-import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261114VF02';
-import { isMenuOpen } from './menu.js?v=20261114VF02';
+import { ctx, h, guard, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar, nativeSelectOpen, paintRanges, paintOneRange } from './util.js?v=20261114VF03';
+import { icon } from './icons.js?v=20261114VF03';
+import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261114VF03';
+import { isMenuOpen } from './menu.js?v=20261114VF03';
 
 const PAGES = [
     { id: 'api', name: '连接', icon: 'plug', tile: 'green', group: 0, lead: '选择 API 来源，填写地址、密钥和模型。' },
@@ -228,7 +228,7 @@ let results = [];
 
 const loadSearch = async () => {
     if (!searchMod) {
-        searchMod = await import('./search.js?v=20261114VF02');
+        searchMod = await import('./search.js?v=20261114VF03');
         searchMod.init(PAGES.map(({ id, name, lead }) => ({ id, name, lead })));
     }
     return searchMod;
@@ -340,21 +340,12 @@ export async function revealItem(r) {
 
 // ------------------------------------------------------------------ sliders: accent fill
 // ST's range inputs get --ag2-pct (CSS draws the accent part of the track up to it).
-function paintRanges(scope) {
-    if (!scope) return;
-    for (const r of scope.querySelectorAll('input[type="range"]')) paintOne(r);
-}
-function paintOne(r) {
-    const min = Number(r.min || 0), max = Number(r.max || 100);
-    const pct = max > min ? (Number(r.value) - min) / (max - min) * 100 : 0;
-    r.style.setProperty('--ag2-pct', Math.max(0, Math.min(100, pct)).toFixed(2) + '%');
-}
 function onPanelInput(e) {
     const t = e.target;
     if (!(t instanceof HTMLInputElement) || !PAGE[cur]?.panel) return;
     const panel = document.getElementById(PAGE[cur].panel);
     if (!panel?.contains(t)) return;
-    if (t.type === 'range') paintOne(t);
+    if (t.type === 'range') paintOneRange(t);
     else if (t.type === 'number') setTimeout(() => paintRanges(panel), 0); // ST syncs the slider from its box
 }
 
@@ -837,6 +828,7 @@ function stLayerUp() {
     return !!document.querySelector('dialog[open]')
         || !!document.querySelector('.select2-container--open')
         || visible('#shadow_popup') || visible('#dialogue_popup') || visible('#character_popup')
+        || visible('#completion_prompt_manager_popup')
         || visible('#select_chat_popup') || visible('#curEditTextarea') || visible('#dialogue_del_mes_cancel')
         || visible('.autoComplete, .ui-autocomplete, [role="menu"], [popover]:popover-open');
 }

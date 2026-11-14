@@ -7,16 +7,16 @@
 // class and listener it added and reloads the current chat.
 // Any exception during enable → automatic teardown + one toastr.
 
-export const BUILD = '20261114VF02';
+export const BUILD = '20261114VF03';
 
-import { local, importStPinsOnce, applyAppearance, clearAppearance } from './store.js?v=20261114VF02';
-import { ctx, h, toggleDrawer, SET_PANELS, settingsModule, openSettings, isDesktop, INSP_ID, inspectorModule, loadInspector, setInspector, setShellApi, paletteModule, PHONE_MQ, loadPhone, phoneModule } from './util.js?v=20261114VF02';
-import { closeMenu } from './menu.js?v=20261114VF02';
-import * as sidebar from './sidebar.js?v=20261114VF02';
-import * as chrome from './chrome.js?v=20261114VF02';
-import * as reading from './reading.js?v=20261114VF02';
-import * as composer from './composer.js?v=20261114VF02';
-import * as keys from './keys.js?v=20261114VF02';
+import { local, importStPinsOnce, applyAppearance, clearAppearance } from './store.js?v=20261114VF03';
+import { ctx, h, toggleDrawer, SET_PANELS, settingsModule, openSettings, isDesktop, INSP_ID, inspectorModule, loadInspector, setInspector, setShellApi, paletteModule, PHONE_MQ, loadPhone, phoneModule, isFloatingOpen, closeOtherFloating, paintOneRange, paintRanges } from './util.js?v=20261114VF03';
+import { closeMenu } from './menu.js?v=20261114VF03';
+import * as sidebar from './sidebar.js?v=20261114VF03';
+import * as chrome from './chrome.js?v=20261114VF03';
+import * as reading from './reading.js?v=20261114VF03';
+import * as composer from './composer.js?v=20261114VF03';
+import * as keys from './keys.js?v=20261114VF03';
 
 const BODY_CLASSES = ['ag2', 'ag2-welcome', 'ag2-side-collapsed', 'ag2-ready', 'ag2-wand-open', 'ag2-set-open', 'ag2-insp-open', 'ag2-phone', 'ag2-kb'];
 let on = false;
@@ -148,6 +148,7 @@ export function enable({ appReady = false } = {}) {
         }
         // Sidebar dispatches (non-bubbling) `ag2-recent` after each load; capture it here.
         shell.addEventListener('ag2-recent', safe(() => chrome.renderWelcome()), true);
+        watchFloating();
 
         if (appIsReady()) onReady();
     } catch (e) {
@@ -252,6 +253,84 @@ function watchPanels() {
     }
 }
 
+let floatCleanups = [];
+function watchFloating() {
+    const mov = document.getElementById('movingDivs');
+    if (!mov) return;
+    let openSet = new Set();
+    const syncAll = () => {
+        const curOpen = [];
+        for (const el of mov.querySelectorAll(':scope > .drawer-content')) {
+            if (isFloatingOpen(el)) curOpen.push(el);
+        }
+        const newlyOpened = curOpen.findLast(el => !openSet.has(el)) || (curOpen.length > 1 ? curOpen[curOpen.length - 1] : null);
+        if (newlyOpened && curOpen.length > 1) {
+            closeOtherFloating(newlyOpened);
+            openSet = new Set([newlyOpened]);
+            paintRanges(newlyOpened);
+        } else {
+            openSet = new Set(curOpen);
+            if (newlyOpened) paintRanges(newlyOpened);
+        }
+        if (newlyOpened?.id === 'logprobsViewer') {
+            const content = newlyOpened.querySelector('.logprobs_panel_content');
+            if (content && getComputedStyle(content).display === 'none') $('#logprovsViewerBlockToggle').trigger('click');
+        }
+        chrome.syncFloating();
+        inspectorModule()?.syncFloating?.();
+    };
+    const mf = new MutationObserver(safe(() => syncAll()));
+    const observeChildren = () => {
+        mf.disconnect(); // release observers on plugin panels removed from the DOM
+        for (const el of mov.querySelectorAll(':scope > .drawer-content')) {
+            mf.observe(el, { attributes: true, attributeFilter: ['style', 'class'] });
+        }
+    };
+    observeChildren();
+    const mc = new MutationObserver(safe(() => { observeChildren(); syncAll(); }));
+    mc.observe(mov, { childList: true });
+    observers.push(mf, mc);
+    const onInput = safe(e => {
+        const t = e.target;
+        if (!(t instanceof HTMLInputElement)) return;
+        if (t.type === 'range') paintOneRange(t);
+        else if (t.type === 'number') {
+            const box = t.closest('.drawer-content, #character_popup');
+            if (box) queueMicrotask(safe(() => paintRanges(box)));
+        }
+    });
+    mov.addEventListener('input', onInput, true);
+    mov.addEventListener('change', onInput, true);
+    const cp = document.getElementById('character_popup');
+    if (cp) {
+        cp.addEventListener('input', onInput, true);
+        cp.addEventListener('change', onInput, true);
+        const mcp = new MutationObserver(safe(() => {
+            if (getComputedStyle(cp).display !== 'none') {
+                closeOtherFloating(null);
+                paintRanges(cp);
+            }
+        }));
+        mcp.observe(cp, { attributes: true, attributeFilter: ['style', 'class'] });
+        observers.push(mcp);
+    }
+    const pm = document.getElementById('completion_prompt_manager_popup');
+    if (pm) {
+        const mp = new MutationObserver(safe(() => {
+            if (getComputedStyle(pm).display !== 'none') closeOtherFloating(null);
+        }));
+        mp.observe(pm, { attributes: true, attributeFilter: ['style', 'class'] });
+        observers.push(mp);
+    }
+    floatCleanups.push(() => {
+        mov.removeEventListener('input', onInput, true);
+        mov.removeEventListener('change', onInput, true);
+        cp?.removeEventListener('input', onInput, true);
+        cp?.removeEventListener('change', onInput, true);
+    });
+    syncAll();
+}
+
 function updateWelcome() {
     if (!on) return;
     const c = ctx();
@@ -271,6 +350,8 @@ export function disable({ reload = true } = {}) {
     listeners = [];
     observers.forEach(o => o.disconnect());
     observers = [];
+    floatCleanups.forEach(f => { try { f(); } catch { /* */ } });
+    floatCleanups = [];
     watching = false;
     timers.forEach(clearTimeout);
     timers = [];

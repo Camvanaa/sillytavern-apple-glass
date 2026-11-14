@@ -14,11 +14,11 @@
 // group_edit of the open group. Anything else → ask ST to re-select (its own
 // #rm_button_selected_ch) and show a neutral placeholder meanwhile.
 
-import { icon } from './icons.js?v=20261114VF02';
-import { openMenu, closeMenu } from './menu.js?v=20261114VF02';
-import { local } from './store.js?v=20261114VF02';
-import { ctx, h, guard, clickSt, isDesktop, INSP_ID, setInspector, restoreInspectorPin, getCurrentChatId, summary, toDate } from './util.js?v=20261114VF02';
-import { guarded } from './index.js?v=20261114VF02';
+import { icon } from './icons.js?v=20261114VF03';
+import { openMenu, closeMenu } from './menu.js?v=20261114VF03';
+import { local } from './store.js?v=20261114VF03';
+import { ctx, h, guard, clickSt, isDesktop, INSP_ID, setInspector, restoreInspectorPin, getCurrentChatId, summary, toDate, isFloatingOpen } from './util.js?v=20261114VF03';
+import { guarded } from './index.js?v=20261114VF03';
 import { openGroupId } from '../../../../group-chats.js';
 
 let panel = null;
@@ -327,9 +327,25 @@ function renderChat(c) {
         b.querySelector('.ag2-insp-row-v').textContent = v;
         list.append(b);
     }
-    const hint = h('p', 'ag2-insp-hint', '作者注释、CFG 和 Logprobs 在 ST 自己的浮动面板里打开（桌面上显示在检视器左侧）。');
+    const hint = h('p', 'ag2-insp-hint', '选择一项查看或调整，再次点击即可收起。');
     frag.append(info, list, hint);
     ui.chat.replaceChildren(frag);
+    syncFloating();
+}
+
+export function syncFloating() {
+    if (!mounted || !ui.chat) return;
+    const note = String(ctx().chatMetadata?.note_prompt ?? '').trim();
+    for (const [act, id] of [['an', 'floatingPrompt'], ['cfg', 'cfgConfig'], ['logprobs', 'logprobsViewer']]) {
+        const row = ui.chat.querySelector(`.ag2-insp-row[data-ag2-act="${act}"]`);
+        if (!row) continue;
+        const open = isFloatingOpen(id);
+        row.classList.toggle('ag2-on', open);
+        row.setAttribute('aria-expanded', String(open));
+        row.setAttribute('aria-controls', id);
+        const v = row.querySelector('.ag2-insp-row-v');
+        if (v) v.textContent = open ? '已打开' : (act === 'an' && note ? '有内容' : '');
+    }
 }
 
 // ------------------------------------------------------------------ actions

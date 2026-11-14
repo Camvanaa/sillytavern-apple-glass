@@ -902,8 +902,17 @@ html body.ag2 #ag2-shell .ag2-tool:hover {
     background: var(--ag2-f4);
 }
 
+html body.ag2 #ag2-shell .ag2-tool.ag2-on {
+    background: var(--ag2-accent-soft);
+    color: var(--ag2-accent-hover);
+}
+
 html body.ag2 #ag2-shell .ag2-tool .ag2-i {
     color: var(--ag2-l2);
+}
+
+html body.ag2 #ag2-shell .ag2-tool.ag2-on .ag2-i {
+    color: var(--ag2-accent-hover);
 }
 
 /* Small dot: chat has a bound lorebook / non-empty author's note (§5.2) */
@@ -5399,6 +5408,392 @@ html body.ag2.reduced-motion:not(#_):not(#__):not(#___) .ag2-hit {
         text-overflow: ellipsis;
         white-space: nowrap;
     }
+
+    /* == 5.5f · Settings pages: Apple grouped cards & hierarchy polish (S2) == */
+
+    /* --- 通用 (#user-settings-block): top toolbar card, grouped cards, single-row selects, stacked switches --- */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block > .flex-container.flexFlowColumn:first-child {
+        box-sizing: border-box;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 8px 12px !important;
+        margin: 4px 0 10px !important;
+        padding: 10px 14px !important;
+        border-radius: 12px !important;
+        background: var(--ag2-f5) !important;
+        box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.065) !important;
+    }
+
+    /* Hide redundant native page heading & search box (window head & left nav already provide them) */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block [name="userSettingsRowOne"] > .flex-container:first-child,
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block #settingsSearch,
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block [name="UserSettingsRowTwo"]:not(:has(#account_controls > :not(.displayNone))) {
+        display: none !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block [name="userSettingsRowOne"] {
+        flex: 1 1 auto !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 8px 12px !important;
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block #UI-language-block {
+        align-items: center !important;
+        gap: 8px !important;
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block #UI-language-block > span {
+        color: var(--ag2-l1);
+        font-size: var(--ag2-fs-sub);
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block #ui_language_select {
+        min-width: 140px;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block #version_display {
+        color: var(--ag2-l3);
+        font-size: 12px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Grouped cards across 通用 */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block :is(
+        #UI-presets-block,
+        [name="AvatarAndChatDisplay"],
+        [name="FontBlurChatWidthBlock"],
+        [name="themeToggles"],
+        [name="CharacterHandlingToggles"],
+        [name="MiscellaneousToggles"],
+        [name="ChatMessageHandlingToggles"],
+        [name="STscriptToggles"]
+    ) {
+        box-sizing: border-box;
+        width: 100%;
+        margin: 0 0 10px !important;
+        padding: 10px 14px !important;
+        border: 0 !important;
+        border-radius: 12px !important;
+        background: var(--ag2-f5) !important;
+        box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.065) !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block :is(
+        #UI-presets-block,
+        [name="CharacterHandlingToggles"],
+        [name="MiscellaneousToggles"],
+        [name="ChatMessageHandlingToggles"],
+        [name="STscriptToggles"]
+    ) > h4:first-child {
+        margin-top: 2px !important;
+        margin-bottom: 8px !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block [name="themeElements"] > hr {
+        display: none !important;
+    }
+
+    /* Nested inline drawers inside a card get a subtle recessed surface */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block :is([name="ChatMessageHandlingToggles"], [name="STscriptToggles"]) .inline-drawer {
+        background: rgba(255, 255, 255, 0.03) !important;
+        box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.055) !important;
+    }
+
+    /* Unified single-row "Label left · Select right" in 通用 */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block :is(
+        [name="AvatarAndChatDisplay"] > .flex-container,
+        [name="CharacterHandlingToggles"] > .flex-container:has(> select),
+        #examples-behavior-block,
+        [name="ChatMessageHandlingToggles"] > div:has(> #image_overswipe),
+        [name="ChatMessageHandlingToggles"] > .flex-container:has(> #send_on_enter)
+    ) {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 6px 12px !important;
+        min-height: 38px;
+        margin: 0 !important;
+        padding: 4px 2px !important;
+        box-shadow: inset 0 -0.5px 0 var(--ag2-sep);
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block [name="AvatarAndChatDisplay"] > .flex-container:last-child {
+        box-shadow: none;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block :is(
+        [name="AvatarAndChatDisplay"] > .flex-container,
+        [name="CharacterHandlingToggles"] > .flex-container:has(> select),
+        #examples-behavior-block,
+        [name="ChatMessageHandlingToggles"] > div:has(> #image_overswipe),
+        [name="ChatMessageHandlingToggles"] > .flex-container:has(> #send_on_enter)
+    ) > :is(span, label, small):first-child {
+        flex: 1 1 130px !important;
+        margin: 0 !important;
+        color: var(--ag2-l1) !important;
+        font-size: var(--ag2-fs-sub) !important;
+        font-weight: 450;
+        text-align: left;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block :is(
+        [name="AvatarAndChatDisplay"] > .flex-container,
+        [name="CharacterHandlingToggles"] > .flex-container:has(> select),
+        #examples-behavior-block,
+        [name="ChatMessageHandlingToggles"] > div:has(> #image_overswipe),
+        [name="ChatMessageHandlingToggles"] > .flex-container:has(> #send_on_enter)
+    ) > :first-child small {
+        color: inherit !important;
+        font-size: inherit !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block :is(
+        [name="AvatarAndChatDisplay"] > .flex-container,
+        [name="CharacterHandlingToggles"] > .flex-container:has(> select),
+        #examples-behavior-block,
+        [name="ChatMessageHandlingToggles"] > div:has(> #image_overswipe),
+        [name="ChatMessageHandlingToggles"] > .flex-container:has(> #send_on_enter)
+    ) > select {
+        flex: 0 1 220px !important;
+        width: 220px !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+    }
+
+    /* Fix side-by-side switch split (备选回复 / 手势 & 自动继续) → full-width stacked switch rows */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block :is(
+        .checkbox-container.flex-container,
+        .inline-drawer-content > .flex-container:has(> label.checkbox_label)
+    ) {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block label.checkbox_label + .checkbox-container.flex-container,
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block .checkbox-container.flex-container + label.checkbox_label {
+        box-shadow: inset 0 0.5px 0 var(--ag2-sep);
+    }
+
+    /* Two-column slider sub-cards in 通用 */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block :is(
+        [name="FontBlurChatWidthBlock"],
+        [name="ChatMessageHandlingToggles"] > .flex-container:first-of-type
+    ) {
+        gap: 8px !important;
+        margin: 0 0 8px !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #user-settings-block :is(
+        [name="FontBlurChatWidthBlock"],
+        [name="ChatMessageHandlingToggles"] > .flex-container:first-of-type
+    ) > .flexBasis48p {
+        box-sizing: border-box;
+        flex: 1 1 calc(50% - 4px) !important;
+        min-width: 140px;
+        margin: 0 !important;
+        padding: 10px 12px !important;
+        border-radius: 10px !important;
+        background: rgba(255, 255, 255, 0.03) !important;
+        box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.055) !important;
+    }
+
+    /* Auxiliary glyphs inside switch rows (flask / desktop / mobile / markdown / warning) */
+    html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) label.checkbox_label :is(.fa-flask, .fa-desktop, .fa-mobile-screen-button, .fa-markdown, .fa-circle-exclamation, .fa-exclamation-triangle) {
+        margin-left: 2px;
+        color: var(--ag2-l3) !important;
+        font-size: 12px !important;
+        opacity: 0.78;
+        filter: none !important;
+    }
+
+    /* --- 提示词与格式 (#AdvancedFormatting): callout banner & grouped cards --- */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #AdvancedFormatting > .flex-container:first-child {
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 8px !important;
+        margin: 2px 0 6px !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #AdvancedFormatting > .flex-container:first-child > h3 {
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #AdvancedFormatting > .flex-container:first-child > h3 > span[data-i18n="Advanced Formatting"] {
+        display: none !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #AdvancedFormatting #advanced-formatting-cc-notice {
+        box-sizing: border-box;
+        align-items: center !important;
+        gap: 8px !important;
+        margin: 4px 0 10px !important;
+        padding: 8px 12px !important;
+        border: 0 !important;
+        border-radius: 10px !important;
+        background: rgba(255, 159, 10, 0.12) !important;
+        box-shadow: inset 0 0 0 0.5px rgba(255, 159, 10, 0.28) !important;
+        color: #ffb340 !important;
+        font-size: 12.5px !important;
+        line-height: 1.4;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #AdvancedFormatting :is(
+        #ContextSettings > div,
+        #InstructSettingsColumn,
+        #SystemPromptColumn > div:not(.inline-drawer)
+    ) {
+        box-sizing: border-box;
+        width: 100%;
+        margin: 0 0 10px !important;
+        padding: 10px 14px !important;
+        border: 0 !important;
+        border-radius: 12px !important;
+        background: var(--ag2-f5) !important;
+        box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.065) !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #AdvancedFormatting :is(
+        #ContextSettings > div,
+        #InstructSettingsColumn,
+        #SystemPromptColumn > div:not(.inline-drawer)
+    ) > h4.standoutHeader:first-child {
+        margin-top: 2px !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #AdvancedFormatting details {
+        box-sizing: border-box;
+        margin: 6px 0 !important;
+        padding: 8px 12px !important;
+        border: 0 !important;
+        border-radius: 10px !important;
+        background: rgba(255, 255, 255, 0.03) !important;
+        box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.055) !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #AdvancedFormatting details > summary {
+        color: var(--ag2-l1);
+        font-size: var(--ag2-fs-sub);
+        font-weight: 560;
+        cursor: pointer;
+    }
+
+    /* --- 生成参数 (#left-nav-panel): preset card & hairline-separated parameter rows --- */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel #respective-presets-block {
+        box-sizing: border-box;
+        margin: 4px 0 10px !important;
+        padding: 8px 12px 12px !important;
+        border-radius: 12px !important;
+        background: var(--ag2-f5) !important;
+        box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.065) !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel #pro-settings-block > .flexBasis48p {
+        box-sizing: border-box;
+        padding: 10px 12px !important;
+        border-radius: 12px !important;
+        background: var(--ag2-f5) !important;
+        box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.065) !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel .range-block + .range-block:not(:has(> #completion_prompt_manager)) {
+        box-shadow: inset 0 0.5px 0 var(--ag2-sep);
+    }
+
+    /* Consecutive native parameter rows form one continuous card. Native separators
+       and inline drawers delimit groups without wrapping or moving any control. */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel #respective-ranges-and-temps > div > .range-block:not(:has(#completion_prompt_manager)) {
+        box-sizing: border-box;
+        margin: 0 !important;
+        padding: 8px 12px !important;
+        background: var(--ag2-f5);
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel #respective-ranges-and-temps > div > .range-block:not(.range-block + .range-block):not(:has(#completion_prompt_manager)) {
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #left-nav-panel #respective-ranges-and-temps > div > .range-block:not(:has(+ .range-block)):not(:has(#completion_prompt_manager)) {
+        border-bottom-left-radius: 12px;
+        border-bottom-right-radius: 12px;
+        margin-bottom: 10px !important;
+    }
+
+    /* --- 连接 (#rm_api_block): connection profile & API selector card --- */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #rm_api_block :is(#connection-profile-block, .wide100p:has(> .flex-container > #connection_profiles), #main-API-selector-block, #openai_api, #textgenerationwebui_api, #kobold_api, #kobold_horde, #novel_api) {
+        box-sizing: border-box;
+        margin: 6px 0 10px !important;
+        padding: 10px 12px !important;
+        border-radius: 12px !important;
+        background: var(--ag2-f5) !important;
+        box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.065) !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #rm_api_block .wide100p:has(> .flex-container > #connection_profiles) h3 {
+        margin-top: 0 !important;
+    }
+
+    /* --- 世界书 (#WorldInfo) & 人设 (#PersonaManagement) & 扩展 (#rm_extensions_block) --- */
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock > .range-block {
+        margin: 0 0 8px !important;
+        padding: 10px 14px !important;
+        border-radius: 12px !important;
+        background: var(--ag2-f5) !important;
+        box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.065) !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #WorldInfo #wiTopBlock > .range-block .inline-drawer {
+        background: rgba(255, 255, 255, 0.03) !important;
+        box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.055) !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #PersonaManagement :is(.persona_management_left_column, .persona_management_current_persona) {
+        box-sizing: border-box;
+        padding: 12px 14px !important;
+        border-radius: 12px !important;
+        background: var(--ag2-f5) !important;
+        box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.065) !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #PersonaManagement .persona_management_current_persona > h4.standoutHeader:first-child {
+        margin-top: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #rm_extensions_block .extensions_block > .flex-container:first-child {
+        box-sizing: border-box;
+        align-items: center !important;
+        gap: 8px 12px !important;
+        margin: 4px 0 10px !important;
+        padding: 8px 12px !important;
+        border-radius: 12px !important;
+        background: var(--ag2-f5) !important;
+        box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.065) !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #rm_extensions_block .extensions_block > .flex-container:first-child > h3 {
+        margin: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(#_):not(#__) #rm_extensions_block .extensions_block > .flex-container:first-child > label.checkbox_label {
+        flex: 0 1 auto !important;
+        width: auto !important;
+        min-height: 32px;
+        padding: 0 4px !important;
+    }
 }
 /* == /5.5e == */
 
@@ -6125,6 +6520,17 @@ html body.ag2.ag2-insp-open {
         background: var(--ag2-f4);
     }
 
+    html body.ag2 #right-nav-panel button.ag2-insp-row.ag2-on {
+        background: var(--ag2-accent-soft);
+    }
+
+    html body.ag2 #right-nav-panel button.ag2-insp-row.ag2-on > .ag2-i:first-child,
+    html body.ag2 #right-nav-panel button.ag2-insp-row.ag2-on .ag2-insp-row-t,
+    html body.ag2 #right-nav-panel button.ag2-insp-row.ag2-on .ag2-insp-row-v,
+    html body.ag2 #right-nav-panel button.ag2-insp-row.ag2-on .ag2-insp-chev {
+        color: var(--ag2-accent-hover);
+    }
+
     /* R2b: a row with nothing to open (creator's notes on a card without notes) is inert */
     html body.ag2 #right-nav-panel button.ag2-insp-row:disabled {
         cursor: default;
@@ -6196,32 +6602,782 @@ html body.ag2.ag2-insp-open {
     }
 
     /* ST's floating panels (作者注释 / CFG / Logprobs) keep their own nodes and
-       behaviour; only placed: left of the open inspector, else under the tool capsule
-       (§5.6). ST may have written a saved MovingUI position inline, hence !important. */
+       behaviour; placed left of the open inspector, else under the tool capsule
+       (§5.6). Full AG2 glass header, controls, cards and 180ms entry motion (S1/S3). */
     html body.ag2:not(#_):not(#__) :is(#floatingPrompt, #cfgConfig, #logprobsViewer) {
         position: fixed !important;
         top: calc(var(--ag2-inset) + 54px) !important;
         right: var(--ag2-inset) !important;
         left: auto !important;
         bottom: auto !important;
+        flex-direction: column !important;
+        gap: 0 !important;
+        box-sizing: border-box !important;
         width: var(--ag2-insp-w) !important;
         min-width: 0 !important;
         max-width: calc(100vw - var(--ag2-sheld-left) - var(--ag2-inset) * 2) !important;
         height: auto !important;
         max-height: calc(100dvh - var(--ag2-inset) * 2 - 54px) !important;
         margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
         border: 0 !important;
         border-radius: var(--ag2-r-panel) !important;
-        background: var(--ag2-mat-menu) !important;
-        -webkit-backdrop-filter: var(--ag2-blur-menu) !important;
-        backdrop-filter: var(--ag2-blur-menu) !important;
+        background: var(--ag2-mat-side) !important;
+        -webkit-backdrop-filter: var(--ag2-blur-side) !important;
+        backdrop-filter: var(--ag2-blur-side) !important;
         box-shadow: var(--ag2-rim), var(--ag2-sh3) !important;
+        color: var(--ag2-l1) !important;
+        font-size: var(--ag2-fs-sub) !important;
+        line-height: 1.45;
+        --mainFontSize: 13.5px;
+        animation: ag2-float-in 180ms var(--ag2-ease-sheet);
+    }
+
+    html body.ag2.no-blur:not(#_):not(#__) :is(#floatingPrompt, #cfgConfig, #logprobsViewer) {
+        background: var(--ag2-solid-side) !important;
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+    }
+
+    @keyframes ag2-float-in {
+        from { opacity: 0; transform: translateX(8px) scale(0.985); }
+        to { opacity: 1; transform: none; }
+    }
+
+    /* ST animates discrete display on drawers. An exclusive inspector must leave the
+       paint tree immediately when hidden, rather than overlapping its replacement. */
+    html body.ag2:not(#_):not(#__) #movingDivs > .drawer-content {
+        transition-property: opacity !important;
+        transition-behavior: normal !important;
     }
 
     html body.ag2.ag2-insp-open:not(#_):not(#__) :is(#floatingPrompt, #cfgConfig, #logprobsViewer) {
         top: var(--ag2-inset) !important;
         right: calc(var(--ag2-inset) * 2 + var(--ag2-insp-w)) !important;
         max-height: calc(100dvh - var(--ag2-inset) * 2) !important;
+    }
+
+    /* --- S1 · Secondary floating panels & popups: header chrome + AG2 controls --- */
+    /* Hide ST's native drag grip, maximize button and redundant collapse toggle */
+    html body.ag2:not(#_):not(#__) #movingDivs > .drawer-content :is(.drag-grabber, .inline-drawer-maximize, #logprovsViewerBlockToggle) {
+        display: none !important;
+    }
+
+    /* Standard Apple panel header bar (46px, title left, 28px round × button right) */
+    html body.ag2:not(#_):not(#__) :is(#floatingPrompt > .panelControlBar, #cfgConfig > .panelControlBar, #logprobsViewer > .logprobs_panel_header) {
+        position: static !important;
+        display: flex !important;
+        flex: none !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        box-sizing: border-box !important;
+        width: 100% !important;
+        min-height: 46px !important;
+        margin: 0 !important;
+        padding: 10px 12px 8px 16px !important;
+        border: 0 !important;
+        background: none !important;
+        box-shadow: inset 0 -0.5px 0 var(--ag2-sep) !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #floatingPrompt > .panelControlBar::before {
+        content: "作者注释";
+        color: var(--ag2-l1);
+        font-size: 15px;
+        font-weight: 650;
+        line-height: 1.3;
+    }
+
+    html body.ag2:not(#_):not(#__) #cfgConfig > .panelControlBar::before {
+        content: "CFG 引导缩放";
+        color: var(--ag2-l1);
+        font-size: 15px;
+        font-weight: 650;
+        line-height: 1.3;
+    }
+
+    html body.ag2:not(#_):not(#__) #logprobsViewer > .logprobs_panel_header > .logprobs_panel_header {
+        margin: 0 !important;
+        padding: 0 !important;
+        color: var(--ag2-l1) !important;
+        font-size: 15px !important;
+        font-weight: 650 !important;
+        line-height: 1.3 !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #logprobsViewer > .logprobs_panel_header > .logprobs_panel_header b {
+        font-weight: 650 !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #logprobsViewer > .logprobs_panel_header > .logprobs_panel_controls {
+        display: flex !important;
+        align-items: center !important;
+        margin: 0 0 0 auto !important;
+        padding: 0 !important;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#ANClose, #CFGClose, #logprobsViewerClose),
+    html body.ag2:not(#_):not(#__) #movingDivs > .drawer-content .floating_panel_close {
+        display: inline-flex !important;
+        flex: none !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 28px !important;
+        height: 28px !important;
+        margin: 0 0 0 auto !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 50% !important;
+        background: var(--ag2-f3) !important;
+        color: var(--ag2-l2) !important;
+        font-size: 14px !important;
+        opacity: 1 !important;
+        filter: none !important;
+        cursor: pointer !important;
+        transition: background-color var(--ag2-dur) ease, color var(--ag2-dur) ease !important;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#ANClose, #CFGClose, #logprobsViewerClose):hover,
+    html body.ag2:not(#_):not(#__) #movingDivs > .drawer-content .floating_panel_close:hover {
+        background: var(--ag2-f2) !important;
+        color: var(--ag2-l1) !important;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#ANClose, #CFGClose, #logprobsViewerClose).fa-circle-xmark::before,
+    html body.ag2:not(#_):not(#__) #movingDivs > .drawer-content .floating_panel_close.fa-circle-xmark::before {
+        content: "\f00d" !important;
+    }
+
+    /* Scrollable bodies inside floating panels */
+    html body.ag2:not(#_):not(#__) :is(#floatingPrompt > [name="floatingPromptHolder"], #cfgConfig > [name="cfgConfigHolder"], #logprobsViewer > .logprobs_panel_content) {
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        box-sizing: border-box !important;
+        width: 100% !important;
+        max-height: calc(100dvh - var(--ag2-inset) * 2 - 102px) !important;
+        margin: 0 !important;
+        padding: 10px 12px 14px !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        overscroll-behavior: contain;
+    }
+
+    html body.ag2.ag2-insp-open:not(#_):not(#__) :is(#floatingPrompt > [name="floatingPromptHolder"], #cfgConfig > [name="cfgConfigHolder"], #logprobsViewer > .logprobs_panel_content) {
+        max-height: calc(100dvh - var(--ag2-inset) * 2 - 48px) !important;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#floatingPrompt, #cfgConfig) :is(hr.sysHR, .inline-drawer-content > br) {
+        display: none !important;
+    }
+
+    /* Shared AG2 controls for secondary floating panels & popups (#movingDivs, #character_popup, #completion_prompt_manager_popup) */
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) .inline-drawer {
+        box-sizing: border-box;
+        margin: 0 0 8px !important;
+        border: 0 !important;
+        border-radius: 12px !important;
+        background: var(--ag2-f5) !important;
+        box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.065) !important;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) .inline-drawer .inline-drawer {
+        background: none !important;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) .inline-drawer-header {
+        box-sizing: border-box;
+        display: flex;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 8px;
+        min-height: 40px;
+        margin: 0 !important;
+        padding: 6px 12px !important;
+        border: 0 !important;
+        border-radius: 12px !important;
+        background: none !important;
+        box-shadow: none !important;
+        color: var(--ag2-l1) !important;
+        font-size: var(--ag2-fs-sub) !important;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) .inline-drawer-header:hover {
+        background: var(--ag2-f5) !important;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) .inline-drawer-header :is(b, strong) {
+        font-weight: 600;
+        color: var(--ag2-l1);
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) .inline-drawer-header small {
+        color: var(--ag2-l3) !important;
+        font-size: 11.5px !important;
+        font-weight: 400;
+        line-height: 1.35;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) .inline-drawer-content {
+        padding: 2px 12px 12px !important;
+        border: 0 !important;
+        background: none !important;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) .inline-drawer-icon {
+        flex: none;
+        margin: 0 0 0 auto !important;
+        color: var(--ag2-l3) !important;
+        font-size: 12px !important;
+        filter: none !important;
+        opacity: 1 !important;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) .inline-drawer-icon.fa-circle-chevron-down::before {
+        content: "\f078" !important;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) .inline-drawer-icon.fa-circle-chevron-up::before {
+        content: "\f077" !important;
+    }
+
+    /* Checkboxes & iOS switches inside secondary panels & popups */
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) label.checkbox_label {
+        display: flex;
+        align-items: center !important;
+        column-gap: 10px !important;
+        box-sizing: border-box;
+        min-height: 36px;
+        margin: 0 !important;
+        padding: 4px 2px !important;
+        color: var(--ag2-l1) !important;
+        font-size: var(--ag2-fs-sub) !important;
+        line-height: 1.4;
+        cursor: pointer;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) label.checkbox_label + label.checkbox_label {
+        box-shadow: inset 0 0.5px 0 var(--ag2-sep);
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) label.checkbox_label > input[type="checkbox"] {
+        order: 99;
+        position: relative;
+        flex: none !important;
+        width: 42px !important;
+        height: 26px !important;
+        min-width: 42px;
+        margin: 0 0 0 auto !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 13px !important;
+        outline: 0 !important;
+        background: var(--ag2-f2) !important;
+        box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.05) !important;
+        filter: none !important;
+        transform: none !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        cursor: pointer;
+        transition: background-color var(--ag2-dur) ease !important;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) label.checkbox_label > input[type="checkbox"]::before {
+        content: "" !important;
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 22px !important;
+        height: 22px !important;
+        border-radius: 50%;
+        background: #fff !important;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3), 0 0 0 0.5px rgba(0, 0, 0, 0.04) !important;
+        clip-path: none !important;
+        transform: none !important;
+        transition: transform var(--ag2-dur) var(--ag2-ease) !important;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) label.checkbox_label > input[type="checkbox"]:checked {
+        background: var(--ag2-green) !important;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) label.checkbox_label > input[type="checkbox"]:checked::before {
+        transform: translateX(16px) !important;
+    }
+
+    /* Radio buttons inside secondary panels & popups: 18px ring + white center dot */
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) input[type="radio"] {
+        position: relative;
+        flex: none !important;
+        box-sizing: border-box;
+        width: 18px !important;
+        height: 18px !important;
+        min-width: 18px;
+        margin: 0 2px 0 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 50% !important;
+        outline: 0 !important;
+        background: var(--ag2-f2) !important;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18) !important;
+        filter: none !important;
+        cursor: pointer;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) input[type="radio"]:checked {
+        background: var(--ag2-accent) !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) input[type="radio"]:checked::before {
+        content: "" !important;
+        position: absolute;
+        inset: 5px;
+        width: auto !important;
+        height: auto !important;
+        border-radius: 50%;
+        background: #fff !important;
+        box-shadow: none !important;
+        clip-path: none !important;
+        transform: none !important;
+    }
+
+    /* Sliders & numeric readouts inside secondary panels & popups */
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) :is(.range-block-counter input, input.neo-range-input) {
+        box-sizing: border-box;
+        width: 58px !important;
+        min-width: 58px;
+        height: 28px !important;
+        margin: 0 !important;
+        padding: 0 4px !important;
+        border: 0 !important;
+        border-radius: 7px !important;
+        background: var(--ag2-f4) !important;
+        box-shadow: none !important;
+        color: var(--ag2-l2) !important;
+        font-size: 12.5px !important;
+        font-variant-numeric: tabular-nums;
+        text-align: center !important;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) input[type="range"] {
+        height: 20px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: none !important;
+        box-shadow: none !important;
+        filter: none !important;
+        cursor: pointer !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) input[type="range"]::-webkit-slider-runnable-track {
+        height: 4px;
+        border-radius: 2px;
+        background: linear-gradient(to right, var(--ag2-accent) var(--ag2-pct, 0%), var(--ag2-f2) var(--ag2-pct, 0%));
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) input[type="range"]::-webkit-slider-thumb {
+        width: 20px !important;
+        height: 20px !important;
+        margin-top: -8px;
+        border: 0 !important;
+        border-radius: 50%;
+        background: #fff !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+        -webkit-appearance: none;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) input[type="range"]::-moz-range-track {
+        height: 4px;
+        border-radius: 2px;
+        background: linear-gradient(to right, var(--ag2-accent) var(--ag2-pct, 0%), var(--ag2-f2) var(--ag2-pct, 0%));
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) input[type="range"]::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        border: 0;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+    }
+
+    /* Single-line inputs & selects inside secondary panels & popups */
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) :is(select:not([multiple]):not([size]), input.text_pole, input[type="text"]:not(.select2-search__field), input[type="search"], input[type="password"], input[type="url"], input[type="number"]:not(.range-block-counter input):not(.neo-range-input)) {
+        box-sizing: border-box;
+        height: 30px !important;
+        min-height: 30px;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        padding-left: 10px !important;
+        border: 0 !important;
+        border-radius: 8px !important;
+        outline: 0;
+        background-color: var(--ag2-f3) !important;
+        box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.05) !important;
+        color: var(--ag2-l1) !important;
+        font-size: 13px !important;
+        line-height: 30px;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup, #right-nav-panel) select:not([multiple]):not([size]) {
+        padding-right: 28px !important;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(235,235,245,0.6)' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 9px center !important;
+        background-size: 12px 12px !important;
+        text-overflow: ellipsis;
+        cursor: pointer;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) textarea:not(.select2-search__field) {
+        box-sizing: border-box;
+        width: 100% !important;
+        padding: 8px 10px !important;
+        border: 0 !important;
+        border-radius: 10px !important;
+        outline: 0;
+        background-color: rgba(0, 0, 0, 0.24) !important;
+        box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.1), inset 0 1px 3px rgba(0, 0, 0, 0.22) !important;
+        color: var(--ag2-l1) !important;
+        font-size: 13px !important;
+        line-height: 1.55 !important;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) .select2-container .select2-selection {
+        min-height: 30px;
+        border: 0 !important;
+        border-radius: 8px !important;
+        background-color: var(--ag2-f3) !important;
+        box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.05) !important;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) :is(.menu_button, .menu_button_icon) {
+        box-sizing: border-box;
+        min-height: 30px;
+        padding: 0 12px !important;
+        border: 0 !important;
+        border-radius: 15px !important;
+        background-color: var(--ag2-f3) !important;
+        box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.07) !important;
+        color: var(--ag2-l1) !important;
+        font-size: 13px !important;
+        font-weight: 560;
+        filter: none !important;
+        transition: background-color var(--ag2-dur) ease !important;
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) :is(.menu_button, .menu_button_icon):hover {
+        background-color: var(--ag2-f2) !important;
+        color: var(--ag2-l1) !important;
+    }
+
+    /* --- #floatingPrompt (作者注释) internal layout --- */
+    html body.ag2:not(#_):not(#__) #floatingPrompt #charaANBlockToggle > .flex-container {
+        align-items: flex-start !important;
+        gap: 2px !important;
+        text-align: left;
+    }
+
+    html body.ag2:not(#_):not(#__) #floatingPrompt .inline-drawer-content > small {
+        display: block;
+        margin: 0 0 8px;
+        color: var(--ag2-l3) !important;
+        font-size: 12px !important;
+        line-height: 1.45;
+        text-align: left;
+    }
+
+    html body.ag2:not(#_):not(#__) #floatingPrompt .extension_token_counter {
+        margin: 4px 2px 6px !important;
+        color: var(--ag2-l3) !important;
+        font-size: 11.5px !important;
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+    }
+
+    html body.ag2:not(#_):not(#__) #floatingPrompt .floating_prompt_radio_group {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 2px !important;
+        margin: 4px 0 6px !important;
+        padding: 4px 0 !important;
+        box-shadow: inset 0 0.5px 0 var(--ag2-sep), inset 0 -0.5px 0 var(--ag2-sep);
+    }
+
+    html body.ag2:not(#_):not(#__) #floatingPrompt .floating_prompt_radio_group > label {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 4px 6px !important;
+        min-height: 32px !important;
+        margin: 0 !important;
+        padding: 3px 2px !important;
+        box-shadow: none !important;
+        color: var(--ag2-l1) !important;
+        font-size: 13px !important;
+        cursor: pointer;
+    }
+
+    html body.ag2:not(#_):not(#__) #floatingPrompt :is(#extension_floating_depth, #extension_default_depth) {
+        flex: 0 0 64px !important;
+        width: 64px !important;
+        min-width: 64px !important;
+        padding: 0 4px !important;
+        margin: 0 !important;
+        text-align: center;
+    }
+
+    html body.ag2:not(#_):not(#__) #floatingPrompt :is(#extension_floating_role, #extension_default_role) {
+        flex: 0 0 96px !important;
+        width: 96px !important;
+        min-width: 96px !important;
+        padding-left: 8px !important;
+        padding-right: 22px !important;
+        margin: 0 !important;
+    }
+
+    /* The translated long label wraps naturally above its two compact controls on
+       narrow panels; it remains readable in every language. */
+    html body.ag2:not(#_):not(#__) #floatingPrompt .floating_prompt_radio_group > label:has(> input[type="number"]) {
+        display: grid !important;
+        grid-template-columns: 18px minmax(0, 1fr) 64px auto 96px;
+        gap: 6px !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #floatingPrompt .floating_prompt_radio_group > label:has(> input[type="number"]) > span {
+        font-size: 12px !important;
+    }
+
+    @media (min-width: 1001px) {
+        html body.ag2:not(#_):not(#__) #floatingPrompt {
+            width: 390px !important;
+        }
+    }
+
+    html body.ag2:not(#_):not(#__) #floatingPrompt .inline-drawer-content > .flex-container:has(input[type="number"]) {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 10px !important;
+        min-height: 38px;
+        margin: 2px 0 0 !important;
+        padding: 4px 2px !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #floatingPrompt .inline-drawer-content > .flex-container:has(input[type="number"]) > label {
+        flex: 1 1 auto;
+        align-items: flex-start !important;
+        margin: 0 !important;
+        color: var(--ag2-l1);
+        font-size: var(--ag2-fs-sub);
+        text-align: left;
+    }
+
+    html body.ag2:not(#_):not(#__) #floatingPrompt .inline-drawer-content > .flex-container:has(input[type="number"]) > label small {
+        color: var(--ag2-l3);
+        font-size: 11.5px;
+    }
+
+    html body.ag2:not(#_):not(#__) #floatingPrompt :is(#extension_floating_interval, #extension_default_interval) {
+        flex: 0 0 68px !important;
+        width: 68px !important;
+        min-width: 68px !important;
+        margin: 0 !important;
+        text-align: center;
+    }
+
+    html body.ag2:not(#_):not(#__) #floatingPrompt .inline-drawer-content > span:has(#extension_floating_counter) {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 4px;
+        padding: 6px 2px 0;
+        box-shadow: inset 0 0.5px 0 var(--ag2-sep);
+        color: var(--ag2-l3);
+        font-size: 12px;
+    }
+
+    /* --- #cfgConfig (CFG 引导缩放) internal layout --- */
+    html body.ag2:not(#_):not(#__) #cfgConfig .inline-drawer-content > small,
+    html body.ag2:not(#_):not(#__) #cfgConfig #cfg_prompt_combine_container .inline-drawer-content > .flex-container:first-child small {
+        display: block;
+        margin: 0 0 6px;
+        color: var(--ag2-l3) !important;
+        font-size: 12px !important;
+        line-height: 1.45;
+        text-align: left;
+    }
+
+    html body.ag2:not(#_):not(#__) #cfgConfig label[for$="_cfg_guidance_scale"] {
+        display: flex !important;
+        align-items: baseline !important;
+        justify-content: space-between !important;
+        margin: 4px 0 4px !important;
+        color: var(--ag2-l1) !important;
+        font-size: var(--ag2-fs-sub) !important;
+        font-weight: 560;
+    }
+
+    html body.ag2:not(#_):not(#__) #cfgConfig label[for$="_cfg_guidance_scale"] small {
+        color: var(--ag2-l3) !important;
+        font-size: 11.5px !important;
+        font-weight: 400;
+    }
+
+    html body.ag2:not(#_):not(#__) #cfgConfig .range-block-range-and-counter {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        width: 100% !important;
+        margin: 0 0 8px !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #cfgConfig .range-block-range {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #cfgConfig .range-block-range input[type="range"] {
+        width: 100% !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #cfgConfig label[for*="_prompt"] {
+        display: block !important;
+        margin: 8px 0 4px !important;
+        color: var(--ag2-l2) !important;
+        font-size: 12.5px !important;
+        font-weight: 560;
+        text-align: left;
+    }
+
+    html body.ag2:not(#_):not(#__) #cfgConfig textarea.text_pole {
+        margin: 0 0 4px !important;
+        min-height: 58px;
+    }
+
+    html body.ag2:not(#_):not(#__) #cfgConfig #cfg_prompt_combine_container label[for="cfg_prompt_combine"] {
+        display: block;
+        margin: 2px 0 4px !important;
+        color: var(--ag2-l3) !important;
+        font-size: 12px !important;
+        font-weight: 640;
+        text-align: left;
+    }
+
+    html body.ag2:not(#_):not(#__) #cfgConfig #cfg_prompt_combine_container .inline-drawer-content > .flex-container:last-child {
+        gap: 0 !important;
+        margin-top: 4px !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #cfgConfig #cfg_prompt_combine_container .inline-drawer-content > .flex-container:last-child > label {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 10px;
+        min-height: 36px;
+        margin: 0 !important;
+        padding: 3px 2px;
+        box-shadow: inset 0 0.5px 0 var(--ag2-sep);
+        color: var(--ag2-l1);
+        font-size: var(--ag2-fs-sub);
+    }
+
+    html body.ag2:not(#_):not(#__) #cfgConfig :is(#cfg_prompt_separator, #cfg_prompt_insertion_depth) {
+        flex: 0 0 92px !important;
+        width: 92px !important;
+        min-width: 92px !important;
+        margin: 0 !important;
+        text-align: center;
+    }
+
+    /* --- #logprobsViewer (Logprobs) internal layout --- */
+    html body.ag2:not(#_):not(#__) #logprobsViewer .logprobs_panel_content > small {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 8px;
+        margin: 0 0 8px !important;
+        color: var(--ag2-l2) !important;
+        font-size: 12.5px !important;
+        line-height: 1.45;
+        text-align: left;
+    }
+
+    html body.ag2:not(#_):not(#__) #movingDivs > #logprobsViewer > .logprobs_panel_content {
+        padding: 10px 12px 14px !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #logprobsViewer .logprobs_panel_content > small b {
+        font-weight: 500;
+    }
+
+    html body.ag2:not(#_):not(#__) #logprobsViewer .logprobs_panel_content > hr {
+        height: 0.5px !important;
+        margin: 0 0 10px !important;
+        border: 0 !important;
+        background: var(--ag2-sep) !important;
+    }
+
+    html body.ag2:not(#_):not(#__) #logprobsViewer #logprobs_generation_output {
+        padding: 12px;
+        border-radius: 12px;
+        background: var(--ag2-f5);
+        box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.065);
+        color: var(--ag2-l2);
+        font-size: 13px;
+        line-height: 1.55;
+    }
+
+    html body.ag2:not(#_):not(#__) #logprobsViewer .logprobs_empty_state {
+        padding: 10px 4px;
+        color: var(--ag2-l2);
+        opacity: 1;
+        word-break: normal;
+        overflow-wrap: anywhere;
+        font-size: 12.5px;
+        text-align: center;
+    }
+
+    html body.ag2:not(#_):not(#__) #logprobsViewer .logprobs_candidate_list {
+        border: 0;
+        gap: 6px;
+        padding: 4px 0 0;
+        font-variant-numeric: tabular-nums;
+    }
+
+    html body.ag2:not(#_):not(#__) #logprobsViewer .logprobs_candidate_list:empty {
+        display: none;
+    }
+
+    html body.ag2:not(#_):not(#__) #logprobsViewer .logprobs_top_candidate {
+        padding: 8px;
+        border-radius: 10px;
+        background: var(--ag2-f5);
+        color: var(--ag2-l2);
+        font-size: 12.5px;
+    }
+
+    html body.ag2:not(#_):not(#__) #logprobsViewer :is(.logprobs_top_candidate, .logprobs_output_token):is(:hover, .selected) {
+        background: var(--ag2-accent-soft);
+        color: var(--ag2-accent-hover);
+    }
+
+    html body.ag2:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) :is(input, select, textarea, button, a, [role="button"]):focus-visible {
+        outline: 2px solid var(--ag2-accent) !important;
+        outline-offset: 2px;
     }
 
     /* menus anchored in the inspector: above ST's z-3005 layer, below its popups (4000+) */
@@ -7145,8 +8301,68 @@ html body.ag2:not(#_):not(#__) #character_popup #character_cross:hover {
     color: var(--ag2-l1);
 }
 
+html body.ag2:not(#_):not(#__) #character_popup #character_cross.fa-circle-xmark::before {
+    content: "\f00d" !important;
+}
+
+html body.ag2:not(#_):not(#__) #character_popup :is(#personality_div, #scenario_div, #depth_prompt_div, #talkativeness_div, #mes_example_div) {
+    box-sizing: border-box;
+    margin: 0 0 8px !important;
+    padding: 10px 14px !important;
+    border-radius: 12px !important;
+    background: var(--ag2-f5) !important;
+    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.065) !important;
+}
+
+html body.ag2:not(#_):not(#__) #character_popup > hr:not(.margin-bot-10px) {
+    display: none !important;
+}
+
+html body.ag2:not(#_):not(#__) #character_popup i.editor_maximize {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    margin: 0 0 0 auto;
+    border-radius: 7px;
+    color: var(--ag2-l3) !important;
+    font-size: 13px !important;
+    filter: none !important;
+    opacity: 0.85;
+}
+
+html body.ag2:not(#_):not(#__) #character_popup i.editor_maximize:hover {
+    background: var(--ag2-f3);
+    color: var(--ag2-l1) !important;
+    opacity: 1;
+}
+
+html body.ag2:not(#_):not(#__) #character_popup h4.flex-container {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 8px;
+    margin: 0 0 6px !important;
+}
+
+html body.ag2:not(#_):not(#__) #character_popup h4.flex-container > span {
+    flex: 1;
+    min-width: 0;
+}
+
+html body.ag2:not(#_):not(#__) #character_popup h4.flex-container > :is(a, i) {
+    flex: none;
+}
+
+html body.ag2:not(#_):not(#__) #character_popup h4 .note-link-span {
+    color: var(--ag2-l3);
+    font-size: 13px;
+}
+
 html body.ag2:not(#_):not(#__) #character_popup hr {
     margin: 12px 0 !important;
+    background: none !important;
     border: 0 !important;
     border-top: 0.5px solid var(--ag2-sep) !important;
 }
@@ -7259,6 +8475,109 @@ html body.ag2:not(#_):not(#__) #character_popup #character_popup_ok {
 
 html body.ag2:not(#_):not(#__) #character_popup #character_popup_ok:hover {
     background: var(--ag2-accent-hover) !important;
+}
+
+/* --- #completion_prompt_manager_popup (生成参数 › 提示词编辑弹窗, z 4002) --- */
+html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup {
+    position: fixed !important;
+    transition-property: opacity !important;
+    transition-behavior: normal !important;
+    inset: 50% auto auto 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: min(560px, calc(100dvw - 32px)) !important;
+    min-width: 0 !important;
+    max-width: calc(100dvw - 32px) !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: calc(100dvh - 48px) !important;
+    margin: 0 !important;
+    padding: 18px 20px !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    z-index: 4002 !important;
+    border: 0 !important;
+    border-radius: var(--ag2-r-panel) !important;
+    background: var(--ag2-mat-window) !important;
+    -webkit-backdrop-filter: var(--ag2-blur-window) !important;
+    backdrop-filter: var(--ag2-blur-window) !important;
+    box-shadow: var(--ag2-rim), var(--ag2-sh3) !important;
+    color: var(--ag2-l1) !important;
+    font: var(--ag2-fs-body) / 1.5 var(--ag2-font);
+}
+
+html body.ag2.no-blur:not(#_):not(#__) #completion_prompt_manager_popup {
+    background: var(--ag2-solid-window) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+
+html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup h3 {
+    margin: 0 0 10px !important;
+    padding: 0 0 8px !important;
+    box-shadow: inset 0 -0.5px 0 var(--ag2-sep);
+    color: var(--ag2-l1) !important;
+    font-size: 16px !important;
+    font-weight: 650 !important;
+    line-height: 1.3 !important;
+}
+
+html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .completion_prompt_manager_popup_entry {
+    padding: 0 !important;
+}
+
+html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup :is(#completion_prompt_manager_popup_edit, #completion_prompt_manager_popup_inspect) {
+    padding: 0 !important;
+}
+
+html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .completion_prompt_manager_popup_entry_form_control {
+    margin-top: 10px !important;
+}
+
+html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .completion_prompt_manager_popup_entry_form_control label:not(.checkbox_label) {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 4px;
+    color: var(--ag2-l2);
+    font-size: 12.5px;
+    font-weight: 560;
+}
+
+html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .completion_prompt_manager_popup_entry_form_control .text_muted {
+    margin-top: 4px;
+    color: var(--ag2-l3);
+    font-size: 11.5px;
+    line-height: 1.4;
+}
+
+html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .completion_prompt_manager_popup_entry_form_footer {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+    margin-top: 14px !important;
+    padding-top: 10px !important;
+    box-shadow: inset 0 0.5px 0 var(--ag2-sep);
+}
+
+html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup .completion_prompt_manager_popup_entry_form_footer > a.menu_button {
+    display: inline-flex;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 34px !important;
+    height: 34px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    font-size: 14px !important;
+}
+
+html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup #completion_prompt_manager_popup_entry_form_save {
+    background-color: var(--ag2-accent) !important;
+    color: #fff !important;
+}
+
+html body.ag2:not(#_):not(#__) #completion_prompt_manager_popup #completion_prompt_manager_popup_entry_form_save:hover {
+    background-color: var(--ag2-accent-hover) !important;
 }
 
 /* --- #shadow_select_chat_popup > #select_chat_popup (切换聊天文件, z 4100) --- */
@@ -7451,9 +8770,12 @@ html body.ag2:not(#_):not(#__) #movingDivs > .drawer-content:not(#floatingPrompt
 /* --- phone: the same popups become near-full-screen sheets (§5.9). */
 @media (max-width: 1000px) {
     html body.ag2.ag2-phone:not(#_):not(#__) #character_popup,
-    html body.ag2.ag2-phone:not(#_):not(#__) #select_chat_popup {
+    html body.ag2.ag2-phone:not(#_):not(#__) #select_chat_popup,
+    html body.ag2.ag2-phone:not(#_):not(#__) #completion_prompt_manager_popup {
         top: calc(var(--ag2-safe-t) + 10px) !important;
         bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
         height: auto !important;
         max-height: none !important;
         width: 100vw !important;
@@ -7461,7 +8783,76 @@ html body.ag2:not(#_):not(#__) #movingDivs > .drawer-content:not(#floatingPrompt
         margin: 0 !important;
         padding: 16px calc(16px + var(--ag2-safe-r)) calc(20px + var(--ag2-safe-b)) calc(16px + var(--ag2-safe-l)) !important;
         border-radius: var(--ag2-r-window) var(--ag2-r-window) 0 0 !important;
-        transform: none;
+        transform: none !important;
+        background: rgba(28, 28, 33, 0.96) !important;
+    }
+
+    html body.ag2.ag2-phone.no-blur:not(#_):not(#__) :is(#character_popup, #completion_prompt_manager_popup, #floatingPrompt, #cfgConfig, #logprobsViewer) {
+        background: var(--ag2-solid-window) !important;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #completion_prompt_manager_popup .completion_prompt_manager_popup_entry_form > .flex-container {
+        flex-wrap: wrap;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #completion_prompt_manager_popup .completion_prompt_manager_popup_entry_form > .flex-container > .flex1 {
+        flex: 1 1 calc(50% - 10px);
+        min-width: 0;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #completion_prompt_manager_popup .completion_prompt_manager_popup_entry_form_control:has(> #completion_prompt_manager_popup_entry_form_injection_trigger) {
+        flex-basis: 100% !important;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #completion_prompt_manager_popup #completion_prompt_manager_popup_entry_form_prompt {
+        min-height: 200px;
+        height: 30dvh;
+        flex: none;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) #character_popup i.editor_maximize {
+        width: 32px;
+        height: 32px;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) :is(#floatingPrompt, #cfgConfig, #logprobsViewer) {
+        top: auto !important;
+        bottom: var(--ag2-ph-bottom) !important;
+        left: max(10px, calc((100vw - 560px) / 2)) !important;
+        right: max(10px, calc((100vw - 560px) / 2)) !important;
+        width: auto !important;
+        max-width: calc(100vw - 20px) !important;
+        max-height: calc(var(--ag2-ph-h) - var(--ag2-safe-t) - 68px) !important;
+        z-index: 3010 !important;
+        background: rgba(28, 28, 33, 0.96) !important;
+        animation: ag2-float-sheet-in 180ms var(--ag2-ease-sheet);
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) :is(textarea:not(.select2-search__field), input.text_pole, input[type="number"], select:not([multiple]):not([size])) {
+        font-size: 16px !important;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) :is(#movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup) label.checkbox_label {
+        min-height: 44px;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) :is(#ANClose, #CFGClose, #logprobsViewerClose) {
+        position: relative;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) :is(#ANClose, #CFGClose, #logprobsViewerClose)::after {
+        content: "";
+        position: absolute;
+        inset: -8px;
+    }
+
+    html body.ag2.ag2-phone:not(#_):not(#__) :is(#floatingPrompt > [name="floatingPromptHolder"], #cfgConfig > [name="cfgConfigHolder"], #logprobsViewer > .logprobs_panel_content) {
+        max-height: calc(var(--ag2-ph-h) - var(--ag2-safe-t) - 118px) !important;
+    }
+
+    @keyframes ag2-float-sheet-in {
+        from { opacity: 0; transform: translateY(12px) scale(0.985); }
+        to { opacity: 1; transform: none; }
     }
 
     html body.ag2.ag2-phone:not(#_):not(#__) dialog.popup,
@@ -8613,6 +10004,19 @@ html body.ag2:not(#_):not(#__) #movingDivs > .drawer-content:not(#floatingPrompt
         flex-wrap: nowrap;
         gap: 6px;
     }
+
+    /* 通用 single-row selects on narrow phone screens: flexible select width */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block :is(
+        [name="AvatarAndChatDisplay"] > .flex-container,
+        [name="CharacterHandlingToggles"] > .flex-container:has(> select),
+        #examples-behavior-block,
+        [name="ChatMessageHandlingToggles"] > div:has(> #image_overswipe),
+        [name="ChatMessageHandlingToggles"] > .flex-container:has(> #send_on_enter)
+    ) > select {
+        flex: 1 1 150px !important;
+        width: auto !important;
+        min-width: 130px !important;
+    }
 }
 /* == /5.9b == */
 
@@ -8635,7 +10039,7 @@ html body.ag2:not(#_):not(#__) #ag2-settings:not(.ag2-set-phone) :is(.ag2-set-gr
 
 /* §7 / §18a: a blurred panel never contains another blurred layer (ST gives the
    formatting notice, background tabs and tile toggles their own blur). */
-html body.ag2:not(#_):not(#__) .drawer-content *,
+html body.ag2:not(#_):not(#__) :is(.drawer-content, #character_popup, #completion_prompt_manager_popup) *,
 html body.ag2:not(#_):not(#__) .bg_example .mobile-only-menu-toggle {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
@@ -8680,39 +10084,39 @@ html:has(> body.ag2:not(#_):not(#__)) {
 /* Only native form controls opt into dark UA chrome. A page-wide scheme changes
    the embedding boundary and makes light/transparent third-party iframes opaque.
    Keep ST's page/content scheme intact, including message cards and embedded SVG. */
-html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, dialog.popup, #send_form) :is(input, select, textarea) {
+html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, #character_popup, dialog.popup, #send_form) :is(input, select, textarea) {
     color-scheme: dark;
 }
 
 /* Real scrolling surfaces only: leave the intentionally hidden QR / anchor bars alone.
    Firefox uses the standard path. WebKit's path resets BOTH standard properties so its
    thumb/track/button rules actually paint instead of being overridden by thin/auto. */
-html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body, .ag2-set-nav, .drawer-content, .scrollableInner, textarea, .select2-results__options, .popup-content, #toast-container) {
+html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body, .ag2-set-nav, .drawer-content, .scrollableInner, [name="floatingPromptHolder"], [name="cfgConfigHolder"], .logprobs_panel_content, #character_popup, #completion_prompt_manager_popup, textarea, .select2-results__options, .popup-content, #toast-container) {
     scrollbar-width: thin !important;
     scrollbar-color: rgba(235,235,245,.3) transparent !important;
 }
 @supports selector(::-webkit-scrollbar) {
-    html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body, .ag2-set-nav, .drawer-content, .scrollableInner, textarea, .select2-results__options, .popup-content, #toast-container) {
+    html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body, .ag2-set-nav, .drawer-content, .scrollableInner, [name="floatingPromptHolder"], [name="cfgConfigHolder"], .logprobs_panel_content, #character_popup, #completion_prompt_manager_popup, textarea, .select2-results__options, .popup-content, #toast-container) {
         scrollbar-width: auto !important;
         scrollbar-color: auto !important;
     }
-    html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body, .ag2-set-nav, .drawer-content, .scrollableInner, textarea, .select2-results__options, .popup-content, #toast-container)::-webkit-scrollbar {
+    html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body, .ag2-set-nav, .drawer-content, .scrollableInner, [name="floatingPromptHolder"], [name="cfgConfigHolder"], .logprobs_panel_content, #character_popup, #completion_prompt_manager_popup, textarea, .select2-results__options, .popup-content, #toast-container)::-webkit-scrollbar {
         width: 6px;
         height: 6px;
         background: transparent;
     }
-    html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body, .ag2-set-nav, .drawer-content, .scrollableInner, textarea, .select2-results__options, .popup-content, #toast-container)::-webkit-scrollbar-thumb {
+    html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body, .ag2-set-nav, .drawer-content, .scrollableInner, [name="floatingPromptHolder"], [name="cfgConfigHolder"], .logprobs_panel_content, #character_popup, #completion_prompt_manager_popup, textarea, .select2-results__options, .popup-content, #toast-container)::-webkit-scrollbar-thumb {
         background: rgba(235,235,245,.3);
         border-radius: 6px;
         border: 0;
     }
-    html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body, .ag2-set-nav, .drawer-content, .scrollableInner, textarea, .select2-results__options, .popup-content, #toast-container)::-webkit-scrollbar-track,
-    html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body, .ag2-set-nav, .drawer-content, .scrollableInner, textarea, .select2-results__options, .popup-content, #toast-container)::-webkit-scrollbar-corner {
+    html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body, .ag2-set-nav, .drawer-content, .scrollableInner, [name="floatingPromptHolder"], [name="cfgConfigHolder"], .logprobs_panel_content, #character_popup, #completion_prompt_manager_popup, textarea, .select2-results__options, .popup-content, #toast-container)::-webkit-scrollbar-track,
+    html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body, .ag2-set-nav, .drawer-content, .scrollableInner, [name="floatingPromptHolder"], [name="cfgConfigHolder"], .logprobs_panel_content, #character_popup, #completion_prompt_manager_popup, textarea, .select2-results__options, .popup-content, #toast-container)::-webkit-scrollbar-corner {
         background: transparent;
         box-shadow: none;
         border: 0;
     }
-    html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body, .ag2-set-nav, .drawer-content, .scrollableInner, textarea, .select2-results__options, .popup-content, #toast-container)::-webkit-scrollbar-button {
+    html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body, .ag2-set-nav, .drawer-content, .scrollableInner, [name="floatingPromptHolder"], [name="cfgConfigHolder"], .logprobs_panel_content, #character_popup, #completion_prompt_manager_popup, textarea, .select2-results__options, .popup-content, #toast-container)::-webkit-scrollbar-button {
         display: none;
         width: 0;
         height: 0;
@@ -8744,20 +10148,20 @@ html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body,
         white-space: nowrap;
         text-overflow: ellipsis;
     }
-    html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible) {
+    html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, #character_popup, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible) {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
-    html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible),
-    html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible)::picker(select) {
+    html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, #character_popup, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible),
+    html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, #character_popup, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible)::picker(select) {
         appearance: base-select !important;
     }
-    html body.ag2:not(#_):not(#__) #ag2-settings select:not([multiple]):not([size]):not(.select2-hidden-accessible)::picker-icon,
+    html body.ag2:not(#_):not(#__) :is(#ag2-settings, #movingDivs > .drawer-content, #character_popup, #completion_prompt_manager_popup, #right-nav-panel) select:not([multiple]):not([size]):not(.select2-hidden-accessible)::picker-icon,
     html body.ag2.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) select:not([multiple]):not([size]):not(.select2-hidden-accessible)::picker-icon {
         display: none; /* existing single chevron stays, including the shell's SVG */
     }
-    html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible)::picker(select) {
+    html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, #character_popup, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible)::picker(select) {
         box-sizing: border-box;
         margin-block: 5px;
         padding: 5px;
@@ -8772,7 +10176,7 @@ html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body,
         scrollbar-width: thin;
         scrollbar-color: rgba(235,235,245,.3) var(--ag2-solid-menu);
     }
-    html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible) option {
+    html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, #character_popup, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible) option {
         min-height: 32px;
         padding: 6px 10px;
         border-radius: 7px;
@@ -8782,14 +10186,40 @@ html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body,
         white-space: normal;
         overflow-wrap: anywhere;
     }
-    html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible) option:checked {
+    html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, #character_popup, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible) option:checked {
         background: var(--ag2-f2);
     }
-    html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible) option:is(:hover, :focus-visible) {
+    html body.ag2:not(#_):not(#__) :is(#ag2-settings, .drawer-content, #character_popup, dialog.popup) select:not([multiple]):not([size]):not(.select2-hidden-accessible) option:is(:hover, :focus-visible) {
         background: var(--ag2-accent);
         color: #fff;
         outline: 0;
     }
+}
+
+/* Native multi-selects are used instead of Select2 on phones. Keep their native
+   multi-selection semantics, but give the listbox the same inset field surface. */
+html body.ag2:not(#_):not(#__) :is(.drawer-content, #character_popup) select[multiple]:not(.select2-hidden-accessible) {
+    box-sizing: border-box;
+    max-width: 100%;
+    padding: 6px !important;
+    border: 0 !important;
+    border-radius: 10px !important;
+    background: var(--ag2-f3) !important;
+    box-shadow: inset 0 0 0 0.5px var(--ag2-sep) !important;
+    color: var(--ag2-l1) !important;
+    font-size: var(--ag2-fs-sub);
+}
+
+html body.ag2:not(#_):not(#__) :is(.drawer-content, #character_popup) select[multiple]:not(.select2-hidden-accessible) option {
+    padding: 4px 8px;
+    border-radius: 6px;
+    color: var(--ag2-l2);
+    background: transparent;
+}
+
+html body.ag2:not(#_):not(#__) :is(.drawer-content, #character_popup) select[multiple]:not(.select2-hidden-accessible) option:checked {
+    background: var(--ag2-accent-soft);
+    color: var(--ag2-accent-hover);
 }
 
 html body.ag2:not(#_):not(#__) .select2-dropdown {

@@ -8,7 +8,7 @@ import {
     is_send_press, isChatSaving, getThumbnailUrl, user_avatar, online_status,
 } from '../../../../../script.js';
 import { openGroupById, openGroupChat, deleteGroupChatByName, is_group_generating } from '../../../../group-chats.js';
-import { local } from './store.js?v=20261114VF02';
+import { local } from './store.js?v=20261114VF03';
 
 export { doNavbarIconClick, getCurrentChatId, newAssistantChat };
 
@@ -129,7 +129,7 @@ let phoneLoading = null;
 export const phoneModule = () => phoneMod;
 export async function loadPhone() {
     if (!phoneMod) {
-        phoneLoading ||= import('./phone.js?v=20261114VF02');
+        phoneLoading ||= import('./phone.js?v=20261114VF03');
         try { phoneMod = await phoneLoading; } finally { phoneLoading = null; }
     }
     return phoneMod;
@@ -142,7 +142,7 @@ export const settingsModule = () => setMod;
 /** Imports settings.js (once) without opening the window — the palette searches its index. */
 export async function loadSettings() {
     if (!setMod) {
-        setLoading ||= import('./settings.js?v=20261114VF02');
+        setLoading ||= import('./settings.js?v=20261114VF03');
         try { setMod = await setLoading; } finally { setLoading = null; }
     }
     return setMod;
@@ -156,6 +156,7 @@ export async function loadSettings() {
 export async function openSettings(page = null, opt = {}) {
     await loadSettings();
     if (!document.body.classList.contains('ag2')) return false; // shell torn down meanwhile
+    closeOtherFloating(null);
     return setMod.open(page, opt);
 }
 
@@ -176,7 +177,7 @@ let inspLoading = null;
 export const inspectorModule = () => inspMod;
 export async function loadInspector() {
     if (!inspMod) {
-        inspLoading ||= import('./inspector.js?v=20261114VF02');
+        inspLoading ||= import('./inspector.js?v=20261114VF03');
         try { inspMod = await inspLoading; } finally { inspLoading = null; }
     }
     if (document.body.classList.contains('ag2')) inspMod.mount();
@@ -221,7 +222,7 @@ export const paletteModule = () => palMod;
 /** Opens the ⌘K palette; palette.js is imported on first use only (not at cold start). */
 export async function openPalette(opt = {}) {
     if (!palMod) {
-        palLoading ||= import('./palette.js?v=20261114VF02');
+        palLoading ||= import('./palette.js?v=20261114VF03');
         try { palMod = await palLoading; } finally { palLoading = null; }
     }
     if (!document.body.classList.contains('ag2')) return false; // shell torn down meanwhile
@@ -239,13 +240,69 @@ export function stLayerUp() {
     return [...document.querySelectorAll('dialog[open]')].some(d => d.id !== 'ag2-palette')
         || !!document.querySelector('.select2-container--open')
         || vis('#shadow_popup') || vis('#dialogue_popup') || vis('#character_popup')
-        || vis('#select_chat_popup') || vis('#curEditTextarea') || vis('#dialogue_del_mes_cancel');
+        || vis('#completion_prompt_manager_popup') || vis('#select_chat_popup')
+        || vis('#curEditTextarea') || vis('#dialogue_del_mes_cancel');
+}
+
+// ---------------------------------------------------------------- floating panels (§5.6, S1)
+export const FLOAT_PANELS = {
+    an: 'floatingPrompt',
+    cfg: 'cfgConfig',
+    logprobs: 'logprobsViewer',
+};
+const FLOAT_BY_TOGGLE = {
+    '#option_toggle_AN': 'floatingPrompt',
+    '#option_toggle_CFG': 'cfgConfig',
+    '#option_toggle_logprobs': 'logprobsViewer',
+};
+const FLOAT_CLOSES = {
+    floatingPrompt: '#ANClose',
+    cfgConfig: '#CFGClose',
+    logprobsViewer: '#logprobsViewerClose',
+};
+
+export function isFloatingOpen(idOrKey) {
+    const el = idOrKey instanceof HTMLElement ? idOrKey : document.getElementById(FLOAT_PANELS[idOrKey] || idOrKey);
+    if (!el || !el.getClientRects().length) return false;
+    const css = getComputedStyle(el);
+    // Opacity starts at zero during entry; it must already own the exclusive slot.
+    return css.display !== 'none' && css.visibility !== 'hidden';
+}
+
+export function paintOneRange(r) {
+    if (!r) return;
+    const min = Number(r.min || 0), max = Number(r.max || 100);
+    const pct = max > min ? (Number(r.value) - min) / (max - min) * 100 : 0;
+    r.style.setProperty('--ag2-pct', Math.max(0, Math.min(100, pct)).toFixed(2) + '%');
+}
+
+export function paintRanges(scope) {
+    if (!scope) return;
+    for (const r of scope.querySelectorAll('input[type="range"]')) paintOneRange(r);
+}
+
+export function closeOtherFloating(keep) {
+    const current = typeof keep === 'string' ? document.getElementById(keep) : keep;
+    for (const el of document.querySelectorAll('#movingDivs > .drawer-content')) {
+        if (el === current || !isFloatingOpen(el)) continue;
+        // The three built-ins have no close-side state beyond their presentation.
+        // Their delayed hide callbacks would otherwise close a rapidly reopened panel.
+        // Plugin inspectors retain their own cleanup handlers before leaving the slot.
+        if (!FLOAT_CLOSES[el.id]) {
+            const btn = el.querySelector('.floating_panel_close, .dragClose, [id$="Close"]');
+            btn?.click();
+        }
+        $(el).stop(true, true).removeClass('resizing').css('opacity', '').hide();
+    }
 }
 
 export function clickSt(selector) {
     const el = document.querySelector(selector);
     if (!el) return false;
+    const floatId = FLOAT_BY_TOGGLE[selector];
+    if (floatId && !isFloatingOpen(floatId)) closeOtherFloating(floatId);
     $(el).trigger('click');
+    if (floatId && isFloatingOpen(floatId)) paintRanges(document.getElementById(floatId));
     return true;
 }
 

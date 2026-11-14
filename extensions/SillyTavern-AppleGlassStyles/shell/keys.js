@@ -11,8 +11,8 @@
 // Never fires while an IME is composing, on auto-repeat of the palette key, or on top of an
 // ST popup. One window-capture listener, added on enable and removed on teardown.
 
-import { isMac, openPalette, paletteModule, settingsModule, setInspector, isDesktop, getShellApi, ctx, INSP_ID, stLayerUp, nativeSelectOpen } from './util.js?v=20261114VF02';
-import { isMenuOpen } from './menu.js?v=20261114VF02';
+import { isMac, openPalette, paletteModule, settingsModule, setInspector, isDesktop, getShellApi, ctx, INSP_ID, stLayerUp, nativeSelectOpen } from './util.js?v=20261114VF03';
+import { isMenuOpen } from './menu.js?v=20261114VF03';
 
 let mounted = false;
 
@@ -101,6 +101,14 @@ function onEsc(e) {
     if (pal?.isCovered()) return;
     if (pal?.isOpen()) { e.preventDefault(); e.stopImmediatePropagation(); pal.close(); return; }
     if (isMenuOpen()) return;                 // menu.js closes it (document capture, stops ST)
+    if (vis('#completion_prompt_manager_popup') && !vis('dialog[open], #character_popup, .select2-container--open, .autoComplete, .ui-autocomplete')) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        // The old prompt editor is a drawer without a navbar toggle. ST's generic
+        // drawer Escape path cannot close it; use its own close action instead.
+        $('#completion_prompt_manager_popup_entry_form_close:visible, #completion_prompt_manager_popup_close_button:visible').get(0)?.click();
+        return;
+    }
     if (settingsModule()?.isOpen()) return;   // settings.js's own window handler
     if (stLayerUp()) return;                  // ST popups / editor own Esc
     // Inspector: the last shell layer. ST's floating panels, a running generation (Esc =
