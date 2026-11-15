@@ -79,6 +79,7 @@ html body.ag2 {
     --ag2-solid-side: rgb(30, 30, 36);
     --ag2-solid-float: rgb(40, 40, 47);
     --ag2-solid-window: rgb(28, 28, 33);
+    --ag2-grouped-surface: rgb(36, 36, 41);
     --ag2-solid-menu: rgb(44, 44, 51);
 
     /* Rim + shadows: every glass surface = rim + one shadow tier */
@@ -10738,15 +10739,15 @@ html body.ag2:not(#_):not(#__) #movingDivs > .drawer-content:not(#floatingPrompt
         color: var(--ag2-l2) !important;
     }
 
-    /* 世界书 phone: iOS inset-grouped sections on a near-black page. Section
+    /* 世界书 phone: iOS inset-grouped sections on a soft charcoal page. Section
        labels sit outside the gray groups; rows put the label left and the value,
        switch or chevron on one right edge. Native controls stay in the DOM. */
     html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__):has(#WorldInfo.openDrawer) #ag2-settings {
-        background: rgb(10, 10, 12) !important;
+        background: var(--ag2-solid-window) !important;
     }
 
     html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo {
-        --ag2-wi-surface: rgb(28, 28, 31);
+        --ag2-wi-surface: var(--ag2-grouped-surface);
         --ag2-wi-fill: rgba(118, 118, 128, 0.18);
         --ag2-wi-inset: 16px;
         --ag2-wi-row: 46px;
@@ -11639,15 +11640,15 @@ html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_en
         font: 400 16px / 21px var(--ag2-font);
     }
 
-    /* 通用 / 外观 / 生成参数 phone: the near-black page and neutral grouped
+    /* 通用 / 外观 / 生成参数 phone: the soft charcoal page and neutral grouped
        surfaces of the worldbook page. Only these pages; values and controls stay native. */
     html body.ag2.ag2-phone.ag2-set-open:is([data-ag2-set="user"], [data-ag2-set="look"], [data-ag2-set="ai"], [data-ag2-set="about"], [data-ag2-set="ext"]):not(#_):not(#__) #ag2-settings {
-        background: rgb(10, 10, 12) !important;
+        background: var(--ag2-solid-window) !important;
     }
 
     html body.ag2.ag2-phone.ag2-set-open:is([data-ag2-set="look"], [data-ag2-set="about"]):not(#_):not(#__) #ag2-settings .ag2-set-body,
     html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#user-settings-block, #left-nav-panel, #rm_extensions_block) {
-        --ag2-f5: rgb(28, 28, 31);
+        --ag2-f5: var(--ag2-grouped-surface);
         --ag2-g-inset: 16px;
     }
 
@@ -12060,9 +12061,19 @@ html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_en
         border-radius: 12px !important;
     }
 
-    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block [name="STscriptToggles"] > div > label {
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block [name="STscriptToggles"] > div > label:not(.checkbox_label) {
         min-height: 30px;
         align-items: flex-end !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block [name="STscriptToggles"] > div > label.checkbox_label {
+        min-height: 46px !important;
+        align-items: center !important;
+        padding: 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block [name="STscriptToggles"] > div > label.checkbox_label + label.checkbox_label {
+        box-shadow: inset 0 0.5px 0 var(--ag2-sep);
     }
 
     html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #user-settings-block :is(#movingUIreset, #movingui-preset-save-button, #CustomCSS-block > h4 .menu_button) {
@@ -12335,6 +12346,1044 @@ html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #WorldInfo #world_popup_en
 }
 /* == /5.9b == */
 
+/* == 5.9c · Phone: stacked-field settings pages (VF11) == */
+@media (max-width: 1000px) {
+    /* 连接 · 人设 · 背景 · 提示词与格式 · 生成参数 forms:
+       One form vocabulary for the stacked-field pages: soft charcoal page, neutral 22px
+       groups, regular 15px field labels, 44px quiet fields with 17px text, glyph-only
+       actions as tinted icons, text actions as tinted words. Native hide/disabled kept. */
+    html body.ag2.ag2-phone.ag2-set-open:is([data-ag2-set="api"], [data-ag2-set="persona"], [data-ag2-set="fmt"], [data-ag2-set="bg"]):not(#_):not(#__) #ag2-settings {
+        background: var(--ag2-solid-window) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #PersonaManagement, #AdvancedFormatting, #Backgrounds, #left-nav-panel) {
+        --ag2-f5: var(--ag2-grouped-surface);
+        --ag2-g-inset: 16px;
+        --ag2-fill: rgba(118, 118, 128, 0.2);
+        --ag2-fill-2: rgba(118, 118, 128, 0.13);
+    }
+
+    /* field labels: regular, secondary, a clear step below 17px values */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #PersonaManagement, #AdvancedFormatting) h4:not(.standoutHeader) {
+        margin: 16px 0 8px !important;
+        padding: 0 !important;
+        color: var(--ag2-l2) !important;
+        font: 400 15px / 20px var(--ag2-font) !important;
+        letter-spacing: 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #PersonaManagement, #AdvancedFormatting) h4 small {
+        color: var(--ag2-l3) !important;
+        font-size: 13px !important;
+        font-weight: 400 !important;
+    }
+
+    /* single-line fields */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #PersonaManagement, #AdvancedFormatting) :is(select:not([multiple]):not([size]), input.text_pole, input[type="text"]:not(.select2-search__field), input[type="search"], input[type="password"], input[type="url"], input[type="number"]):not(#_r3) {
+        height: 44px !important;
+        min-height: 44px !important;
+        padding-left: 14px !important;
+        border-radius: 12px !important;
+        background-color: var(--ag2-fill) !important;
+        box-shadow: none !important;
+        font-size: 17px !important;
+        line-height: 44px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #PersonaManagement, #AdvancedFormatting) select:not([multiple]):not([size]) {
+        padding-right: 36px !important;
+        background-position: right 14px center !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #PersonaManagement, #AdvancedFormatting) textarea:not(.select2-search__field) {
+        padding: 11px 14px !important;
+        border-radius: 12px !important;
+        background-color: var(--ag2-fill-2) !important;
+        box-shadow: none !important;
+        font-size: 16px !important;
+        line-height: 1.5 !important;
+    }
+
+    /* glyph-only actions: tinted icons on the group, 44px targets */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #PersonaManagement, #AdvancedFormatting, #Backgrounds) .menu_button:empty:not(input):not(.toggled):not(.active):not(.toggleEnabled),
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel :is(#respective-presets-block, .openai_logit_bias_preset_form, .completion_prompt_manager_footer) .menu_button:empty:not(input) {
+        width: 44px !important;
+        min-width: 44px !important;
+        height: 44px !important;
+        min-height: 44px !important;
+        border-radius: 12px !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        color: var(--ag2-accent) !important;
+        font-size: 18px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #PersonaManagement, #AdvancedFormatting, #Backgrounds, #left-nav-panel) .menu_button:is(.fa-trash, .fa-trash-can, .fa-skull, .redWarningBG, .caution) {
+        color: var(--ag2-red) !important;
+    }
+
+    /* text actions: tinted words, no capsules */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #PersonaManagement) :is(.menu_button, .menu_button_icon):not(:empty):not(.toggled):not(.active):not(.toggleEnabled) {
+        width: auto !important;
+        min-height: 44px !important;
+        height: 44px !important;
+        padding: 0 10px !important;
+        border-radius: 12px !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        color: var(--ag2-accent) !important;
+        font-size: 17px !important;
+        font-weight: 400 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #PersonaManagement) .menu_button_icon:not(:empty) > :is(span, div) {
+        font-size: inherit !important;
+        font-weight: inherit !important;
+        color: inherit;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #PersonaManagement, #AdvancedFormatting) :is(.menu_button, .menu_button_icon):not(.disabled):not([disabled]):hover {
+        background-color: var(--ag2-fill-2) !important;
+    }
+
+    /* toggles and descriptions in these groups read like the 通用 rows */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #PersonaManagement, #AdvancedFormatting) label.checkbox_label {
+        min-height: 46px !important;
+        padding: 0 !important;
+        font-size: 17px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #PersonaManagement, #AdvancedFormatting) :is(.toggle-description, small:not(h4 small):not(label small)) {
+        color: var(--ag2-l3) !important;
+        font-size: 13px !important;
+        line-height: 18px !important;
+    }
+
+    /* inset group whose title sits above the surface (the surface is ::before, so the
+       native heading stays in place and in the DOM) */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(
+        #rm_api_block .wide100p:has(> .flex-container > #connection_profiles),
+        #PersonaManagement .persona_management_current_persona,
+        #PersonaManagement .persona_management_global_settings
+    ) {
+        position: relative !important;
+        isolation: isolate;
+        margin: 0 0 30px !important;
+        padding: 0 var(--ag2-g-inset) 8px !important;
+        border-radius: 22px !important;
+        background: none !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(
+        #rm_api_block .wide100p:has(> .flex-container > #connection_profiles),
+        #PersonaManagement .persona_management_current_persona,
+        #PersonaManagement .persona_management_global_settings
+    )::before {
+        content: '';
+        position: absolute;
+        inset: 34px 0 0;
+        z-index: -1;
+        border-radius: 22px;
+        background: var(--ag2-f5);
+        pointer-events: none;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_api_block .wide100p:has(> .flex-container > #connection_profiles) > .flex-container:first-child,
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement :is(.persona_management_current_persona, .persona_management_global_settings) > h4.standoutHeader {
+        box-sizing: border-box;
+        display: flex !important;
+        align-items: flex-end !important;
+        height: 34px;
+        margin: 0 calc(0px - var(--ag2-g-inset)) 6px !important;
+        padding: 0 var(--ag2-g-inset) 7px !important;
+    }
+
+    /* group titles: 13px secondary, outside the surface */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) :is(#rm_api_block, #PersonaManagement, #Backgrounds) :is(h3, h4.standoutHeader) {
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        padding: 0 !important;
+        color: var(--ag2-l2) !important;
+        font: 400 13px / 18px var(--ag2-font) !important;
+        letter-spacing: 0 !important;
+        text-transform: none !important;
+    }
+
+    /* --- 连接 --- */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_api_block :is(#main-API-selector-block, #openai_api, #textgenerationwebui_api, #kobold_api, #kobold_horde, #novel_api) {
+        margin: 0 0 30px !important;
+        padding: 6px var(--ag2-g-inset) 8px !important;
+        border-radius: 22px !important;
+        background: var(--ag2-f5) !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_api_block #main-API-selector-block {
+        padding: 10px var(--ag2-g-inset) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_api_block > h3#title_api {
+        margin: 0 var(--ag2-g-inset) 7px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_api_block > .flex-container.flexFlowColumn {
+        gap: 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_api_block .wide100p:has(> .flex-container > #connection_profiles) > .flex-container:not(:first-child) {
+        flex-wrap: wrap;
+        gap: 0 !important;
+        padding-top: 10px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_api_block #connection_profiles {
+        flex: 1 1 100% !important;
+        margin: 0 !important;
+    }
+
+    /* profile actions: one quiet row of tinted glyphs under the picker */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_api_block .wide100p:has(> .flex-container > #connection_profiles) > .flex-container:not(:first-child) > :not(select) {
+        margin-top: 6px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_api_block :is(#openai_api, #textgenerationwebui_api, #kobold_api, #kobold_horde, #novel_api) > h4:first-child,
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_api_block :is(#openai_api, #textgenerationwebui_api, #kobold_api, #kobold_horde, #novel_api) > :first-child > h4:first-child {
+        margin-top: 10px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_api_block :is(form, div) > div:has(> small > code) {
+        margin: 8px 2px 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_api_block :is(form, div) > div > small:has(> code) {
+        color: var(--ag2-l3) !important;
+        font-size: 13px !important;
+        line-height: 19px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_api_block small > code {
+        padding: 1px 5px !important;
+        border-radius: 6px !important;
+        background: var(--ag2-fill-2) !important;
+        color: var(--ag2-l2) !important;
+        font-size: 12px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_api_block small > b {
+        color: var(--ag2-l3) !important;
+        font-weight: 400 !important;
+    }
+
+    /* connect · extra parameters · test: one action row under a hairline */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_api_block .flex-container:has(> .api_button) {
+        gap: 0 !important;
+        margin: 14px calc(0px - var(--ag2-g-inset)) 0 !important;
+        padding: 0 calc(var(--ag2-g-inset) - 10px) !important;
+        box-shadow: inset 0 0.5px 0 var(--ag2-sep);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_api_block .online_status {
+        min-height: 30px;
+        align-items: center;
+        padding: 0 0 4px;
+        color: var(--ag2-l2) !important;
+        font-size: 15px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_api_block .online_status .online_status_indicator {
+        width: 8px !important;
+        height: 8px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_api_block > .flex-container:has(> label > #auto-connect-checkbox) {
+        flex-direction: column;
+        align-items: stretch !important;
+        margin: 0 0 30px !important;
+        padding: 0 var(--ag2-g-inset) !important;
+        border-radius: 22px;
+        background: var(--ag2-f5);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_api_block > .flex-container:has(> label > #auto-connect-checkbox) > label {
+        justify-content: space-between;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #rm_api_block #viewSecrets {
+        display: flex;
+        align-items: center;
+        min-height: 46px;
+        box-shadow: inset 0 0.5px 0 var(--ag2-sep);
+        color: var(--ag2-accent) !important;
+        font-size: 17px !important;
+    }
+
+    /* --- 人设 --- */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement > .flex-container > .flex-container:first-child {
+        margin: 0 0 6px !important;
+        gap: 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement > .flex-container > .flex-container:first-child > .flex1 {
+        min-height: 34px;
+        align-items: flex-end !important;
+        padding: 0 var(--ag2-g-inset) 4px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement > .flex-container > .flex-container:first-child > .flex-container:last-child {
+        gap: 0 !important;
+        margin: 0 0 0 calc(var(--ag2-g-inset) - 10px) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement .persona_management_left_column {
+        margin: 0 0 30px !important;
+        padding: 12px var(--ag2-g-inset) !important;
+        border-radius: 22px !important;
+        background: var(--ag2-f5) !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement .persona_management_left_column > .flex-container {
+        grid-template-columns: auto minmax(0, 1fr) 44px !important;
+        gap: 8px 6px !important;
+        align-items: center !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement #create_dummy_persona {
+        padding-left: 4px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement #persona_grid_toggle {
+        width: 44px !important;
+        min-width: 44px !important;
+        background: transparent !important;
+        color: var(--ag2-accent) !important;
+        font-size: 18px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement .paginationjs-nav {
+        color: var(--ag2-l3) !important;
+        font-size: 13px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement .paginationjs-size-changer select {
+        height: 36px !important;
+        min-height: 36px !important;
+        background-color: transparent !important;
+        color: var(--ag2-l2) !important;
+        font-size: 15px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement .avatar-container {
+        border-radius: 14px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement .avatar-container .ch_description {
+        color: var(--ag2-l2) !important;
+        font-size: 15px !important;
+        line-height: 20px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement .avatar-container .ch_name {
+        font-size: 17px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement #persona_controls {
+        gap: 4px 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement #your_name {
+        margin: 6px 0 0 !important;
+        font: 600 20px / 26px var(--ag2-font) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement .persona_controls_buttons_block {
+        justify-content: space-between !important;
+        gap: 0 !important;
+        margin: 0 -11px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement .persona_management_current_persona .extension_token_counter {
+        color: var(--ag2-l3) !important;
+        font-size: 13px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement .persona_management_current_persona .justifySpaceBetween:has(> .extension_token_counter) {
+        align-items: baseline !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement .persona_management_current_persona .justifySpaceBetween:has(> .extension_token_counter) > h4 {
+        margin-bottom: 8px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement #persona_connections_buttons {
+        gap: 0 !important;
+        margin: 0 -10px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement #persona_connections_list {
+        margin: 2px 0 6px !important;
+        color: var(--ag2-l3) !important;
+        font-size: 13px !important;
+        line-height: 18px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement .persona_management_global_settings > .range-block {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #PersonaManagement .persona_management_global_settings > .range-block + .range-block {
+        box-shadow: inset 0 0.5px 0 var(--ag2-sep);
+    }
+
+    /* --- 背景 --- */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #Backgrounds :is(#bg-header-fixed, #bg_tabs) {
+        border: 0 !important;
+        background: none !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #Backgrounds #bg-header-fixed {
+        padding: 4px 0 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #Backgrounds .bg-header-row-1 {
+        align-items: center !important;
+        gap: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* the drawer title repeats the sheet title */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #Backgrounds .bg-header-row-1 > h3 {
+        display: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #Backgrounds .bg-header-row-1 > .expander {
+        order: 1;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #Backgrounds .bg-header-row-1 > :is(.menu_button, label, button) {
+        order: 2;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #Backgrounds #background_fitting {
+        flex: 0 1 auto !important;
+        width: auto !important;
+        max-width: none !important;
+        height: 44px !important;
+        margin-right: auto !important;
+        padding-left: 0 !important;
+        background-color: transparent !important;
+        box-shadow: none !important;
+        color: var(--ag2-l1) !important;
+        font-size: 17px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #Backgrounds :is(.bg-header-row-1, .heading-controls) .menu_button {
+        width: 44px !important;
+        min-width: 44px !important;
+        height: 44px !important;
+        padding: 0 !important;
+        border-radius: 12px !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        color: var(--ag2-accent) !important;
+        font-size: 18px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #Backgrounds .heading-controls .menu_button:is(.toggled, .active, .toggleEnabled, .selected) {
+        background: var(--ag2-accent-soft) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #Backgrounds .bg-header-row-2 {
+        gap: 8px !important;
+        padding: 6px 0 4px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #Backgrounds :is(#bg-filter, #bg-sort) {
+        height: 40px !important;
+        min-height: 40px !important;
+        border-radius: 12px !important;
+        background-color: var(--ag2-fill) !important;
+        box-shadow: none !important;
+        font-size: 17px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #Backgrounds #bg-sort {
+        background-color: transparent !important;
+        color: var(--ag2-l2) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #Backgrounds #bg_tabs {
+        padding: 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #Backgrounds #bg_tabs > ul.bg_tabs_list {
+        align-items: center !important;
+        min-height: 52px;
+        padding: 4px 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #Backgrounds .bg_tab_button {
+        height: 32px !important;
+        padding: 0 !important;
+        border-radius: 9px !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #Backgrounds .bg_tab_button.ui-tabs-active {
+        background: rgba(118, 118, 128, 0.32) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #Backgrounds .bg_tab_button > a {
+        min-width: 64px;
+        height: 32px !important;
+        justify-content: center;
+        color: var(--ag2-l2) !important;
+        font-size: 15px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #Backgrounds .bg_tab_button.ui-tabs-active > a {
+        color: var(--ag2-l1) !important;
+        font-weight: 600 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #Backgrounds .heading-controls {
+        gap: 0 !important;
+        margin-left: auto;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #Backgrounds .bg_tab_panel {
+        padding: 4px 0 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #Backgrounds .BGSampleTitle {
+        font-size: 12px !important;
+    }
+
+    /* --- 生成参数: presets, the long option list, logit bias, prompt manager tools --- */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #respective-presets-block {
+        margin: 4px 0 30px !important;
+        padding: 12px var(--ag2-g-inset) 6px !important;
+        border-radius: 22px !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #openai_api-presets .title_restorable > strong,
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #openai_api-presets .title_restorable > strong > span {
+        color: var(--ag2-l2) !important;
+        font: 400 15px / 20px var(--ag2-font) !important;
+        letter-spacing: 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel :is(#settings_preset_openai, #openai_logit_bias_preset, #completion_prompt_manager_footer_append_prompt) {
+        height: 44px !important;
+        min-height: 44px !important;
+        padding-left: 14px !important;
+        border-radius: 12px !important;
+        background-color: var(--ag2-fill) !important;
+        box-shadow: none !important;
+        font-size: 17px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #openai_api-presets :is(.title_restorable > .flex-container, #settings_preset_openai + .flex-container) {
+        gap: 0 !important;
+        margin-right: -10px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #openai_api-presets .ag2-preset-more {
+        height: 44px !important;
+        padding: 0 10px !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        color: var(--ag2-accent) !important;
+        font: 400 17px / 1 var(--ag2-font) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #respective-ranges-and-temps > div > .range-block:not(:has(#completion_prompt_manager)) {
+        padding-left: var(--ag2-g-inset) !important;
+        padding-right: var(--ag2-g-inset) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #respective-ranges-and-temps > div > .range-block:not(.range-block + .range-block):not(:has(#completion_prompt_manager)) {
+        border-top-left-radius: 22px !important;
+        border-top-right-radius: 22px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #respective-ranges-and-temps > div > .range-block:not(:has(+ .range-block)):not(:has(#completion_prompt_manager)) {
+        border-bottom-left-radius: 22px !important;
+        border-bottom-right-radius: 22px !important;
+        margin-bottom: 30px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #respective-ranges-and-temps > div > hr {
+        height: 24px !important;
+        margin: 0 !important;
+        background: transparent !important;
+    }
+
+    /* every top-level drawer is a plain 17px row; nested drawers sit flat in their group */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel .inline-drawer {
+        border-radius: 22px !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #respective-ranges-and-temps > div > .inline-drawer {
+        margin: 0 0 12px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #respective-ranges-and-temps > div > .inline-drawer:has(+ .range-block) {
+        margin-bottom: 30px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel .inline-drawer-header {
+        min-height: 48px !important;
+        padding: 6px var(--ag2-g-inset) !important;
+        font-size: 17px !important;
+        font-weight: 400 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel .inline-drawer-header :is(b, strong) {
+        font-size: 17px !important;
+        font-weight: 400 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel .inline-drawer-header small {
+        color: var(--ag2-l2) !important;
+        font-size: 15px !important;
+        font-weight: 400 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel .inline-drawer-content {
+        padding-left: var(--ag2-g-inset) !important;
+        padding-right: var(--ag2-g-inset) !important;
+    }
+
+    /* 角色名称行为 … 长度: one group, hairline rows */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #openai_settings > div:first-child {
+        margin: 0 0 30px !important;
+        padding: 0 var(--ag2-g-inset) 6px !important;
+        border-radius: 22px;
+        background: var(--ag2-f5);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #openai_settings > div:first-child > .inline-drawer {
+        margin: 0 calc(0px - var(--ag2-g-inset)) !important;
+        border-radius: 0 !important;
+        background: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #openai_settings > div:first-child > .inline-drawer:first-child,
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #openai_settings > div:first-child > .inline-drawer:first-child > .inline-drawer-header {
+        border-top-left-radius: 22px !important;
+        border-top-right-radius: 22px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #openai_settings > div:first-child > * + * {
+        box-shadow: inset 0 0.5px 0 var(--ag2-sep) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #openai_settings > div:first-child > .inline-drawer + .inline-drawer {
+        box-shadow: inset var(--ag2-g-inset) 0.5px 0 -0.25px var(--ag2-f5), inset 0 0.5px 0 var(--ag2-sep) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #openai_settings > div:first-child > :is(.range-block, .flex-container) {
+        margin: 0 !important;
+        padding: 8px 0 !important;
+        background: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #openai_settings .oneline-dropdown {
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        gap: 0 12px !important;
+        min-height: 44px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #openai_settings .oneline-dropdown > label {
+        flex: 1 1 auto !important;
+        width: auto !important;
+        color: var(--ag2-l1) !important;
+        font-size: 17px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #openai_settings .oneline-dropdown > select {
+        flex: 0 1 auto !important;
+        width: auto !important;
+        max-width: 60% !important;
+        height: 40px !important;
+        min-height: 40px !important;
+        padding: 0 24px 0 6px !important;
+        background-color: transparent !important;
+        background-position: right 4px center !important;
+        box-shadow: none !important;
+        color: var(--ag2-l2) !important;
+        font-size: 17px !important;
+        text-align: right;
+        text-align-last: right;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #openai_settings .oneline-dropdown > .toggle-description {
+        flex: 1 1 100% !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #openai_settings :is(.toggle-description, .toggle-description *) {
+        font-size: 13px !important;
+        line-height: 18px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #openai_settings > .range-block.m-t-1 {
+        margin: 0 0 30px !important;
+        padding: 12px var(--ag2-g-inset) 4px !important;
+        border-radius: 22px !important;
+        background: var(--ag2-f5) !important;
+        box-shadow: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #logit_bias_openai {
+        font-size: 17px !important;
+        font-weight: 400 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel .openai_logit_bias_preset_form {
+        gap: 0 !important;
+        margin-right: -10px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #openai_settings > .range-block.m-t-1 > .inline-drawer {
+        margin: 6px calc(0px - var(--ag2-g-inset)) 0 !important;
+        border-radius: 0 0 22px 22px !important;
+        background: none !important;
+        box-shadow: inset 0 0.5px 0 var(--ag2-sep) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel .completion_prompt_manager_footer {
+        gap: 0 !important;
+    }
+
+    /* --- 提示词与格式 --- */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting > .flex-container:first-child {
+        min-height: 44px;
+        gap: 0 !important;
+        margin-right: -10px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting > .flex-container:first-child .menu_button {
+        width: auto !important;
+        height: 44px !important;
+        padding: 0 10px !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        color: var(--ag2-accent) !important;
+        font-size: 17px !important;
+        font-weight: 400 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting > .flex-container:first-child .menu_button > span {
+        font-size: inherit !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting #advanced-formatting-cc-notice {
+        margin: 6px 0 24px !important;
+        padding: 10px 14px !important;
+        border-radius: 14px !important;
+        box-shadow: none !important;
+        font-size: 15px !important;
+        line-height: 20px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting #advanced-formatting-cc-notice > span {
+        font-size: inherit !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting :is(#ContextSettings > div, #InstructSettingsColumn, #SystemPromptColumn > div:not(.inline-drawer)) {
+        margin: 0 0 30px !important;
+        padding: 6px var(--ag2-g-inset) 8px !important;
+        border-radius: 22px !important;
+        box-shadow: none !important;
+    }
+
+    /* group title above the surface, with the group's own switches on its right */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting :is(#ContextSettings > div, #InstructSettingsColumn, #SystemPromptColumn > div:not(.inline-drawer)):has(> h4.standoutHeader:first-child:not(.range-block-title)) {
+        position: relative !important;
+        isolation: isolate;
+        padding-top: 0 !important;
+        background: none !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting :is(#ContextSettings > div, #InstructSettingsColumn, #SystemPromptColumn > div:not(.inline-drawer)):has(> h4.standoutHeader:first-child:not(.range-block-title))::before {
+        content: '';
+        position: absolute;
+        inset: 44px 0 0;
+        z-index: -1;
+        border-radius: 22px;
+        background: var(--ag2-f5);
+        pointer-events: none;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting :is(#ContextSettings > div, #InstructSettingsColumn, #SystemPromptColumn, #SystemPromptColumn > div:not(.inline-drawer)) > h4.standoutHeader:first-child:not(.range-block-title) {
+        box-sizing: border-box;
+        align-items: center !important;
+        height: 44px !important;
+        min-height: 44px !important;
+        margin: 0 0 4px !important;
+        padding: 0 !important;
+        color: var(--ag2-l2) !important;
+        font: 400 13px / 18px var(--ag2-font) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting #SystemPromptColumn > h4.standoutHeader:first-child {
+        margin: 0 var(--ag2-g-inset) 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting h4.standoutHeader:first-child :is(span, b, div):not([class*="fa-"]) {
+        color: inherit !important;
+        font: inherit !important;
+    }
+
+    /* sub-headings inside a group: a quiet label with breathing room above */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting h4.standoutHeader {
+        margin: 22px 0 6px !important;
+        padding: 0 !important;
+        color: var(--ag2-l2) !important;
+        font: 400 13px / 18px var(--ag2-font) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting h4.standoutHeader :is(b, span):not([class*="fa-"]) {
+        font: inherit !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting h4.range-block-title.standoutHeader,
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting h4.range-block-title.standoutHeader > span:not([class*="fa-"]) {
+        margin-top: 10px !important;
+        color: var(--ag2-l1) !important;
+        font: 400 17px / 22px var(--ag2-font) !important;
+    }
+
+    /* field captions (ST's 12.5px <small>) */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting :is(label:not(.checkbox_label), div) > small:not(.fa-solid),
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting label.flex-container > small {
+        color: var(--ag2-l2) !important;
+        font-size: 15px !important;
+        line-height: 20px !important;
+        opacity: 1;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting :is(label:not(.checkbox_label), div) > small:not(.fa-solid) > span {
+        font-size: inherit !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting label.flex-container:has(> small) {
+        min-height: 0 !important;
+        margin: 14px 0 8px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting h4.standoutHeader label.checkbox_label {
+        min-height: 44px !important;
+        font-size: 15px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting label.checkbox_label:not(h4 label) > small {
+        font-size: 17px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting label.checkbox_label:not(h4 label) + label.checkbox_label {
+        box-shadow: inset 0 0.5px 0 var(--ag2-sep);
+    }
+
+    /* preset tool rows: tinted glyphs, centred under the picker */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting .flex-container:has(> select.text_pole) > .flex-container {
+        gap: 0 4px !important;
+    }
+
+    /* sequence groups: flat disclosure rows inside the group, not nested boxes */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting details {
+        margin: 0 calc(0px - var(--ag2-g-inset)) !important;
+        padding: 0 var(--ag2-g-inset) !important;
+        border-radius: 0 !important;
+        background: none !important;
+        box-shadow: inset 0 0.5px 0 var(--ag2-sep) !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting details > summary {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 46px;
+        color: var(--ag2-l1) !important;
+        font-size: 17px !important;
+        font-weight: 400 !important;
+        list-style: none;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting details > summary::-webkit-details-marker {
+        display: none;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting details > summary::after {
+        content: '';
+        width: 8px;
+        height: 8px;
+        margin: 0 4px 0 auto;
+        border: solid var(--ag2-l3);
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg) translateY(-2px);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting details[open] > summary::after {
+        transform: rotate(-135deg) translate(-2px, 0);
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting details > summary > span {
+        font-size: inherit !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting details[open] {
+        padding-bottom: 12px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting details .flex-container {
+        gap: 8px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting details small:not(.fa-solid) {
+        display: inline-block;
+        margin: 4px 0 6px;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting [name="tokenizerSelectorBlock"] > h4.standoutHeader {
+        margin: 12px 0 8px !important;
+        font-size: 15px !important;
+        line-height: 20px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting [name="tokenPaddingBlock"] > .range-block-title {
+        color: var(--ag2-l1) !important;
+        font-size: 17px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #respective-presets-block .menu_button:not(.ag2-preset-more) {
+        width: 44px !important;
+        min-width: 44px !important;
+        height: 44px !important;
+        padding: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        color: var(--ag2-accent) !important;
+        font-size: 18px !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #openai_settings .oneline-dropdown > label,
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #openai_settings .oneline-dropdown > label > span {
+        font-weight: 400 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel #openai_logit_bias_preset {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting label.flex-container:has(> small) {
+        align-items: center !important;
+    }
+
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #AdvancedFormatting details > summary :is(b, strong, span) {
+        font-weight: 400 !important;
+    }
+
+    /* 生成参数 row titles share the 17px primary size of the other pages */
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel label.checkbox_label,
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel label.checkbox_label > :is(span, small),
+    html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__) #left-nav-panel .range-block .range-block-title:not(#_r3) {
+        font-size: 17px !important;
+        font-weight: 400 !important;
+    }
+}
+/* == /5.9c == */
+
+/* == 5.9d · Desktop settings: shared row vocabulary (VF11) == */
+@media screen {
+    /* 通用: row pickers hug their value at the trailing edge, the way 外观's
+       消息信息 does, instead of a fixed 220px solid column. */
+    html body.ag2.ag2-set-open:not(.ag2-phone):not(#_):not(#__) #user-settings-block .flex-container:has(> select.widthNatural:not(#movingUIPresets)) > select.widthNatural,
+    html body.ag2.ag2-set-open:not(.ag2-phone):not(#_):not(#__) #user-settings-block #examples-behavior-block > #example_messages_behavior {
+        flex: 0 0 auto !important;
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: 50% !important;
+        margin-left: auto !important;
+    }
+
+    /* 扩展: each column of drawers is one group of regular-weight rows */
+    html body.ag2.ag2-set-open:not(.ag2-phone):not(#_):not(#__) #rm_extensions_block :is(#extensions_settings, #extensions_settings2):has(.inline-drawer) {
+        gap: 0 !important;
+        align-self: flex-start;
+        padding: 0 12px !important;
+        border-radius: 12px;
+        background: var(--ag2-f5);
+        box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.065);
+    }
+
+    html body.ag2.ag2-set-open:not(.ag2-phone):not(#_):not(#__) #rm_extensions_block :is(#extensions_settings, #extensions_settings2):has(.inline-drawer)::after {
+        content: '';
+        position: relative;
+        z-index: 1;
+        display: block;
+        flex: none;
+        height: 1px;
+        margin-top: -1px;
+        background: var(--ag2-f5);
+    }
+
+    html body.ag2.ag2-set-open:not(.ag2-phone):not(#_):not(#__) #rm_extensions_block :is(#extensions_settings, #extensions_settings2) :is(> *, > .extension_container > *):has(> .inline-drawer) {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(.ag2-phone):not(#_):not(#__) #rm_extensions_block :is(#extensions_settings, #extensions_settings2) .inline-drawer:not(.inline-drawer .inline-drawer) {
+        margin: 0 !important;
+        border-radius: 0 !important;
+        background: none !important;
+        box-shadow: inset 0 -0.5px 0 var(--ag2-sep) !important;
+    }
+
+    html body.ag2.ag2-set-open:not(.ag2-phone):not(#_):not(#__) #rm_extensions_block :is(#extensions_settings, #extensions_settings2) .inline-drawer:not(.inline-drawer .inline-drawer) > .inline-drawer-header {
+        min-height: 40px !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+        background: none !important;
+    }
+
+    html body.ag2.ag2-set-open:not(.ag2-phone):not(#_):not(#__) #rm_extensions_block :is(#extensions_settings, #extensions_settings2) .inline-drawer:not(.inline-drawer .inline-drawer) > .inline-drawer-header :is(b, strong) {
+        color: var(--ag2-l1);
+        font-weight: 400 !important;
+    }
+
+    html body.ag2.ag2-set-open:not(.ag2-phone):not(#_):not(#__) #rm_extensions_block :is(#extensions_settings, #extensions_settings2) .inline-drawer:not(.inline-drawer .inline-drawer) > .inline-drawer-content {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+}
+/* == /5.9d == */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* phone-only shell nodes never show on the desktop layout (and the reverse) */
 html body.ag2:not(.ag2-phone):not(#_):not(#__) .ag2-ph-x,
 html body.ag2:not(#_):not(#__) #ag2-settings:not(.ag2-set-phone) :is(.ag2-set-grab, .ag2-set-phead, .ag2-set-me, .ag2-set-back) {
@@ -12588,6 +13637,203 @@ html body.ag2:not(#_):not(#__) :is(.range-block-counter input[type="number"], in
 html body.ag2:not(#_):not(#__) :is(.range-block-counter input[type="number"], input.neo-range-input[type="number"])::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
+}
+
+/* == 5.9e · Reading tools: one calm hierarchy (VF11) == */
+/* Phone navigation is driven by settings.js so the shell and native drawer share
+   the same axis and timeline. Independent translate leaves drag transforms intact. */
+html body.ag2.ag2-phone:is([data-ag2-set-motion="push"], [data-ag2-set-motion="pop"]):not(#_):not(#__):not(#_motion) #ag2-settings .ag2-set-nav {
+    display: flex !important;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+}
+html body.ag2.ag2-phone:is([data-ag2-set-motion="push"], [data-ag2-set-motion="pop"]):not(#_):not(#__):not(#_motion) #ag2-settings .ag2-set-page {
+    position: relative;
+    z-index: 1;
+    background: var(--ag2-solid-window);
+}
+html body.ag2.ag2-phone[data-ag2-set-motion]:not(#_):not(#__):not(#_motion) :is(#ag2-settings, #ag2-settings .ag2-set-page, #rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) {
+    animation: none !important;
+}
+html body.ag2.ag2-phone[data-ag2-set-motion="opening"]:not(#_):not(#__):not(#_motion) :is(#ag2-settings, #rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block),
+html body.ag2.ag2-phone[data-ag2-set-motion="switching"]:not(#_):not(#__):not(#_motion) :is(#ag2-settings .ag2-set-page, #rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block) {
+    visibility: hidden !important;
+}
+html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__):not(#_tools) #left-nav-panel #respective-ranges-and-temps > div > .range-block:is(:has(+ hr), :has(+ .inline-drawer)) {
+    border-bottom-left-radius: 22px !important;
+    border-bottom-right-radius: 22px !important;
+}
+html body.ag2.ag2-phone.ag2-set-open:not(#_):not(#__):not(#_tools) #left-nav-panel #respective-ranges-and-temps > div > .range-block:has(+ .inline-drawer) {
+    margin-bottom: 24px !important;
+}
+html body.ag2:not(#_):not(#__):not(#_tools) :is(#floatingPrompt, #cfgConfig) .inline-drawer {
+    margin: 0 0 18px !important;
+    box-shadow: none !important;
+}
+html body.ag2:not(#_):not(#__):not(#_tools) :is(#floatingPrompt, #cfgConfig) .inline-drawer-header,
+html body.ag2:not(#_):not(#__):not(#_tools) :is(#floatingPrompt, #cfgConfig) .inline-drawer-header b {
+    font-weight: 400 !important;
+}
+html body.ag2:not(#_):not(#__):not(#_tools) :is(#floatingPrompt, #cfgConfig) .inline-drawer-content > small,
+html body.ag2:not(#_):not(#__):not(#_tools) :is(#floatingPrompt, #cfgConfig) .inline-drawer-content > small b {
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+    font-weight: 400 !important;
+}
+@media (max-width: 1000px) {
+    /* The primary action strip stays with its message; extended actions use menu.js. */
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) #chat .mes:not(.smallSysMes) .mes_buttons > .mes_button {
+        width: 44px !important;
+        min-width: 44px !important;
+        height: 44px !important;
+        font-size: 17px !important;
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) #ag2-message-actions {
+        width: min(300px, calc(100vw - 32px));
+        max-height: calc(var(--ag2-ph-h) - 100px);
+        overflow-y: auto;
+        padding: 6px 16px;
+        border-radius: 20px;
+        background: var(--ag2-grouped-surface);
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) #ag2-message-actions .ag2-menu-item {
+        min-height: 46px;
+        padding: 10px 0;
+        font-size: 17px;
+        line-height: 22px;
+        border-radius: 0;
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) #ag2-message-actions .ag2-menu-item + .ag2-menu-item {
+        box-shadow: inset 0 0.5px 0 var(--ag2-sep);
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) :is(#floatingPrompt, #cfgConfig, #logprobsViewer, #completion_prompt_manager_popup) {
+        background: var(--ag2-solid-window) !important;
+        --ag2-f5: var(--ag2-grouped-surface);
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) :is(#floatingPrompt, #cfgConfig) .inline-drawer {
+        margin: 0 0 24px !important;
+        border-radius: 20px !important;
+        background: var(--ag2-f5) !important;
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) :is(#floatingPrompt, #cfgConfig) .inline-drawer-header {
+        min-height: 48px !important;
+        padding: 12px 16px !important;
+        border-radius: 20px !important;
+        font-size: 17px !important;
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) :is(#floatingPrompt, #cfgConfig) .inline-drawer-header b {
+        font-size: 17px !important;
+        line-height: 22px !important;
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) :is(#floatingPrompt, #cfgConfig) .inline-drawer-content {
+        padding: 0 16px 12px !important;
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) :is(#floatingPrompt, #cfgConfig) small:not([class*="fa-"]),
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) #floatingPrompt .inline-drawer-content > span:has(#extension_floating_counter) {
+        font-size: 13px !important;
+        line-height: 18px !important;
+        color: var(--ag2-l2) !important;
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) :is(#floatingPrompt, #cfgConfig) label,
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) :is(#floatingPrompt, #cfgConfig) label > span {
+        font-size: 17px !important;
+        font-weight: 400 !important;
+        line-height: 22px !important;
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) :is(#floatingPrompt, #cfgConfig) textarea {
+        padding: 12px !important;
+        border-radius: 12px !important;
+        background: rgba(118, 118, 128, 0.13) !important;
+        box-shadow: none !important;
+        margin: 10px 0 !important;
+        font-size: 16px !important;
+        line-height: 1.5 !important;
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) :is(#floatingPrompt, #cfgConfig) :is(select, input[type="number"]) {
+        min-height: 40px !important;
+        height: 40px !important;
+        border-radius: 10px !important;
+        box-shadow: none !important;
+        font-size: 17px !important;
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) #floatingPrompt .floating_prompt_radio_group {
+        margin: 16px 0 !important;
+        padding: 8px 0 !important;
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) #floatingPrompt .floating_prompt_radio_group > label {
+        min-height: 46px !important;
+        gap: 10px !important;
+        padding: 8px 0 !important;
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) #floatingPrompt .floating_prompt_radio_group > label:has(> input[type="number"]) {
+        display: grid !important;
+        grid-template-columns: 20px minmax(0, 1fr) 72px;
+        gap: 12px 10px !important;
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) #floatingPrompt .floating_prompt_radio_group > label:has(> input[type="number"]) > input[type="number"] {
+        width: 72px !important;
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) #floatingPrompt .floating_prompt_radio_group > label > input[type="number"] + span {
+        grid-column: 2;
+        color: var(--ag2-l2);
+        font-size: 15px !important;
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) #floatingPrompt .floating_prompt_radio_group > label > select {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) #cfgConfig label[for*="_prompt"] {
+        margin-top: 16px !important;
+        color: var(--ag2-l2) !important;
+        font-size: 15px !important;
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) #logprobsViewer .logprobs_empty_state:has(.ag2-logprobs-settings) {
+        margin: 16px 0;
+        padding: 20px 16px;
+        border-radius: 20px;
+        background: var(--ag2-f5);
+        box-shadow: none;
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) #logprobsViewer .logprobs_empty_state p {
+        font-size: 17px;
+        line-height: 24px;
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) #logprobsViewer .logprobs_empty_state p.ag2-logprobs-hint {
+        font-size: 13px;
+        line-height: 18px;
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) #logprobsViewer .ag2-logprobs-settings {
+        background: transparent;
+        padding-left: 0;
+        font-size: 17px;
+        font-weight: 400;
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) #completion_prompt_manager_popup .ag2-prompt-triggers {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0 16px;
+        padding: 0 16px;
+        background: var(--ag2-f5);
+        border-radius: 20px;
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) #completion_prompt_manager_popup .ag2-prompt-triggers label {
+        min-height: 48px;
+        padding: 10px 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: inset 0 -0.5px 0 var(--ag2-sep);
+        font-size: 17px;
+        font-weight: 400;
+    }
+    html body.ag2.ag2-phone:not(#_):not(#__):not(#_tools) #completion_prompt_manager_popup :is(input[type="text"], select:not([multiple]):not([size])) {
+        min-height: 44px !important;
+        height: 44px !important;
+        border-radius: 12px !important;
+        font-size: 17px !important;
+        line-height: 44px !important;
+        align-items: center !important;
+    }
 }
 
 /* == 14 · Accessibility (reduced motion) == */

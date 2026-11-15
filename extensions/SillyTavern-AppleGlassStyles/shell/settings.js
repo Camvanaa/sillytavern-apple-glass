@@ -19,10 +19,10 @@
 // the sheet below the head (same CSS variables as the window). Drag the grabber / head down
 // to dismiss.
 
-import { ctx, h, guard, closeSelect2s, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar, nativeSelectOpen, paintRanges, paintOneRange } from './util.js?v=20261114VF10';
-import { icon } from './icons.js?v=20261114VF10';
-import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261114VF10';
-import { isMenuOpen } from './menu.js?v=20261114VF10';
+import { ctx, h, guard, closeSelect2s, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar, nativeSelectOpen, paintRanges, paintOneRange } from './util.js?v=20261114VF11';
+import { icon } from './icons.js?v=20261114VF11';
+import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261114VF11';
+import { isMenuOpen } from './menu.js?v=20261114VF11';
 
 const PAGES = [
     { id: 'api', name: '连接', icon: 'plug', tile: 'green', group: 0, lead: '选择 API 来源，填写地址、密钥和模型。' },
@@ -61,6 +61,7 @@ function enqueue(task) {
     return queue;
 }
 function navigation(task) {
+    cancelPageMotion();
     const ticket = ++intent, frame = root;
     const valid = () => ticket === intent && frame === root && isOpenNow;
     return enqueue(() => valid() && task(valid));
@@ -79,6 +80,35 @@ let phoneMode = false; // the sheet form, fixed for one open (a width change clo
 let lastFocus = null;
 let activeDragCleanup = null;
 let dragging = false;
+let phoneEntry = false;
+const pageAnimations = new Set();
+
+function cancelPageMotion() {
+    for (const animation of pageAnimations) animation.cancel();
+    pageAnimations.clear();
+}
+
+function pageSurfaces() {
+    return [root?.querySelector('.ag2-set-page'), ...openPanels().map(id => document.getElementById(id))].filter(Boolean);
+}
+
+/** The native drawers are siblings of the frame, not its children. Animate both
+ * surfaces on one clock; never clone a live form or move a host content node. */
+async function phoneMotion(kind, nodes, valid = () => true) {
+    if (!phoneMode || !valid()) return;
+    document.body.dataset.ag2SetMotion = kind;
+    if (document.body.classList.contains('reduced-motion') || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const width = root?.getBoundingClientRect().width || innerWidth;
+    const from = kind === 'up' ? `0 ${innerHeight}px` : kind === 'push' ? `${width}px 0` : kind === 'list' ? `${-width * .12}px 0` : '0 0';
+    const to = kind === 'pop' ? `${width}px 0` : kind === 'down' ? `0 ${innerHeight}px` : '0 0';
+    const start = document.timeline.currentTime;
+    const animations = nodes.map(node => node.animate([{ translate: from }, { translate: to }], {
+        duration: kind === 'list' ? 180 : 260, easing: 'cubic-bezier(.32,.72,0,1)', fill: 'both',
+    }));
+    for (const animation of animations) { animation.startTime = start; pageAnimations.add(animation); }
+    await Promise.all(animations.map(animation => animation.finished.catch(() => {})));
+    for (const animation of animations) { animation.cancel(); pageAnimations.delete(animation); }
+}
 const stEvents = [];
 let selectObserver = null;
 const selectButtons = new Set();
@@ -228,7 +258,7 @@ let results = [];
 
 const loadSearch = async () => {
     if (!searchMod) {
-        searchMod = await import('./search.js?v=20261114VF10');
+        searchMod = await import('./search.js?v=20261114VF11');
         searchMod.init(PAGES.map(({ id, name, lead }) => ({ id, name, lead })));
     }
     return searchMod;
@@ -539,6 +569,8 @@ export function open(page = null) {
     if (!isOpenNow) {
         isOpenNow = true;
         phoneMode = phone;
+        phoneEntry = phone;
+        if (phone) document.body.dataset.ag2SetMotion = 'opening';
         root.classList.toggle('ag2-set-phone', phone);
         root.dataset.level = 'list';
         opener = document.activeElement instanceof HTMLElement && !root.contains(document.activeElement) ? document.activeElement : null;
@@ -569,6 +601,10 @@ async function listNow({ focus = false } = {}, valid) {
     clearTimeout(closeTimer);
     switching++;
     try {
+        if (phoneMode && was && !phoneEntry) {
+            await phoneMotion('pop', pageSurfaces(), valid);
+            if (!valid()) return;
+        }
         root.dataset.level = 'list';
         searchMod?.clearHit();
         detachSpy();
@@ -580,6 +616,12 @@ async function listNow({ focus = false } = {}, valid) {
         delete document.body.dataset.ag2Set;
         root.classList.remove('ag2-set-st');
         for (const b of root.querySelectorAll('.ag2-set-item')) { b.classList.remove('ag2-on'); b.removeAttribute('aria-current'); }
+        if (phoneMode) {
+            const entering = phoneEntry;
+            phoneEntry = false;
+            if (entering) await phoneMotion('up', [root], valid);
+            if (valid()) document.body.dataset.ag2SetMotion = 'active';
+        }
     } finally {
         switching--;
     }
@@ -606,6 +648,7 @@ function dragDismiss(handle) {
         if (!isOpenNow || !phoneMode || !e.isPrimary || e.button > 0 || dragging
             || e.target.closest('button, input, a, select, textarea')) return;
         const startDy = parseFloat(getComputedStyle(root).translate.split(' ')[1]) || 0;
+        cancelPageMotion();
         activeDragCleanup?.(); // a new pointer takes over the current presentation position
         dragging = true;
         const pointerId = e.pointerId;
@@ -652,7 +695,7 @@ function settleDrag(from, dismiss) {
     if (document.body.classList.contains('reduced-motion') || matchMedia('(prefers-reduced-motion: reduce)').matches) {
         sheetOffset();
         document.body.classList.remove('ag2-sheet-drag');
-        if (dismiss) close();
+        if (dismiss) close({ motion: false });
         return;
     }
     const to = dismiss ? Math.max(from, innerHeight) : 0;
@@ -679,7 +722,7 @@ function settleDrag(from, dismiss) {
     Promise.all(animations.map(animation => animation.finished)).then(() => {
         if (cancelled) return;
         cleanup();
-        if (dismiss) close();
+        if (dismiss) close({ motion: false });
     }).catch(() => { /* explicit close, blur, unmount or pointer takeover cancelled it */ });
 }
 
@@ -691,9 +734,11 @@ export function go(page, opt = {}) {
 async function goNow(page, { focus = false } = {}, valid) {
     if (!isOpenNow || !PAGE[page]) return;
     const p = PAGE[page];
+    const previous = cur;
     clearTimeout(closeTimer);
     switching++;
     try {
+        if (phoneMode && !phoneEntry && previous !== page) document.body.dataset.ag2SetMotion = 'switching';
         if (phoneMode) root.dataset.level = 'page'; // pushed over the list (§5.9)
         closeSelect2s();
         setCurrent(page);
@@ -711,6 +756,13 @@ async function goNow(page, { focus = false } = {}, valid) {
         }
         if (cur === page) renderAnchors(page);
         if (valid()) watchSelects(p.panel ? document.getElementById(p.panel) : root.querySelector('.ag2-set-body'));
+        if (phoneMode && valid()) {
+            const entering = phoneEntry;
+            phoneEntry = false;
+            if (entering) await phoneMotion('up', [root, ...openPanels().map(id => document.getElementById(id))], valid);
+            else if (previous !== page) await phoneMotion('push', pageSurfaces(), valid);
+            if (valid()) document.body.dataset.ag2SetMotion = 'active';
+        }
     } finally {
         switching--;
     }
@@ -755,7 +807,8 @@ export function sync(id, opened) {
     }, 450);
 }
 
-export async function close() {
+export async function close({ motion = true } = {}) {
+    cancelPageMotion();
     clearSelects();
     closeSelect2s();
     activeDragCleanup?.();
@@ -773,6 +826,11 @@ export async function close() {
     searchMod?.clearHit();
     detachSpy();
     delete document.body.dataset.ag2Anchors;
+    if (phoneMode && motion && !phoneEntry) {
+        await phoneMotion('down', [root, ...openPanels().map(id => document.getElementById(id))], () => ticket === intent && !isOpenNow && !!root);
+        if (ticket !== intent || isOpenNow || !root) return;
+    }
+    phoneEntry = false;
     // Drawers close first (synchronous class flip inside doNavbarIconClick) while the window
     // CSS still positions them, so nothing flashes at ST's default drawer spot.
     // Keep all host toggles serial, including close while a host open is awaiting delay.
@@ -784,6 +842,7 @@ export async function close() {
     dim.hidden = true;
     root.hidden = true;
     root.dataset.level = 'list';
+    delete document.body.dataset.ag2SetMotion;
     clearSearch();
     await drained;
     if (ticket === intent && !isOpenNow && previousOpener?.isConnected) previousOpener.focus({ preventScroll: true });
@@ -792,6 +851,9 @@ export async function close() {
 /** Shell teardown: nodes and listeners go; ST drawers stay as they are (the theme may have
  *  been switched from inside 通用, where the user keeps working in the classic drawer). */
 export function unmount() {
+    cancelPageMotion();
+    phoneEntry = false;
+    delete document.body.dataset.ag2SetMotion;
     clearSelects();
     closeSelect2s();
     intent++;
