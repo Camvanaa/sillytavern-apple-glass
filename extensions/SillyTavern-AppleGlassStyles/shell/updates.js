@@ -1,4 +1,5 @@
 // Same native extension/theme APIs on ST and TauriTavern. No settings snapshot sync.
+import { ensureUpdateStyles } from './update-style.js?v=20261115TT02';
 export const INSTALL_URL = 'https://github.com/Camvanaa/SillyTavern-AppleGlassStyles';
 export const FEED_URL = 'https://tt.camvan.xyz/apple-glass/latest.json';
 const ROOT = new URL('../', import.meta.url);
@@ -7,13 +8,21 @@ const KEY = 'ag2.release.notifications';
 let running = false;
 
 function context() { return SillyTavern.getContext(); }
-async function json(url, options = {}) {
+async function request(url, options = {}) {
     const response = await fetch(url, { ...options, signal: AbortSignal.timeout(30000) });
     if (!response.ok) throw new Error(`请求失败（HTTP ${response.status}）`);
-    return response.json();
+    return response;
 }
-async function post(path, body) {
-    return json(path, { method: 'POST', headers: context().getRequestHeaders(), body: JSON.stringify(body) });
+async function json(url, options = {}) {
+    const response = await request(url, options);
+    try { return await response.json(); }
+    catch { throw new Error(`接口未返回有效 JSON：${new URL(url, location.href).pathname}`); }
+}
+async function post(path, body, acknowledgement = false) {
+    const options = { method: 'POST', headers: context().getRequestHeaders(), body: JSON.stringify(body) };
+    // ST themes/save returns plain "OK"; TT may return JSON. These commands
+    // promise success by HTTP status, unlike the data-reading endpoints.
+    return acknowledgement ? request(path, options) : json(path, options);
 }
 function validateRelease(data) {
     if (data?.schema !== 1 || typeof data.build !== 'string' || !/^[A-Za-z0-9-]{1,48}$/.test(data.build)
@@ -41,10 +50,10 @@ export async function importBundledTheme() {
     // Read only the theme library. Existing appearance choices are preserved.
     const data = await post('/api/settings/get', {});
     const old = (data.themes || []).find(t => t.name === theme.name);
-    await post('/api/themes/save', old ? { ...old, custom_css: theme.custom_css } : theme);
+    await post('/api/themes/save', old ? { ...old, custom_css: theme.custom_css } : theme, true);
     const pu = context().powerUserSettings;
     if (pu?.theme === theme.name) {
-    const before = pu.custom_css;
+        const before = pu.custom_css;
         pu.custom_css = theme.custom_css;
         try {
             const { saveSettings } = await import('/script.js');
@@ -68,7 +77,7 @@ export async function updateInstalled() {
         if (String(version.remoteUrl || '').replace(/\.git$/, '').replace(/\/$/, '') !== INSTALL_URL) {
             throw new Error('此副本由服务器或迁移包管理。请先在扩展管理中用安装 URL 安装本地副本，再使用在线更新。');
         }
-        await post('/api/extensions/update', location);
+        await post('/api/extensions/update', location, true);
         // Fetch and validate the theme shipped by the updated repository, never a
         // separately moving "latest" theme URL. A failure leaves a retryable state.
         return await importBundledTheme();
@@ -79,6 +88,8 @@ function button(text, action) {
     b.addEventListener('click', action); return b;
 }
 export function renderUpdates(container) {
+    ensureUpdateStyles();
+    const panel = document.createElement('section'); panel.className = 'ag2-update-panel';
     const group = document.createElement('div'); group.className = 'ag2-set-group';
     const title = document.createElement('div'); title.className = 'ag2-set-gtitle'; title.textContent = '主题与扩展更新';
     const status = document.createElement('p'); status.className = 'ag2-set-note'; status.setAttribute('role', 'status');
@@ -109,7 +120,7 @@ export function renderUpdates(container) {
         toggle.setAttribute('aria-checked', String(enabled)); localStorage.setItem(KEY, String(enabled));
         if (enabled) void checkAndNotify();
     });
-    notify.append(lab, toggle); group.append(row, linkRow, notify); container.append(title, group, status);
+    notify.append(lab, toggle); group.append(row, linkRow, notify); panel.append(title, group, status); container.append(panel);
 }
 async function checkAndNotify() {
     try {
