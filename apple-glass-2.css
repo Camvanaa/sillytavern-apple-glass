@@ -13560,6 +13560,94 @@ html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body,
     }
 }
 
+/* TT's native settings and sync dialogs keep their own draft/save lifecycle. */
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-update-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 12px;
+}
+html body.ag2:not(#_):not(#__) #ag2-settings .ag2-update-actions .ag2-set-btn {
+    min-height: 44px;
+    border: 0;
+    background: none;
+    color: var(--ag2-accent);
+    font: 500 15px / 1.4 var(--ag2-font);
+}
+html body.ag2:not(#_):not(#__) dialog.tt-tauritavern-panel-popup {
+    background: var(--ag2-solid-window) !important;
+    color: var(--ag2-l1) !important;
+    border: 0 !important;
+    border-radius: var(--ag2-r-window) !important;
+    box-shadow: var(--ag2-rim), var(--ag2-sh3) !important;
+}
+html body.ag2:not(#_):not(#__) .tt-settings-root {
+    color: var(--ag2-l1);
+    font: 14px / 1.5 var(--ag2-font);
+    gap: 24px;
+}
+html body.ag2:not(#_):not(#__) .tt-settings-section {
+    border: 0;
+    padding: 0;
+}
+html body.ag2:not(#_):not(#__) .tt-settings-section-title {
+    color: var(--ag2-l2);
+    font-size: 13px;
+}
+html body.ag2:not(#_):not(#__) .tt-settings-section-body {
+    background: var(--ag2-grouped-surface, #242429);
+    border-radius: 18px;
+    padding: 0 16px;
+    gap: 0;
+}
+html body.ag2:not(#_):not(#__) .tt-settings-row {
+    min-height: 48px;
+    padding: 10px 0;
+}
+html body.ag2:not(#_):not(#__) .tt-settings-row + .tt-settings-row {
+    box-shadow: inset 0 .5px 0 var(--ag2-sep);
+}
+html body.ag2:not(#_):not(#__) :is(.tt-settings-hint, .tt-settings-section-note, .tt-settings-status) {
+    color: var(--ag2-l2);
+    font-size: 13px;
+    opacity: 1;
+}
+html body.ag2:not(#_):not(#__) :is(.tt-settings-select, .tt-settings-input, .tt-settings-path-row input) {
+    background: var(--ag2-f3);
+    border: 0;
+    border-radius: 8px;
+    color: var(--ag2-l1);
+    min-height: 34px;
+    padding: 4px 10px;
+}
+html body.ag2:not(#_):not(#__) .tt-settings-switch span {
+    height: 26px;
+    border: 0;
+    background: var(--ag2-f2);
+}
+html body.ag2:not(#_):not(#__) .tt-settings-switch span::after {
+    width: 22px;
+    height: 22px;
+    top: 2px;
+    left: 2px;
+    background: white;
+}
+html body.ag2:not(#_):not(#__) .tt-settings-switch input:checked + span { background: var(--ag2-green); }
+html body.ag2:not(#_):not(#__) .tt-settings-switch input:checked + span::after { transform: translateX(16px); }
+html body.ag2:not(#_):not(#__) :is(.tt-settings-action-button, .tt-settings-icon-button) {
+    color: var(--ag2-accent);
+    background: transparent;
+    border: 0;
+    min-height: 36px;
+}
+@media (max-width: 1000px) {
+    html body.ag2:not(#_):not(#__) .tt-settings-root { font-size: 17px; }
+    html body.ag2:not(#_):not(#__) .tt-settings-row {
+        grid-template-columns: minmax(0, 1fr) minmax(100px, 45%);
+        gap: 8px 12px;
+    }
+    html body.ag2:not(#_):not(#__) :is(.tt-settings-select, .tt-settings-input, .tt-settings-path-row input) { font-size: 16px; min-height: 40px; }
+}
+
 /* Native multi-selects are used instead of Select2 on phones. Keep their native
    multi-selection semantics, but give the listbox the same inset field surface. */
 html body.ag2:not(#_):not(#__) :is(.drawer-content, #character_popup) select[multiple]:not(.select2-hidden-accessible) {

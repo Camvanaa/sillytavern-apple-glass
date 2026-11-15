@@ -19,10 +19,12 @@
 // the sheet below the head (same CSS variables as the window). Drag the grabber / head down
 // to dismiss.
 
-import { ctx, h, guard, closeSelect2s, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar, nativeSelectOpen, paintRanges, paintOneRange } from './util.js?v=20261114VF11';
-import { icon } from './icons.js?v=20261114VF11';
-import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261114VF11';
-import { isMenuOpen } from './menu.js?v=20261114VF11';
+import { ctx, h, guard, closeSelect2s, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar, nativeSelectOpen, paintRanges, paintOneRange } from './util.js?v=20261115TT01';
+import { icon } from './icons.js?v=20261115TT01';
+import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261115TT01';
+import { isMenuOpen } from './menu.js?v=20261115TT01';
+import { renderUpdates } from './updates.js?v=20261115TT01';
+import { isTauri, renderTauriSettings } from './tauri-settings.js?v=20261115TT01';
 
 const PAGES = [
     { id: 'api', name: '连接', icon: 'plug', tile: 'green', group: 0, lead: '选择 API 来源，填写地址、密钥和模型。' },
@@ -36,6 +38,7 @@ const PAGES = [
     { id: 'ext', name: '扩展', icon: 'puzzle', tile: 'red', group: 2, lead: '已安装的扩展和它们的设置。' },
     { id: 'about', name: '关于', icon: 'info', tile: 'gray', group: 3, lead: 'SillyTavern 与 Apple Glass 2 的版本信息。' },
 ];
+if (isTauri()) PAGES.splice(PAGES.length - 1, 0, { id: 'tauri', name: 'TauriTavern', icon: 'settings', tile: 'gray', group: 2, lead: '客户端设置与设备同步。' });
 const PAGE = Object.fromEntries(PAGES.map(p => [p.id, { ...p, panel: SET_PANELS[p.id] || null }]));
 const PANEL_IDS = Object.values(SET_PANELS);
 const STYLES = ['阅读', '气泡', '文档', '回声', '低语', '涟漪', '轻声'];
@@ -258,7 +261,7 @@ let results = [];
 
 const loadSearch = async () => {
     if (!searchMod) {
-        searchMod = await import('./search.js?v=20261114VF11');
+        searchMod = await import('./search.js?v=20261115TT01');
         searchMod.init(PAGES.map(({ id, name, lead }) => ({ id, name, lead })));
     }
     return searchMod;
@@ -968,6 +971,7 @@ function renderBody(page) {
     body.scrollTop = 0;
     if (page === 'look') renderLook(body);
     else if (page === 'about') renderAbout(body);
+    else if (page === 'tauri') renderTauriSettings(body);
 }
 
 const sw = (k, label, sub) => `
@@ -1129,5 +1133,6 @@ function renderAbout(body = root?.querySelector('.ag2-set-body')) {
     vals[0].textContent = version || '…';
     vals[1].textContent = shellBuild;
     vals[2].textContent = theme;
+    renderUpdates(body);
     if (!version) fetchVersion();
 }

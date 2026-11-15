@@ -1,6 +1,6 @@
 {
-    "display_name": "Apple Glass Chat Styles",
-    "description": "Adds Echo / Whisper / Ripple / Hush chat styles to User Settings → Chat Style. Visuals live in the Apple Glass Dark UI theme.",
+    "display_name": "Apple Glass 2",
+    "description": "Apple Glass UI、配套主题与版本更新。支持 SillyTavern 和 TauriTavern。",
     "loading_order": 20,
     "requires": [],
     "optional": [],

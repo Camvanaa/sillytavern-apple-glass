@@ -19,7 +19,7 @@ const NATIVE_CLASSES = ['bubblechat', 'documentstyle'];
 const THEME_NAMES = ['Apple Glass Dark', 'Apple Glass 2'];
 const AG2_THEME = 'Apple Glass 2';
 // Keep in sync with BUILD in shell/index.js (tools/ag2/bump-build.sh updates both).
-const SHELL_BUILD = '20261114VF11';
+const SHELL_BUILD = '20261115TT01';
 const STYLE_KEY = 'apGlass.chatStyle';
 
 function themeActive() {
@@ -266,6 +266,7 @@ function scheduleChatWork() {
 }
 
 jQuery(() => {
+    import(`./shell/updates.js?v=${SHELL_BUILD}`).then(m => { m.mountInstaller(); m.startUpdateNotifications(); }).catch(e => console.error('[AG2] update tools unavailable', e));
     ensureOptions();
     applyStyle();
     ensureJumpButton();
