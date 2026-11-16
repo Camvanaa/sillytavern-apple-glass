@@ -19,12 +19,12 @@
 // the sheet below the head (same CSS variables as the window). Drag the grabber / head down
 // to dismiss.
 
-import { ctx, h, guard, closeSelect2s, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar, nativeSelectOpen, paintRanges, paintOneRange } from './util.js?v=20261116TT07';
-import { icon } from './icons.js?v=20261116TT07';
-import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261116TT07';
-import { isMenuOpen } from './menu.js?v=20261116TT07';
-import { renderUpdates } from './updates.js?v=20261116TT07';
-import { isTauri, renderTauriSettings } from './tauri-settings.js?v=20261116TT07';
+import { ctx, h, guard, closeSelect2s, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar, nativeSelectOpen, paintRanges, paintOneRange } from './util.js?v=20261116TT08';
+import { icon } from './icons.js?v=20261116TT08';
+import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261116TT08';
+import { isMenuOpen } from './menu.js?v=20261116TT08';
+import { renderUpdates } from './updates.js?v=20261116TT08';
+import { isTauri, renderTauriSettings } from './tauri-settings.js?v=20261116TT08';
 
 const PAGES = [
     { id: 'api', name: '连接', icon: 'plug', tile: 'green', group: 0, lead: '选择 API 来源，填写地址、密钥和模型。' },
@@ -113,6 +113,19 @@ async function caughtUp(valid) {
     }
 }
 
+/** The sheet clips its own pages (外观, 关于) at its edge. A native drawer is a fixed sibling
+ *  the sheet cannot clip, so a centred sheet (641–1000px) would show it sliding across the
+ *  backdrop. Its container never moves: clip that at the sheet's right edge, the one a
+ *  slide crosses — for the whole time the sheet is up, as one clip change repaints every
+ *  drawer (~150ms) and would land in the middle of a page switch. */
+function clipDrawers(on) {
+    const holder = document.getElementById('top-settings-holder');
+    if (!holder) return;
+    if (!on || !root) return holder.style.removeProperty('clip-path');
+    const edge = Math.round(root.getBoundingClientRect().right - holder.getBoundingClientRect().left);
+    holder.style.setProperty('clip-path', `polygon(-100000px -100000px, ${edge}px -100000px, ${edge}px 100000px, -100000px 100000px)`);
+}
+
 /** The native drawers are siblings of the frame, not its children. Animate both
  * surfaces on one clock; never clone a live form or move a host content node. */
 async function phoneMotion(kind, nodes, valid = () => true) {
@@ -123,15 +136,8 @@ async function phoneMotion(kind, nodes, valid = () => true) {
     const width = root?.getBoundingClientRect().width || innerWidth;
     const from = kind === 'up' ? `0 ${innerHeight}px` : kind === 'push' ? `${width}px 0` : kind === 'list' ? `${-width * .12}px 0` : '0 0';
     const to = kind === 'pop' ? `${width}px 0` : kind === 'down' ? `0 ${innerHeight}px` : '0 0';
-    // The sheet clips its own page, but not a drawer: in a centred sheet (641–1000px) the
-    // sliding drawer would cross the backdrop. Its clip cancels its offset, so it is only
-    // ever drawn inside the sheet.
-    const clip = kind === 'push' ? [width, 0] : kind === 'pop' ? [0, width] : null;
-    const keyframes = node => clip && !root.contains(node)
-        ? [{ translate: from, clipPath: `inset(0 ${clip[0]}px 0 0)` }, { translate: to, clipPath: `inset(0 ${clip[1]}px 0 0)` }]
-        : [{ translate: from }, { translate: to }];
     const duration = kind === 'list' ? 180 : 260;
-    const animations = nodes.map(node => node.animate(keyframes(node), {
+    const animations = nodes.map(node => node.animate([{ translate: from }, { translate: to }], {
         duration, easing: 'cubic-bezier(.32,.72,0,1)', fill: 'both',
     }));
     for (const animation of animations) { animation.pause(); pageAnimations.add(animation); }
@@ -309,7 +315,7 @@ let results = [];
 
 const loadSearch = async () => {
     if (!searchMod) {
-        searchMod = await import('./search.js?v=20261116TT07');
+        searchMod = await import('./search.js?v=20261116TT08');
         searchMod.init(PAGES.map(({ id, name, lead }) => ({ id, name, lead })));
     }
     return searchMod;
@@ -628,6 +634,7 @@ export function open(page = null) {
         document.body.classList.add('ag2-set-open');
         dim.hidden = false;
         root.hidden = false;
+        clipDrawers(phone);
         window.addEventListener('keydown', onKey, true);
         window.addEventListener('resize', onResize);
         document.addEventListener('focusin', onFocus, true);
@@ -899,6 +906,7 @@ export async function close({ motion = true } = {}) {
     delete document.body.dataset.ag2SetMotion;
     clearSearch();
     await drained;
+    if (ticket === intent && !isOpenNow) clipDrawers(false);
     if (ticket === intent && !isOpenNow && previousOpener?.isConnected) previousOpener.focus({ preventScroll: true });
 }
 
@@ -929,6 +937,7 @@ export function unmount() {
     document.body.classList.remove('ag2-set-open', 'ag2-sheet-drag');
     document.body.style.removeProperty('--ag2-sheet-dy');
     delete document.body.dataset.ag2Set;
+    clipDrawers(false);
     dim?.remove();
     root?.remove();
     dim = root = null;
