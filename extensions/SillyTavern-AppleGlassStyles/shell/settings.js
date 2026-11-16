@@ -19,12 +19,12 @@
 // the sheet below the head (same CSS variables as the window). Drag the grabber / head down
 // to dismiss.
 
-import { ctx, h, guard, closeSelect2s, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar, nativeSelectOpen, paintRanges, paintOneRange } from './util.js?v=20261116TT05';
-import { icon } from './icons.js?v=20261116TT05';
-import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261116TT05';
-import { isMenuOpen } from './menu.js?v=20261116TT05';
-import { renderUpdates } from './updates.js?v=20261116TT05';
-import { isTauri, renderTauriSettings } from './tauri-settings.js?v=20261116TT05';
+import { ctx, h, guard, closeSelect2s, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar, nativeSelectOpen, paintRanges, paintOneRange } from './util.js?v=20261116TT06';
+import { icon } from './icons.js?v=20261116TT06';
+import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261116TT06';
+import { isMenuOpen } from './menu.js?v=20261116TT06';
+import { renderUpdates } from './updates.js?v=20261116TT06';
+import { isTauri, renderTauriSettings } from './tauri-settings.js?v=20261116TT06';
 
 const PAGES = [
     { id: 'api', name: '连接', icon: 'plug', tile: 'green', group: 0, lead: '选择 API 来源，填写地址、密钥和模型。' },
@@ -104,7 +104,9 @@ async function phoneMotion(kind, nodes, valid = () => true) {
     const width = root?.getBoundingClientRect().width || innerWidth;
     const from = kind === 'up' ? `0 ${innerHeight}px` : kind === 'push' ? `${width}px 0` : kind === 'list' ? `${-width * .12}px 0` : '0 0';
     const to = kind === 'pop' ? `${width}px 0` : kind === 'down' ? `0 ${innerHeight}px` : '0 0';
-    if (document.hidden) return;
+    // Slides are a touch gesture's echo. Narrow desktop windows (TT on Windows) switch
+    // instantly: WebView2 was seen leaving both surfaces frozen mid-slide.
+    if (document.hidden || !matchMedia('(pointer: coarse)').matches) return;
     const duration = kind === 'list' ? 180 : 260;
     const start = document.timeline.currentTime;
     const animations = nodes.map(node => node.animate([{ translate: from }, { translate: to }], {
@@ -270,7 +272,7 @@ let results = [];
 
 const loadSearch = async () => {
     if (!searchMod) {
-        searchMod = await import('./search.js?v=20261116TT05');
+        searchMod = await import('./search.js?v=20261116TT06');
         searchMod.init(PAGES.map(({ id, name, lead }) => ({ id, name, lead })));
     }
     return searchMod;
