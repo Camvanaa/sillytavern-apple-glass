@@ -1,7 +1,9 @@
 // Same native extension/theme APIs on ST and TauriTavern. No settings snapshot sync.
-import { ensureUpdateStyles } from './update-style.js?v=20261116TT03';
+import { ensureUpdateStyles } from './update-style.js?v=20261116TT04';
 export const INSTALL_URL = 'https://github.com/Camvanaa/SillyTavern-AppleGlassStyles';
-export const FEED_URL = 'https://tt.camvan.xyz/apple-glass/latest.json';
+// GitHub is the only update source: the release.json of the branch that the native
+// update pulls, so a check never announces a build that “更新” cannot fetch.
+export const RELEASE_URL = 'https://raw.githubusercontent.com/Camvanaa/SillyTavern-AppleGlassStyles/main/release.json';
 const ROOT = new URL('../', import.meta.url);
 const FOLDER = decodeURIComponent(ROOT.pathname.split('/').filter(Boolean).at(-1));
 const KEY = 'ag2.release.notifications';
@@ -30,7 +32,7 @@ function validateRelease(data) {
     return data;
 }
 export async function checkRelease() {
-    return validateRelease(await json(`${FEED_URL}?t=${Date.now()}`, { cache: 'no-store', credentials: 'omit' }));
+    return validateRelease(await json(`${RELEASE_URL}?t=${Date.now()}`, { cache: 'no-store', credentials: 'omit' }));
 }
 async function bundle() {
     const release = validateRelease(await json(new URL('release.json', ROOT), { cache: 'no-store' }));
