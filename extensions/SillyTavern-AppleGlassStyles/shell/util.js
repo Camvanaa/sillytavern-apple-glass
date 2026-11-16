@@ -8,7 +8,7 @@ import {
     is_send_press, isChatSaving, getThumbnailUrl, user_avatar, online_status,
 } from '../../../../../script.js';
 import { openGroupById, openGroupChat, deleteGroupChatByName, is_group_generating } from '../../../../group-chats.js';
-import { local } from './store.js?v=20261116TT09';
+import { local } from './store.js?v=20261116TT10';
 
 export { doNavbarIconClick, getCurrentChatId, newAssistantChat };
 
@@ -136,13 +136,32 @@ export const isDesktop = () => window.matchMedia('(min-width: 1001px)').matches;
 export const PHONE_MQ = '(max-width: 1000px)';
 export const isPhone = () => window.matchMedia(PHONE_MQ).matches;
 
+// ---------------------------------------------------------------- lazy modules
+/** This copy of the shell. Each lazily imported module re-exports it from its own import. */
+export const SHELL = {};
+let staleNoticeAt = 0;
+/**
+ * A lazy module is imported on first use. If 更新 has replaced the files since this page
+ * loaded, that import is the next build, and its own imports (…?v=next) are fresh copies of
+ * the shell, not this one: it would draw its UI with every handler cut off. It is never
+ * used; the page asks for the reload that 更新 already mentions.
+ */
+export function current(mod) {
+    if (mod?.SHELL === SHELL) return mod;
+    if (Date.now() - staleNoticeAt > 5000) {
+        staleNoticeAt = Date.now();
+        try { window.toastr?.info?.('已安装新版本，请重载页面后再打开。', 'Apple Glass 2', { timeOut: 6000 }); } catch { /* toastr missing */ }
+    }
+    return null;
+}
+
 let phoneMod = null;
 let phoneLoading = null;
 /** phone.js once loaded — it is only imported at phone widths (never on desktop). */
 export const phoneModule = () => phoneMod;
 export async function loadPhone() {
     if (!phoneMod) {
-        phoneLoading ||= import('./phone.js?v=20261116TT09');
+        phoneLoading ||= import('./phone.js?v=20261116TT10').then(current);
         try { phoneMod = await phoneLoading; } finally { phoneLoading = null; }
     }
     return phoneMod;
@@ -155,7 +174,7 @@ export const settingsModule = () => setMod;
 /** Imports settings.js (once) without opening the window — the palette searches its index. */
 export async function loadSettings() {
     if (!setMod) {
-        setLoading ||= import('./settings.js?v=20261116TT09');
+        setLoading ||= import('./settings.js?v=20261116TT10').then(current);
         try { setMod = await setLoading; } finally { setLoading = null; }
     }
     return setMod;
@@ -167,7 +186,7 @@ export async function loadSettings() {
  * same module draws the bottom sheet (§5.9): page null → the sheet's list level.
  */
 export async function openSettings(page = null, opt = {}) {
-    await loadSettings();
+    if (!await loadSettings()) return false;
     if (!document.body.classList.contains('ag2')) return false; // shell torn down meanwhile
     closeOtherFloating(null);
     return setMod.open(page, opt);
@@ -190,10 +209,10 @@ let inspLoading = null;
 export const inspectorModule = () => inspMod;
 export async function loadInspector() {
     if (!inspMod) {
-        inspLoading ||= import('./inspector.js?v=20261116TT09');
+        inspLoading ||= import('./inspector.js?v=20261116TT10').then(current);
         try { inspMod = await inspLoading; } finally { inspLoading = null; }
     }
-    if (document.body.classList.contains('ag2')) inspMod.mount();
+    if (inspMod && document.body.classList.contains('ag2')) inspMod.mount();
     return inspMod;
 }
 export const isInspectorOpen = () => !!document.getElementById(INSP_ID)?.classList.contains('openDrawer');
@@ -212,8 +231,7 @@ export function restoreInspectorPin() {
  */
 export async function setInspector(want, { persist = true } = {}) {
     const p = document.getElementById(INSP_ID);
-    if (!p) return false;
-    await loadInspector();
+    if (!p || !await loadInspector()) return false;
     if (!document.body.classList.contains('ag2')) return false; // shell torn down meanwhile
     if (want === undefined) want = !p.classList.contains('openDrawer');
     if (persist && isDesktop()) local.set('inspector', want ? 'open' : 'closed');
@@ -235,10 +253,10 @@ export const paletteModule = () => palMod;
 /** Opens the ⌘K palette; palette.js is imported on first use only (not at cold start). */
 export async function openPalette(opt = {}) {
     if (!palMod) {
-        palLoading ||= import('./palette.js?v=20261116TT09');
+        palLoading ||= import('./palette.js?v=20261116TT10').then(current);
         try { palMod = await palLoading; } finally { palLoading = null; }
     }
-    if (!document.body.classList.contains('ag2')) return false; // shell torn down meanwhile
+    if (!palMod || !document.body.classList.contains('ag2')) return false; // stale, or shell torn down meanwhile
     return palMod.open(opt);
 }
 

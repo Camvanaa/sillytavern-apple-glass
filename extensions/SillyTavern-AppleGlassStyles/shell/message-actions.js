@@ -1,6 +1,6 @@
 // Phone message actions use the shared labelled menu. Original buttons stay in place:
 // extensions and ST keep receiving their own delegated click events.
-import { openMenu, closeMenu } from './menu.js?v=20261116TT09';
+import { openMenu, closeMenu } from './menu.js?v=20261116TT10';
 
 let cleanup = null;
 const icons = [

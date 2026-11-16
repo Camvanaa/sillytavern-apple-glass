@@ -19,12 +19,14 @@
 // the sheet below the head (same CSS variables as the window). Drag the grabber / head down
 // to dismiss.
 
-import { ctx, h, guard, closeSelect2s, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar, nativeSelectOpen, paintRanges, paintOneRange } from './util.js?v=20261116TT09';
-import { icon } from './icons.js?v=20261116TT09';
-import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261116TT09';
-import { isMenuOpen } from './menu.js?v=20261116TT09';
-import { renderUpdates } from './updates.js?v=20261116TT09';
-import { isTauri, renderTauriSettings } from './tauri-settings.js?v=20261116TT09';
+import { ctx, h, guard, closeSelect2s, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar, nativeSelectOpen, paintRanges, paintOneRange, current } from './util.js?v=20261116TT10';
+// linked to the running shell? (util.current)
+export { SHELL } from './util.js?v=20261116TT10';
+import { icon } from './icons.js?v=20261116TT10';
+import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261116TT10';
+import { isMenuOpen } from './menu.js?v=20261116TT10';
+import { renderUpdates } from './updates.js?v=20261116TT10';
+import { isTauri, renderTauriSettings } from './tauri-settings.js?v=20261116TT10';
 
 const PAGES = [
     { id: 'api', name: '连接', icon: 'plug', tile: 'green', group: 0, lead: '选择 API 来源，填写地址、密钥和模型。' },
@@ -315,8 +317,10 @@ let results = [];
 
 const loadSearch = async () => {
     if (!searchMod) {
-        searchMod = await import('./search.js?v=20261116TT09');
-        searchMod.init(PAGES.map(({ id, name, lead }) => ({ id, name, lead })));
+        const mod = current(await import('./search.js?v=20261116TT10'));
+        if (!mod) return null;
+        mod.init(PAGES.map(({ id, name, lead }) => ({ id, name, lead })));
+        searchMod = mod;
     }
     return searchMod;
 };
@@ -340,7 +344,7 @@ async function onSearch(raw) {
         return;
     }
     const mod = await loadSearch();
-    if (seq !== searchSeq || !root) return; // a newer keystroke won
+    if (!mod || seq !== searchSeq || !root) return; // stale files, or a newer keystroke won
     results = mod.query(q);
     root.classList.add('ag2-searching');
     box.hidden = false;
@@ -405,6 +409,7 @@ export async function searchAndReveal(q, i = 0) {
 
 export async function searchIndex(q) {
     const mod = await loadSearch();
+    if (!mod) return [];
     return mod.query(q).map(r => ({ page: r.page, group: r.group || '', label: r.label, kind: r.kind }));
 }
 
@@ -414,12 +419,14 @@ export const pageMeta = id => PAGE[id] ? { id, name: PAGE[id].name, icon: PAGE[i
 /** Raw results (with element refs) for the palette; `fresh` drops the index first. */
 export async function searchItems(q, max = 12, { fresh = false } = {}) {
     const mod = await loadSearch();
+    if (!mod) return [];
     if (fresh) mod.reset();
     return mod.query(q, max);
 }
 /** Opens the window on the result's page, then scrolls to / flashes the item. */
 export async function revealItem(r) {
     const mod = await loadSearch();
+    if (!mod) return null;
     await open(r.page);
     if (!isOpenNow) return null;
     return mod.reveal(r, page => go(page), root.querySelector('.ag2-set-body'));

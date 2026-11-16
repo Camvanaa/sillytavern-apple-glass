@@ -10,14 +10,16 @@
 // Matching: substring first (prefix / word start rank higher), then in-order subsequence;
 // matched characters are bold + underlined. Every action goes through ST's own entry points.
 
-import { icon } from './icons.js?v=20261116TT09';
+import { icon } from './icons.js?v=20261116TT10';
 import { world_names, selected_world_info, METADATA_KEY } from '../../../../world-info.js';
 import {
     ctx, h, guard, toast, thumb, fmtTime, summary, stem, clickSt, openEntry, openCharacter, openGroup,
     openSettings, loadSettings, setInspector, isInspectorOpen, isDesktop, modKeyLabel, modCombo, getShellApi,
-} from './util.js?v=20261116TT09';
-import { getRecent, openRightMenu } from './sidebar.js?v=20261116TT09';
-import { closeMenu } from './menu.js?v=20261116TT09';
+} from './util.js?v=20261116TT10';
+// linked to the running shell? (util.current)
+export { SHELL } from './util.js?v=20261116TT10';
+import { getRecent, openRightMenu } from './sidebar.js?v=20261116TT10';
+import { closeMenu } from './menu.js?v=20261116TT10';
 import { fixToastrForDialogs } from '../../../../../scripts/popup.js';
 
 const GROUPS = {
@@ -364,6 +366,7 @@ async function refresh() {
     if (!q || q.startsWith('/')) return;
     try {
         const m = await loadSettings();
+        if (!m) return;
         const hits = await m.searchItems(raw, 14, { fresh: freshIndex });
         freshIndex = false;
         if (my !== seq || !dlg?.open) return;
