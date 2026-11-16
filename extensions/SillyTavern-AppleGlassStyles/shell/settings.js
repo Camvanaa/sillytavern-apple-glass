@@ -19,12 +19,12 @@
 // the sheet below the head (same CSS variables as the window). Drag the grabber / head down
 // to dismiss.
 
-import { ctx, h, guard, closeSelect2s, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar, nativeSelectOpen, paintRanges, paintOneRange } from './util.js?v=20261116TT06';
-import { icon } from './icons.js?v=20261116TT06';
-import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261116TT06';
-import { isMenuOpen } from './menu.js?v=20261116TT06';
-import { renderUpdates } from './updates.js?v=20261116TT06';
-import { isTauri, renderTauriSettings } from './tauri-settings.js?v=20261116TT06';
+import { ctx, h, guard, closeSelect2s, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar, nativeSelectOpen, paintRanges, paintOneRange } from './util.js?v=20261116TT07';
+import { icon } from './icons.js?v=20261116TT07';
+import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261116TT07';
+import { isMenuOpen } from './menu.js?v=20261116TT07';
+import { renderUpdates } from './updates.js?v=20261116TT07';
+import { isTauri, renderTauriSettings } from './tauri-settings.js?v=20261116TT07';
 
 const PAGES = [
     { id: 'api', name: '连接', icon: 'plug', tile: 'green', group: 0, lead: '选择 API 来源，填写地址、密钥和模型。' },
@@ -95,33 +95,65 @@ function pageSurfaces() {
     return [root?.querySelector('.ag2-set-page'), ...openPanels().map(id => document.getElementById(id))].filter(Boolean);
 }
 
+/** The next frame's timestamp, bounded in wall-clock time for a WebView that stops
+ *  producing frames (occluded / throttled window). */
+const nextFrame = () => new Promise(resolve => {
+    const timer = setTimeout(() => resolve(performance.now()), 100);
+    requestAnimationFrame(time => { clearTimeout(timer); resolve(time); });
+});
+/** Wait until rendering has caught up — one frame within 50ms of the previous — for at
+ *  most 600ms. */
+async function caughtUp(valid) {
+    const end = performance.now() + 600;
+    let last = await nextFrame();
+    while (valid() && performance.now() < end) {
+        const now = await nextFrame();
+        if (now - last < 50) return;
+        last = now;
+    }
+}
+
 /** The native drawers are siblings of the frame, not its children. Animate both
  * surfaces on one clock; never clone a live form or move a host content node. */
 async function phoneMotion(kind, nodes, valid = () => true) {
     if (!phoneMode || !valid()) return;
     document.body.dataset.ag2SetMotion = kind;
     if (document.body.classList.contains('reduced-motion') || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (document.hidden) return;
     const width = root?.getBoundingClientRect().width || innerWidth;
     const from = kind === 'up' ? `0 ${innerHeight}px` : kind === 'push' ? `${width}px 0` : kind === 'list' ? `${-width * .12}px 0` : '0 0';
     const to = kind === 'pop' ? `${width}px 0` : kind === 'down' ? `0 ${innerHeight}px` : '0 0';
-    // Slides are a touch gesture's echo. Narrow desktop windows (TT on Windows) switch
-    // instantly: WebView2 was seen leaving both surfaces frozen mid-slide.
-    if (document.hidden || !matchMedia('(pointer: coarse)').matches) return;
+    // The sheet clips its own page, but not a drawer: in a centred sheet (641–1000px) the
+    // sliding drawer would cross the backdrop. Its clip cancels its offset, so it is only
+    // ever drawn inside the sheet.
+    const clip = kind === 'push' ? [width, 0] : kind === 'pop' ? [0, width] : null;
+    const keyframes = node => clip && !root.contains(node)
+        ? [{ translate: from, clipPath: `inset(0 ${clip[0]}px 0 0)` }, { translate: to, clipPath: `inset(0 ${clip[1]}px 0 0)` }]
+        : [{ translate: from }, { translate: to }];
     const duration = kind === 'list' ? 180 : 260;
-    const start = document.timeline.currentTime;
-    const animations = nodes.map(node => node.animate([{ translate: from }, { translate: to }], {
+    const animations = nodes.map(node => node.animate(keyframes(node), {
         duration, easing: 'cubic-bezier(.32,.72,0,1)', fill: 'both',
     }));
-    for (const animation of animations) { animation.startTime = start; pageAnimations.add(animation); }
-    // A WebView whose animation clock stalls (TT on Windows: occluded / throttled window)
-    // must not leave the page half-pushed over the list: settle on wall-clock time too.
+    for (const animation of animations) { animation.pause(); pageAnimations.add(animation); }
+    const release = () => { for (const animation of animations) { animation.cancel(); pageAnimations.delete(animation); } };
+    // Hold the first frame until rendering has caught up. A heavy native page (通用, 世界书)
+    // otherwise spends the start of the slide being laid out and painted, and the first
+    // frame shown is already halfway.
+    if (kind !== 'down') {
+        await caughtUp(() => valid() && !animations.some(animation => animation.playState === 'idle'));
+        if (!valid() || animations.some(animation => animation.playState === 'idle')) return release();
+    }
+    const start = document.timeline.currentTime;
+    for (const animation of animations) animation.startTime = start;
+    // A WebView whose animation clock stalls must not leave the page half-pushed over the
+    // list: settle on wall-clock time too.
     let timer = 0;
     await Promise.race([
         Promise.all(animations.map(animation => animation.finished.catch(() => {}))),
         new Promise(resolve => { timer = setTimeout(resolve, duration + 200); }),
     ]);
     clearTimeout(timer);
-    for (const animation of animations) { animation.cancel(); pageAnimations.delete(animation); }
+    release();
 }
 const stEvents = [];
 let selectObserver = null;
@@ -144,8 +176,11 @@ function watchSelects(container) {
                 selectButtons.delete(button);
             }
         }
-        for (const select of container.querySelectorAll('select:not([multiple]):not([size]):not(.select2-hidden-accessible)')) {
-            if (getComputedStyle(select).appearance !== 'base-select') continue;
+        // Read every appearance before writing any button: a style read after each insertion
+        // restyles the whole document once per select (seconds on 通用 / a full 世界书).
+        const selects = [...container.querySelectorAll('select:not([multiple]):not([size]):not(.select2-hidden-accessible)')]
+            .filter(select => getComputedStyle(select).appearance === 'base-select');
+        for (const select of selects) {
             let button = select.querySelector(':scope > button');
             if (button && !selectButtons.has(button)) continue; // respect another owner's custom select
             if (!button) {
@@ -167,6 +202,8 @@ function watchSelects(container) {
         const relevant = records.some(r => {
             const target = r.target.nodeType === Node.ELEMENT_NODE ? r.target : r.target.parentElement;
             if (target?.closest('selectedcontent')) return false; // the UA's own value mirror
+            const own = [...r.addedNodes, ...r.removedNodes];
+            if (own.length && own.every(n => n.classList?.contains('ag2-select-button'))) return false; // enhance's own writes
             if (target?.closest('select')) return true;
             return [...r.addedNodes, ...r.removedNodes].some(n => n.nodeType === Node.ELEMENT_NODE && (n.matches('select') || n.querySelector('select')));
         });
@@ -272,7 +309,7 @@ let results = [];
 
 const loadSearch = async () => {
     if (!searchMod) {
-        searchMod = await import('./search.js?v=20261116TT06');
+        searchMod = await import('./search.js?v=20261116TT07');
         searchMod.init(PAGES.map(({ id, name, lead }) => ({ id, name, lead })));
     }
     return searchMod;
