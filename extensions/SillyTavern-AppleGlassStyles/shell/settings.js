@@ -19,12 +19,12 @@
 // the sheet below the head (same CSS variables as the window). Drag the grabber / head down
 // to dismiss.
 
-import { ctx, h, guard, closeSelect2s, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar, nativeSelectOpen, paintRanges, paintOneRange } from './util.js?v=20261116TT04';
-import { icon } from './icons.js?v=20261116TT04';
-import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261116TT04';
-import { isMenuOpen } from './menu.js?v=20261116TT04';
-import { renderUpdates } from './updates.js?v=20261116TT04';
-import { isTauri, renderTauriSettings } from './tauri-settings.js?v=20261116TT04';
+import { ctx, h, guard, closeSelect2s, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar, nativeSelectOpen, paintRanges, paintOneRange } from './util.js?v=20261116TT05';
+import { icon } from './icons.js?v=20261116TT05';
+import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261116TT05';
+import { isMenuOpen } from './menu.js?v=20261116TT05';
+import { renderUpdates } from './updates.js?v=20261116TT05';
+import { isTauri, renderTauriSettings } from './tauri-settings.js?v=20261116TT05';
 
 const PAGES = [
     { id: 'api', name: '连接', icon: 'plug', tile: 'green', group: 0, lead: '选择 API 来源，填写地址、密钥和模型。' },
@@ -104,12 +104,21 @@ async function phoneMotion(kind, nodes, valid = () => true) {
     const width = root?.getBoundingClientRect().width || innerWidth;
     const from = kind === 'up' ? `0 ${innerHeight}px` : kind === 'push' ? `${width}px 0` : kind === 'list' ? `${-width * .12}px 0` : '0 0';
     const to = kind === 'pop' ? `${width}px 0` : kind === 'down' ? `0 ${innerHeight}px` : '0 0';
+    if (document.hidden) return;
+    const duration = kind === 'list' ? 180 : 260;
     const start = document.timeline.currentTime;
     const animations = nodes.map(node => node.animate([{ translate: from }, { translate: to }], {
-        duration: kind === 'list' ? 180 : 260, easing: 'cubic-bezier(.32,.72,0,1)', fill: 'both',
+        duration, easing: 'cubic-bezier(.32,.72,0,1)', fill: 'both',
     }));
     for (const animation of animations) { animation.startTime = start; pageAnimations.add(animation); }
-    await Promise.all(animations.map(animation => animation.finished.catch(() => {})));
+    // A WebView whose animation clock stalls (TT on Windows: occluded / throttled window)
+    // must not leave the page half-pushed over the list: settle on wall-clock time too.
+    let timer = 0;
+    await Promise.race([
+        Promise.all(animations.map(animation => animation.finished.catch(() => {}))),
+        new Promise(resolve => { timer = setTimeout(resolve, duration + 200); }),
+    ]);
+    clearTimeout(timer);
     for (const animation of animations) { animation.cancel(); pageAnimations.delete(animation); }
 }
 const stEvents = [];
@@ -261,7 +270,7 @@ let results = [];
 
 const loadSearch = async () => {
     if (!searchMod) {
-        searchMod = await import('./search.js?v=20261116TT04');
+        searchMod = await import('./search.js?v=20261116TT05');
         searchMod.init(PAGES.map(({ id, name, lead }) => ({ id, name, lead })));
     }
     return searchMod;
@@ -722,7 +731,10 @@ function settleDrag(from, dismiss) {
     };
     activeDragCleanup = cleanup;
     window.addEventListener('blur', cleanup);
-    Promise.all(animations.map(animation => animation.finished)).then(() => {
+    Promise.race([
+        Promise.all(animations.map(animation => animation.finished)),
+        new Promise(resolve => setTimeout(resolve, 400)), // stalled animation clock (see phoneMotion)
+    ]).then(() => {
         if (cancelled) return;
         cleanup();
         if (dismiss) close({ motion: false });

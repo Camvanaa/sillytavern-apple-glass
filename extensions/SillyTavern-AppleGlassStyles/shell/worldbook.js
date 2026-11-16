@@ -1,6 +1,6 @@
 // Named states are legible without an emoji font. Preserve values and restore on teardown.
-import { openMenu, closeMenu } from './menu.js?v=20261116TT04';
-import { icon } from './icons.js?v=20261116TT04';
+import { openMenu, closeMenu } from './menu.js?v=20261116TT05';
+import { icon } from './icons.js?v=20261116TT05';
 let cleanup = null;
 export function mount() {
     unmount();
