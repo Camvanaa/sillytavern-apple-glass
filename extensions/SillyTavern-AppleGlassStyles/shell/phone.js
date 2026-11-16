@@ -14,12 +14,12 @@
 // keyboard's top edge.
 // State: localStorage ag2.phPage = list | chat (per device, §9.1).
 
-import { icon } from './icons.js?v=20261115TT02';
-import { openMenu, closeMenu, isMenuOpen } from './menu.js?v=20261115TT02';
-import { local } from './store.js?v=20261115TT02';
-import { ctx, h, guard, getCurrentChatId, openSettings, setInspector, inspectorModule, openPalette, clickSt } from './util.js?v=20261115TT02';
-import { chatMenuItems } from './chrome.js?v=20261115TT02';
-import { segment, setSegment } from './sidebar.js?v=20261115TT02';
+import { icon } from './icons.js?v=20261116TT03';
+import { openMenu, closeMenu, isMenuOpen } from './menu.js?v=20261116TT03';
+import { local } from './store.js?v=20261116TT03';
+import { ctx, h, guard, getCurrentChatId, openSettings, setInspector, inspectorModule, openPalette, clickSt } from './util.js?v=20261116TT03';
+import { chatMenuItems } from './chrome.js?v=20261116TT03';
+import { segment, setSegment } from './sidebar.js?v=20261116TT03';
 
 const TABS = [['chats', '对话', 'messages-square'], ['chars', '角色', 'users'], ['wi', '世界书', 'book-open'], ['settings', '设置', 'settings']];
 const SEG_TITLE = { chats: '对话', chars: '角色', groups: '群组' };
@@ -97,6 +97,17 @@ export function mount(shell) {
         vv.addEventListener('scroll', onViewport);
         off.push(() => { vv.removeEventListener('resize', onViewport); vv.removeEventListener('scroll', onViewport); });
     }
+    // Focus changes alone must re-evaluate: WKWebView does not always fire a viewport
+    // event once the keyboard has gone.
+    const onFocus = () => requestAnimationFrame(onViewport);
+    document.addEventListener('focusin', onFocus);
+    document.addEventListener('focusout', onFocus);
+    window.addEventListener('resize', onFocus);
+    off.push(() => {
+        document.removeEventListener('focusin', onFocus);
+        document.removeEventListener('focusout', onFocus);
+        window.removeEventListener('resize', onFocus);
+    });
     onViewport();
 
     want = local.get('phPage', 'list') === 'chat' ? 'chat' : 'list';
@@ -241,10 +252,24 @@ function moreMenu(anchor) {
 
 // ------------------------------------------------------------------ keyboard / viewport
 
+// The keyboard can only be up while something editable has focus (an iframe may hold its
+// own field). Otherwise a pinch / auto-zoom or a stale WKWebView value (seen in TT on iOS)
+// would leave the chat page short with the composer mid-screen: use the layout (100dvh).
+function keyboardPossible() {
+    const a = document.activeElement;
+    return !!a && (a.isContentEditable || a.matches('textarea, select, iframe, input:not([type=checkbox], [type=radio], [type=range], [type=button], [type=submit], [type=reset], [type=color], [type=file])'));
+}
+
 function onViewport() {
     const vv = window.visualViewport;
     const s = document.body.style;
     if (!vv) return;
+    if (!keyboardPossible() || Math.abs((vv.scale || 1) - 1) > 0.01) {
+        s.removeProperty('--ag2-vvh');
+        s.removeProperty('--ag2-vvt');
+        document.body.classList.remove('ag2-kb');
+        return;
+    }
     // VisualViewport reads flush pending styles. Snapshot before writing inherited body
     // variables: alternating these caused three full style passes at the phone breakpoint.
     const height = vv.height, top = vv.offsetTop, layoutHeight = window.innerHeight;

@@ -2975,7 +2975,7 @@ html body.ag2.ag2-wand-open:not(#_):not(#__) #extensionsMenu {
     display: flex !important;
     flex-direction: column;
     position: fixed !important;
-    inset: 80px auto auto 320px !important;
+    inset: var(--ag2-wand-top, 80px) auto auto var(--ag2-wand-left, 320px) !important;
     z-index: 3004 !important;
     min-width: 236px;
     max-width: 320px;

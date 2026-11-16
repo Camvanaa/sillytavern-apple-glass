@@ -1,5 +1,5 @@
 // Same native extension/theme APIs on ST and TauriTavern. No settings snapshot sync.
-import { ensureUpdateStyles } from './update-style.js?v=20261115TT02';
+import { ensureUpdateStyles } from './update-style.js?v=20261116TT03';
 export const INSTALL_URL = 'https://github.com/Camvanaa/SillyTavern-AppleGlassStyles';
 export const FEED_URL = 'https://tt.camvan.xyz/apple-glass/latest.json';
 const ROOT = new URL('../', import.meta.url);

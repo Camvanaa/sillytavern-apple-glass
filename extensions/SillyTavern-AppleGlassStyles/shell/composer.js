@@ -14,9 +14,9 @@
 // Every action is a click on ST's own control (`#option_*`, `#attachFile`, the model
 // <select>), as ST's core does it.
 
-import { icon } from './icons.js?v=20261115TT02';
-import { openMenu, closeMenu, positionPopover } from './menu.js?v=20261115TT02';
-import { ctx, h, guard, clickSt, toggleDrawer, openSettings, busy, onlineStatus } from './util.js?v=20261115TT02';
+import { icon } from './icons.js?v=20261116TT03';
+import { openMenu, closeMenu, positionPopover } from './menu.js?v=20261116TT03';
+import { ctx, h, guard, clickSt, toggleDrawer, openSettings, busy, onlineStatus } from './util.js?v=20261116TT03';
 import { showBookmarksButtons } from '../../../../bookmarks.js';
 
 const NO_CONN_TEXT = '未连接 API — 点此连接';
@@ -183,7 +183,13 @@ function toggleWand(btn) {
     // above the complete parent menu so no sibling action is covered.
     const phone = b.classList.contains('ag2-phone');
     const anchor = phone ? document.getElementById('ag2-plus-menu') : (btn || document.querySelector('#ag2-plus-menu [data-item="wand"]'));
-    positionPopover(menu, anchor, { side: phone ? 'top' : 'right', gap: 10 });
+    // ST's Popper rewrites the inline left/top on every scroll (a swipe on the phone),
+    // so the placement also lives in body variables that the CSS rule reads.
+    const at = positionPopover(menu, anchor, { side: phone ? 'top' : 'right', gap: 10 });
+    if (at) {
+        b.style.setProperty('--ag2-wand-left', Math.round(at.x) + 'px');
+        b.style.setProperty('--ag2-wand-top', Math.round(at.y) + 'px');
+    }
     const onClick = e => {
         if (WAND_KEEP.some(s => e.target.closest(s))) return;
         if (e.target.closest('.list-group-item, .extension_container > *')) setTimeout(() => closeMenu(), 0);
@@ -201,6 +207,8 @@ function closeWand() {
     document.body.classList.remove('ag2-wand-open');
     document.body.style.removeProperty('--ag2-wand-left');
     document.body.style.removeProperty('--ag2-wand-top');
+    const menu = document.getElementById('extensionsMenu');
+    for (const p of ['left', 'top', 'max-height']) menu?.style.removeProperty(p);
     document.querySelector('#ag2-plus-menu .ag2-sub-open')?.classList.remove('ag2-sub-open');
 }
 
