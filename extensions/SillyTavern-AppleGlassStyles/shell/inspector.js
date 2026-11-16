@@ -14,11 +14,11 @@
 // group_edit of the open group. Anything else → ask ST to re-select (its own
 // #rm_button_selected_ch) and show a neutral placeholder meanwhile.
 
-import { icon } from './icons.js?v=20261116TT08';
-import { openMenu, closeMenu } from './menu.js?v=20261116TT08';
-import { local } from './store.js?v=20261116TT08';
-import { ctx, h, guard, clickSt, isDesktop, INSP_ID, setInspector, restoreInspectorPin, getCurrentChatId, summary, toDate, isFloatingOpen } from './util.js?v=20261116TT08';
-import { guarded } from './index.js?v=20261116TT08';
+import { icon } from './icons.js?v=20261116TT09';
+import { openMenu, closeMenu } from './menu.js?v=20261116TT09';
+import { local } from './store.js?v=20261116TT09';
+import { ctx, h, guard, clickSt, isDesktop, INSP_ID, setInspector, restoreInspectorPin, getCurrentChatId, summary, toDate, isFloatingOpen } from './util.js?v=20261116TT09';
+import { guarded } from './index.js?v=20261116TT09';
 import { openGroupId } from '../../../../group-chats.js';
 
 let panel = null;
@@ -375,6 +375,8 @@ function moreMenu(anchor) {
         { label: '复制角色', icon: 'copy', onSelect: () => clickSt('#dupe_button') },
         { label: '重命名…', icon: 'pencil', onSelect: () => pickManagement('renameCharButton') },
         { label: '更换头像…', icon: 'image', onSelect: () => clickSt('#add_avatar_button') },
+        // ST's “Replace / Update”: a newer card file or the card's source URL; chats are kept
+        { label: '替换 / 更新角色卡…', icon: 'refresh-cw', disabled: inGroup, onSelect: () => pickManagement('replace_update') },
         { separator: true },
         { label: '转为群聊', icon: 'users', disabled: inGroup, onSelect: () => clickSt('#option_convert_to_group') },
         { label: '角色设置覆盖…', icon: 'sliders-horizontal', disabled: inGroup, onSelect: () => pickManagement('set_chat_character_settings') },
