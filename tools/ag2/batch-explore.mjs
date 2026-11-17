@@ -73,8 +73,8 @@ async function snapshot(page) {
             if (!intentionalPhoneSlide && (r.left < -2 || r.right > innerWidth + 2)) overflow.push(`${e.id || e.className}:x=${Math.round(r.left)}..${Math.round(r.right)}`);
         }
         const openDrawers = [...document.querySelectorAll('.drawer-content.openDrawer')].filter(vis).map(e => e.id || 'drawer');
-        const settingsOpen = body.classList.contains('ag2-set-open');
-        const inspectorOpen = body.classList.contains('ag2-insp-open');
+        const settingsOpen = body.hasAttribute('data-ag2-set-open');
+        const inspectorOpen = body.hasAttribute('data-ag2-insp-open');
         const paletteOpen = !!document.querySelector('#ag2-palette[open]');
         const menus = [...document.querySelectorAll('.ag2-menu')].filter(vis).length;
         const toasts = [...document.querySelectorAll('#toast-container > div')].filter(vis).length;

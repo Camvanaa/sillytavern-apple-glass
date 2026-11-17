@@ -174,7 +174,7 @@ export default async function(T) {
                     const samples=[],start=performance.now();
                     const sample=()=>{const root=document.querySelector('#ag2-settings'),drawer=document.querySelector('.drawer-content.openDrawer');samples.push({t:performance.now()-start,dy:parseFloat(getComputedStyle(root).translate.split(' ')[1])||0,open:mf.isOpen(),shell:root.getBoundingClientRect().y,drawer:drawer?.getBoundingClientRect().y});};
                     sample();window.dispatchEvent(ev('pointerup',100+dy));sample();
-                    while(performance.now()-start<1000){await new Promise(requestAnimationFrame);sample();if(performance.now()-start>350&&mf.isOpen()===!dismiss&&!document.body.classList.contains('ag2-sheet-drag'))break;}
+                    while(performance.now()-start<1000){await new Promise(requestAnimationFrame);sample();if(performance.now()-start>350&&mf.isOpen()===!dismiss&&!document.body.hasAttribute('data-ag2-sheet-drag'))break;}
                     return samples;
                 },{dismiss,mode});
                 writeFileSync(`${ROOT}/${id}-drag-${p}-${dismiss}.json`,JSON.stringify(frames,null,2));

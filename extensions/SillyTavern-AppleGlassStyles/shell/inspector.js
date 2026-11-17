@@ -14,13 +14,13 @@
 // group_edit of the open group. Anything else → ask ST to re-select (its own
 // #rm_button_selected_ch) and show a neutral placeholder meanwhile.
 
-import { icon } from './icons.js?v=20261116TT11';
-import { openMenu, closeMenu } from './menu.js?v=20261116TT11';
-import { local } from './store.js?v=20261116TT11';
-import { ctx, h, guard, clickSt, isDesktop, INSP_ID, setInspector, restoreInspectorPin, getCurrentChatId, summary, toDate, isFloatingOpen } from './util.js?v=20261116TT11';
+import { icon } from './icons.js?v=20261117TT12';
+import { openMenu, closeMenu } from './menu.js?v=20261117TT12';
+import { local } from './store.js?v=20261117TT12';
+import { ctx, h, guard, clickSt, isDesktop, INSP_ID, setInspector, restoreInspectorPin, getCurrentChatId, summary, toDate, isFloatingOpen, flag } from './util.js?v=20261117TT12';
 // linked to the running shell? (util.current)
-export { SHELL } from './util.js?v=20261116TT11';
-import { guarded } from './index.js?v=20261116TT11';
+export { SHELL } from './util.js?v=20261117TT12';
+import { guarded } from './index.js?v=20261117TT12';
 import { openGroupId } from '../../../../group-chats.js';
 
 let panel = null;
@@ -181,7 +181,7 @@ export function unmount() {
         for (const k of ['ag2Insp', 'ag2Edit', 'ag2Tagging', 'ag2Notes']) delete panel.dataset[k];
         restoreInspectorPin();
     }
-    document.body.classList.remove('ag2-insp-open');
+    flag.set('ag2-insp-open', false);
     panel = null;
     ui = {};
 }
@@ -191,7 +191,7 @@ export function sync() {
     if (!mounted) return;
     // both layouts: desktop column / floating panel, phone full-screen sheet (§5.9)
     const open = panel.classList.contains('openDrawer');
-    document.body.classList.toggle('ag2-insp-open', open);
+    flag.set('ag2-insp-open', open);
     if (open) panel.classList.add('pinnedOpen');
     const t = document.querySelector('#ag2-tools [data-act="insp"]');
     if (t) { t.setAttribute('aria-pressed', String(open)); t.classList.toggle('ag2-on', open); }
@@ -229,7 +229,7 @@ function resync(mt) {
 }
 
 export function render() {
-    if (!mounted || !document.body.classList.contains('ag2-insp-open')) return;
+    if (!mounted || !flag.has('ag2-insp-open')) return;
     const c = ctx();
     const view = computeView();
     panel.dataset.ag2Insp = view;
@@ -417,7 +417,7 @@ function toggleNotes() {
         if (content && getComputedStyle(content).display === 'none') $('#spoiler_free_desc > .inline-drawer-toggle').trigger('click');
         const owner = panel;
         notesTimer = setTimeout(() => {
-            if (!mounted || panel !== owner || !panel.dataset.ag2Notes || !document.body.classList.contains('ag2-insp-open')) return;
+            if (!mounted || panel !== owner || !panel.dataset.ag2Notes || !flag.has('ag2-insp-open')) return;
             const reduced = document.body.classList.contains('reduced-motion') || matchMedia('(prefers-reduced-motion: reduce)').matches;
             $id('spoiler_free_desc')?.scrollIntoView({ block: 'nearest', behavior: reduced ? 'auto' : 'smooth' });
         }, 50);

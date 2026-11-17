@@ -34,7 +34,7 @@ export default async function (T) {
         await T.openChat(page, await T.longChat(page), 10);
 
         // Open inspector -> 本次对话
-        if (!(await page.evaluate(() => document.body.classList.contains('ag2-insp-open')))) {
+        if (!(await page.evaluate(() => document.body.hasAttribute('data-ag2-insp-open')))) {
             await page.click('#ag2-tools [data-act="insp"]');
             await T.sleep(700);
         }

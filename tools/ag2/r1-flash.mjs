@@ -94,7 +94,7 @@ function sampler(recordAll = false) {
             const cs = getComputedStyle(ie);
             if (cs.display !== 'none') {
                 const r = ie.getBoundingClientRect();
-                if (shown(cs, r)) inspRaw = { t, id: INSP, ...inspLook(cs, r), cls: ie.className.replace(/\s+/g, ' ').trim(), body: (b.classList.contains('ag2-insp-open') ? 'insp-open ' : '') + (b.classList.contains('ag2-set-open') ? 'set-open' : ''), op: cs.opacity, bf: cs.backdropFilter };
+                if (shown(cs, r)) inspRaw = { t, id: INSP, ...inspLook(cs, r), cls: ie.className.replace(/\s+/g, ' ').trim(), body: (b.hasAttribute('data-ag2-insp-open') ? 'insp-open ' : '') + (b.hasAttribute('data-ag2-set-open') ? 'set-open' : ''), op: cs.opacity, bf: cs.backdropFilter };
             }
         }
         // full-page blur: large boxes first (cheap), computed style only for those
@@ -175,8 +175,8 @@ function sampler(recordAll = false) {
 const state = page => page.evaluate(() => {
     const b = document.body;
     return {
-        set: b.classList.contains('ag2-set-open'), page: b.dataset.ag2Set || null, level: document.getElementById('ag2-settings')?.dataset.level || null,
-        insp: b.classList.contains('ag2-insp-open'), open: [...document.querySelectorAll('.drawer-content.openDrawer')].map(e => e.id).join(','),
+        set: b.hasAttribute('data-ag2-set-open'), page: b.dataset.ag2Set || null, level: document.getElementById('ag2-settings')?.dataset.level || null,
+        insp: b.hasAttribute('data-ag2-insp-open'), open: [...document.querySelectorAll('.drawer-content.openDrawer')].map(e => e.id).join(','),
         ag2: b.classList.contains('ag2'), chat: SillyTavern.getContext().getCurrentChatId?.() || null,
         dur: getComputedStyle(document.documentElement).getPropertyValue('--animation-duration').trim(),
     };
@@ -507,13 +507,13 @@ async function cycle(T, keep) {
         // close the window from a drawer page and open it again
         if (phoneMode) await act('#ag2-settings .ag2-set-item[data-page="api"]'), await T.sleep(450);
         await page.keyboard.press('Escape'); await T.sleep(450);
-        if (phoneMode && await page.evaluate(() => document.body.classList.contains('ag2-set-open'))) { await page.keyboard.press('Escape'); await T.sleep(450); }
+        if (phoneMode && await page.evaluate(() => document.body.hasAttribute('data-ag2-set-open'))) { await page.keyboard.press('Escape'); await T.sleep(450); }
         const c = await snap(); n++;
         if (c.open.length || c.leak.length || c.icons) bad.push({ r, at: 'closed', ...c });
         await act(phoneMode ? '#ag2-tabbar [data-tab="settings"]' : '#ag2-sidebar [data-act="settings"]'); await T.sleep(600);
     }
     await page.keyboard.press('Escape'); await T.sleep(500);
-    if (await page.evaluate(() => document.body.classList.contains('ag2-set-open'))) { await page.keyboard.press('Escape'); await T.sleep(500); }
+    if (await page.evaluate(() => document.body.hasAttribute('data-ag2-set-open'))) { await page.keyboard.press('Escape'); await T.sleep(500); }
     out.cycle = { rounds: ROUNDS, checks: n, bad: bad.slice(0, 6), badCount: bad.length };
     // inspector: toggled through the shell API path (ST's handler), desktop only
     if (!phoneMode) {
@@ -554,7 +554,7 @@ async function cycle(T, keep) {
     await page.evaluate(() => { $('#themes').val('Apple Glass Dark').trigger('change'); }); await T.sleep(3000);
     await classic('darkTheme');
     await page.evaluate(() => { $('#themes').val('Apple Glass 2').trigger('change'); }); await T.sleep(3500);
-    out.backAg2 = await page.evaluate(() => ({ ag2: document.body.classList.contains('ag2'), set: document.body.classList.contains('ag2-set-open'), open: [...document.querySelectorAll('.drawer-content.openDrawer')].map(e => e.id).join(',') }));
+    out.backAg2 = await page.evaluate(() => ({ ag2: document.body.classList.contains('ag2'), set: document.body.hasAttribute('data-ag2-set-open'), open: [...document.querySelectorAll('.drawer-content.openDrawer')].map(e => e.id).join(',') }));
     // ?classic boot
     const p2 = await T.newPage({ phone: phoneMode });
     await T.prepare(p2, {});
@@ -570,7 +570,7 @@ async function cycle(T, keep) {
         const o = { body: [...document.body.classList].filter(c => c.startsWith('ag2')).join(' ') || '-', shell: !!document.getElementById('ag2-shell'), theme: SillyTavern.getContext().powerUserSettings.theme };
         // direct: nothing matches the R1 selectors without body.ag2
         const ids = '#rm_api_block, #left-nav-panel, #AdvancedFormatting, #WorldInfo, #PersonaManagement, #Backgrounds, #user-settings-block, #rm_extensions_block';
-        o.r1Matches = document.querySelectorAll(`html body.ag2 :is(${ids}, #right-nav-panel):not(.openDrawer), html body.ag2:not(.ag2-set-open) :is(${ids}).openDrawer, html body.ag2:not(.ag2-insp-open) #right-nav-panel`).length;
+        o.r1Matches = document.querySelectorAll(`html body.ag2 :is(${ids}, #right-nav-panel):not(.openDrawer), html body.ag2:not([data-ag2-set-open]) :is(${ids}).openDrawer, html body.ag2:not([data-ag2-insp-open]) #right-nav-panel`).length;
         o.preloader = !!document.getElementById('preloader');
         d.classList.replace('closedDrawer', 'openDrawer'); await wait(700);
         let cs = getComputedStyle(d); const r = d.getBoundingClientRect();

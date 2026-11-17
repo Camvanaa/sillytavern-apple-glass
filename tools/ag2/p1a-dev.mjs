@@ -25,7 +25,7 @@ export default async function (T) {
         cur: SillyTavern.getContext().getCurrentChatId(),
         title: document.querySelector('.ag2-title-name')?.textContent, sub: document.querySelector('.ag2-title-sub')?.textContent,
         active: document.querySelector('#ag2-sidebar .ag2-row.ag2-on .ag2-row-name')?.textContent,
-        welcome: document.body.classList.contains('ag2-welcome'),
+        welcome: document.body.hasAttribute('data-ag2-welcome'),
         sheld: (r => [r.left, r.top, r.width, r.height].map(Math.round).join(','))(document.getElementById('sheld').getBoundingClientRect()),
         mes0: (r => [r.left, r.width].map(Math.round).join(','))(document.querySelector('#chat .mes').getBoundingClientRect()),
     }));

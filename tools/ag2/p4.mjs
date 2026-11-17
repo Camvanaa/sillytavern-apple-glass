@@ -46,8 +46,8 @@ const shell = page => page.evaluate(() => {
     const a = document.activeElement;
     return {
         name2: c.name2, chatId: c.getCurrentChatId(), mes: document.querySelectorAll('#chat .mes').length,
-        setOpen: document.body.classList.contains('ag2-set-open'), setPage: document.body.dataset.ag2Set || null,
-        insp: document.body.classList.contains('ag2-insp-open'), side: !document.body.classList.contains('ag2-side-collapsed'),
+        setOpen: document.body.hasAttribute('data-ag2-set-open'), setPage: document.body.dataset.ag2Set || null,
+        insp: document.body.hasAttribute('data-ag2-insp-open'), side: !document.body.hasAttribute('data-ag2-side-collapsed'),
         menu: !!document.querySelector('.ag2-menu'),
         active: a?.id || (a?.className || a?.tagName || '').toString().slice(0, 50),
         ta: document.getElementById('send_textarea')?.value ?? null,
@@ -241,7 +241,7 @@ async function keys(T) {
         fire({ key: '.', code: 'Period', ctrlKey: true, isComposing: true });
         fire({ key: '\\', code: 'Backslash', ctrlKey: true, isComposing: true });
         await new Promise(r => setTimeout(r, 500));
-        return { pal: !!document.getElementById('ag2-palette')?.open, insp: document.body.classList.contains('ag2-insp-open'), collapsed: document.body.classList.contains('ag2-side-collapsed') };
+        return { pal: !!document.getElementById('ag2-palette')?.open, insp: document.body.hasAttribute('data-ag2-insp-open'), collapsed: document.body.hasAttribute('data-ag2-side-collapsed') };
     });
     // control: the same Ctrl+K without composition opens it
     out.imeControl = await page.evaluate(async () => {

@@ -11,7 +11,7 @@ export default async function(T) {
             const vv=window.visualViewport, s=document.body.style;if(!vv)return;
             s.setProperty('--ag2-vvh',Math.round(vv.height)+'px');
             s.setProperty('--ag2-vvt',Math.max(0,Math.round(vv.offsetTop))+'px');
-            document.body.classList.toggle('ag2-kb',window.innerHeight-vv.height>120);
+            document.body.toggleAttribute('data-ag2-kb',window.innerHeight-vv.height>120);
         }`;
         src+=`\nfunction onViewport() {
             if (!window.qaBatchViewport) return originalOnViewport();
@@ -21,7 +21,7 @@ export default async function(T) {
             const set=(k,v)=>{if(s.getPropertyValue(k)!==v)s.setProperty(k,v);};
             set('--ag2-vvh',Math.round(height)+'px');
             set('--ag2-vvt',Math.max(0,Math.round(top))+'px');
-            document.body.classList.toggle('ag2-kb',layoutHeight-height>120);
+            document.body.toggleAttribute('data-ag2-kb',layoutHeight-height>120);
         }`;
         await route.fulfill({response:res,body:src});
     });

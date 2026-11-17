@@ -14,14 +14,14 @@
 // keyboard's top edge.
 // State: localStorage ag2.phPage = list | chat (per device, §9.1).
 
-import { icon } from './icons.js?v=20261116TT11';
-import { openMenu, closeMenu, isMenuOpen } from './menu.js?v=20261116TT11';
-import { local } from './store.js?v=20261116TT11';
-import { ctx, h, guard, getCurrentChatId, openSettings, setInspector, inspectorModule, openPalette, clickSt } from './util.js?v=20261116TT11';
+import { icon } from './icons.js?v=20261117TT12';
+import { openMenu, closeMenu, isMenuOpen } from './menu.js?v=20261117TT12';
+import { local } from './store.js?v=20261117TT12';
+import { ctx, h, guard, getCurrentChatId, openSettings, setInspector, inspectorModule, openPalette, clickSt, flag } from './util.js?v=20261117TT12';
 // linked to the running shell? (util.current)
-export { SHELL } from './util.js?v=20261116TT11';
-import { chatMenuItems } from './chrome.js?v=20261116TT11';
-import { segment, setSegment } from './sidebar.js?v=20261116TT11';
+export { SHELL } from './util.js?v=20261117TT12';
+import { chatMenuItems } from './chrome.js?v=20261117TT12';
+import { segment, setSegment } from './sidebar.js?v=20261117TT12';
 
 const TABS = [['chats', '对话', 'messages-square'], ['chars', '角色', 'users'], ['wi', '世界书', 'book-open'], ['settings', '设置', 'settings']];
 const SEG_TITLE = { chats: '对话', chars: '角色', groups: '群组' };
@@ -114,7 +114,7 @@ export function mount(shell) {
 
     want = local.get('phPage', 'list') === 'chat' ? 'chat' : 'list';
     // mounted mid-session (window narrowed, theme switched): stay on the open chat
-    if (document.body.classList.contains('ag2-ready') && chatKey()) want = 'chat';
+    if (flag.has('ag2-ready') && chatKey()) want = 'chat';
     lastChat = chatKey();
     apply();
     syncTabs();
@@ -131,7 +131,7 @@ export function unmount() {
     const tb = document.querySelector('#ag2-title .ag2-title-btn');
     if (tb) { tb.setAttribute('aria-haspopup', 'menu'); tb.setAttribute('aria-label', '对话菜单'); }
     delete document.body.dataset.ag2Ph;
-    document.body.classList.remove('ag2-kb');
+    flag.set('ag2-kb', false);
     document.body.style.removeProperty('--ag2-vvh');
     document.body.style.removeProperty('--ag2-vvt');
 }
@@ -157,7 +157,7 @@ function apply() {
     closeMenu();
     document.body.dataset.ag2Ph = p;
     // the inspector sheet belongs to the chat page
-    if (p === 'list' && document.body.classList.contains('ag2-insp-open')) setInspector(false);
+    if (p === 'list' && flag.has('ag2-insp-open')) setInspector(false);
     for (const b of nodes[1]?.querySelectorAll('[data-tab]') || []) b.tabIndex = p === 'list' ? 0 : -1;
 }
 
@@ -171,7 +171,7 @@ function onChat() {
     const k = chatKey();
     const changed = k !== lastChat;
     lastChat = k;
-    const active = navigator.userActivation ? navigator.userActivation.hasBeenActive : document.body.classList.contains('ag2-ready');
+    const active = navigator.userActivation ? navigator.userActivation.hasBeenActive : flag.has('ag2-ready');
     if (changed && k && active) setPage('chat');
     else if (!k && active) want = 'list';
     apply();
@@ -269,7 +269,7 @@ function onViewport() {
     if (!keyboardPossible() || Math.abs((vv.scale || 1) - 1) > 0.01) {
         s.removeProperty('--ag2-vvh');
         s.removeProperty('--ag2-vvt');
-        document.body.classList.remove('ag2-kb');
+        flag.set('ag2-kb', false);
         return;
     }
     // VisualViewport reads flush pending styles. Snapshot before writing inherited body
@@ -281,5 +281,5 @@ function onViewport() {
     // iOS keeps the layout viewport and shrinks only the visual one; Android Chrome
     // (interactive-widget=resizes-content) resizes both, where this stays false and the
     // layout follows by itself.
-    document.body.classList.toggle('ag2-kb', layoutHeight - height > 120);
+    flag.set('ag2-kb', layoutHeight - height > 120);
 }

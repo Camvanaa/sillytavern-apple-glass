@@ -147,16 +147,16 @@ async function funcBody(T, page, out) {
     // Collapse / expand
     await page.click('#ag2-sidebar [data-act="collapse"]');
     await page.waitForTimeout(500);
-    c.collapsed = await page.evaluate(() => ({ cls: document.body.classList.contains('ag2-side-collapsed'), sheldLeft: Math.round(document.getElementById('sheld').getBoundingClientRect().left), expand: getComputedStyle(document.querySelector('#ag2-title .ag2-expand')).display, ls: localStorage.getItem('ag2.sidebar') }));
+    c.collapsed = await page.evaluate(() => ({ cls: document.body.hasAttribute('data-ag2-side-collapsed'), sheldLeft: Math.round(document.getElementById('sheld').getBoundingClientRect().left), expand: getComputedStyle(document.querySelector('#ag2-title .ag2-expand')).display, ls: localStorage.getItem('ag2.sidebar') }));
     await T.shot(page, 'collapsed-1440');
     await page.click('#ag2-title .ag2-expand');
     await page.waitForTimeout(500);
-    c.expanded = await page.evaluate(() => ({ cls: document.body.classList.contains('ag2-side-collapsed'), sheldLeft: Math.round(document.getElementById('sheld').getBoundingClientRect().left) }));
+    c.expanded = await page.evaluate(() => ({ cls: document.body.hasAttribute('data-ag2-side-collapsed'), sheldLeft: Math.round(document.getElementById('sheld').getBoundingClientRect().left) }));
     // Close chat → welcome; new-menu
     await page.click('#ag2-title .ag2-title-btn');
     await page.click('.ag2-menu [data-item="close"]');
-    await page.waitForFunction(() => document.body.classList.contains('ag2-welcome'), null, { timeout: 10000 }).catch(() => {});
-    c.welcomeAfterClose = await page.evaluate(() => ({ welcome: document.body.classList.contains('ag2-welcome'), cards: document.querySelectorAll('.ag2-wel-card').length, sheldVis: getComputedStyle(document.getElementById('sheld')).visibility }));
+    await page.waitForFunction(() => document.body.hasAttribute('data-ag2-welcome'), null, { timeout: 10000 }).catch(() => {});
+    c.welcomeAfterClose = await page.evaluate(() => ({ welcome: document.body.hasAttribute('data-ag2-welcome'), cards: document.querySelectorAll('.ag2-wel-card').length, sheldVis: getComputedStyle(document.getElementById('sheld')).visibility }));
     out.capsules = c;
     out.scan = await T.scan(page, ['#ag2-sidebar .ag2-side-list', '#ag2-welcome']);
 }

@@ -19,14 +19,14 @@
 // the sheet below the head (same CSS variables as the window). Drag the grabber / head down
 // to dismiss.
 
-import { ctx, h, guard, closeSelect2s, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar, nativeSelectOpen, paintRanges, paintOneRange, current } from './util.js?v=20261116TT11';
+import { ctx, h, guard, closeSelect2s, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar, nativeSelectOpen, paintRanges, paintOneRange, current, flag } from './util.js?v=20261117TT12';
 // linked to the running shell? (util.current)
-export { SHELL } from './util.js?v=20261116TT11';
-import { icon } from './icons.js?v=20261116TT11';
-import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261116TT11';
-import { isMenuOpen } from './menu.js?v=20261116TT11';
-import { renderUpdates } from './updates.js?v=20261116TT11';
-import { isTauri, renderTauriSettings } from './tauri-settings.js?v=20261116TT11';
+export { SHELL } from './util.js?v=20261117TT12';
+import { icon } from './icons.js?v=20261117TT12';
+import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261117TT12';
+import { isMenuOpen } from './menu.js?v=20261117TT12';
+import { renderUpdates } from './updates.js?v=20261117TT12';
+import { isTauri, renderTauriSettings } from './tauri-settings.js?v=20261117TT12';
 
 const PAGES = [
     { id: 'api', name: '连接', icon: 'plug', tile: 'green', group: 0, lead: '选择 API 来源，填写地址、密钥和模型。' },
@@ -317,7 +317,7 @@ let results = [];
 
 const loadSearch = async () => {
     if (!searchMod) {
-        const mod = current(await import('./search.js?v=20261116TT11'));
+        const mod = current(await import('./search.js?v=20261117TT12'));
         if (!mod) return null;
         mod.init(PAGES.map(({ id, name, lead }) => ({ id, name, lead })));
         searchMod = mod;
@@ -638,7 +638,7 @@ export function open(page = null) {
         root.classList.toggle('ag2-set-phone', phone);
         root.dataset.level = 'list';
         opener = document.activeElement instanceof HTMLElement && !root.contains(document.activeElement) ? document.activeElement : null;
-        document.body.classList.add('ag2-set-open');
+        flag.set('ag2-set-open');
         dim.hidden = false;
         root.hidden = false;
         clipDrawers(phone);
@@ -721,7 +721,7 @@ function dragDismiss(handle) {
         const t0 = performance.now();
         let dy = startDy;
         sheetOffset(dy);
-        document.body.classList.add('ag2-sheet-drag');
+        flag.set('ag2-sheet-drag');
         const move = ev => {
             if (ev.pointerId !== pointerId) return;
             dy = Math.max(0, ev.clientY - y0); sheetOffset(dy);
@@ -732,7 +732,7 @@ function dragDismiss(handle) {
             window.removeEventListener('pointercancel', cancel);
             window.removeEventListener('blur', cleanup);
             if (keepPosition !== true) {
-                document.body.classList.remove('ag2-sheet-drag');
+                flag.set('ag2-sheet-drag', false);
                 sheetOffset();
             }
             activeDragCleanup = null;
@@ -759,7 +759,7 @@ function dragDismiss(handle) {
 function settleDrag(from, dismiss) {
     if (document.body.classList.contains('reduced-motion') || matchMedia('(prefers-reduced-motion: reduce)').matches) {
         sheetOffset();
-        document.body.classList.remove('ag2-sheet-drag');
+        flag.set('ag2-sheet-drag', false);
         if (dismiss) close({ motion: false });
         return;
     }
@@ -778,7 +778,7 @@ function settleDrag(from, dismiss) {
         cancelled = true;
         for (const animation of animations) animation.cancel();
         window.removeEventListener('blur', cleanup);
-        document.body.classList.remove('ag2-sheet-drag');
+        flag.set('ag2-sheet-drag', false);
         sheetOffset();
         activeDragCleanup = null;
     };
@@ -905,7 +905,7 @@ export async function close({ motion = true } = {}) {
     const drained = enqueue(async () => {
         for (const id of openPanels()) await toggleDrawer(id, false);
     });
-    document.body.classList.remove('ag2-set-open', 'ag2-sheet-drag');
+    flag.set('ag2-set-open', false); flag.set('ag2-sheet-drag', false);
     delete document.body.dataset.ag2Set;
     dim.hidden = true;
     root.hidden = true;
@@ -941,7 +941,7 @@ export function unmount() {
     delete document.body.dataset.ag2Anchors;
     try { const { eventSource } = ctx(); for (const [t, fn] of stEvents) eventSource.removeListener(t, fn); } catch { /* */ }
     stEvents.length = 0;
-    document.body.classList.remove('ag2-set-open', 'ag2-sheet-drag');
+    flag.set('ag2-set-open', false); flag.set('ag2-sheet-drag', false);
     document.body.style.removeProperty('--ag2-sheet-dy');
     delete document.body.dataset.ag2Set;
     clipDrawers(false);

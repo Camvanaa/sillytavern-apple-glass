@@ -1,5 +1,5 @@
 // Enhance only ST's disabled-feature empty state; leave live token output untouched.
-import { openSettings } from './util.js?v=20261116TT11';
+import { openSettings } from './util.js?v=20261117TT12';
 
 let cleanup = null;
 export function mount() {

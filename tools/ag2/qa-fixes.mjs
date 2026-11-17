@@ -137,7 +137,7 @@ export default async function(T) {
             await page.evaluate(()=>window.dispatchEvent(new PointerEvent('pointermove',{pointerId:71,clientY:180})));
             assert.equal(await page.evaluate(()=>document.body.style.getPropertyValue('--ag2-sheet-dy')),'160px');
         };
-        const clean=async()=>assert.deepEqual(await page.evaluate(()=>({drag:document.body.classList.contains('ag2-sheet-drag'),dy:document.body.style.getPropertyValue('--ag2-sheet-dy')})),{drag:false,dy:''});
+        const clean=async()=>assert.deepEqual(await page.evaluate(()=>({drag:document.body.hasAttribute('data-ag2-sheet-drag'),dy:document.body.style.getPropertyValue('--ag2-sheet-dy')})),{drag:false,dy:''});
         for(const action of ['cancel','blur','close','theme']) {
             await open(null);const before=await counts();await start();
             await page.evaluate(()=>{
@@ -163,7 +163,7 @@ export default async function(T) {
         await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});
         await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:y+80}]});
         await T.sleep(100);
-        assert.ok(await page.evaluate(()=>document.body.classList.contains('ag2-sheet-drag')));
+        assert.ok(await page.evaluate(()=>document.body.hasAttribute('data-ag2-sheet-drag')));
         await shot('trusted-touch-drag');
         await cdp.send('Input.dispatchTouchEvent',{type:'touchCancel',touchPoints:[]});await clean();
         assert.equal(await page.evaluate(()=>qaSettings.isOpen()),true);

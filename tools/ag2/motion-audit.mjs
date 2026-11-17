@@ -115,14 +115,14 @@ export default async function(T){
     for(const level of [null,'api'])for(const kind of ['slow60','fast45','release150','cancel']){
      await open(level);await page.waitForFunction(()=>document.querySelector('#ag2-settings')?.getBoundingClientRect().y<200);
      const b=await page.locator('.ag2-set-grab').boundingBox(),x=b.x+b.width/2,y=b.y+b.height/2;
-     await seq(`drag-${level||'list'}-${kind}`,async()=>{await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});for(const dy of (kind==='fast45'?[45]:kind==='slow60'?[20,40,60]:[40,80,150])){await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:y+dy}]});if(kind==='slow60')await T.sleep(140);else await page.evaluate(()=>new Promise(requestAnimationFrame));}await cdp.send('Input.dispatchTouchEvent',{type:kind==='cancel'?'touchCancel':'touchEnd',touchPoints:[]});},{capture:true,filmstrip:kind==='slow60',check:()=>page.evaluate(kind=>!document.body.classList.contains('ag2-sheet-drag')&&ms.isOpen()===['slow60','cancel'].includes(kind),kind)});
+     await seq(`drag-${level||'list'}-${kind}`,async()=>{await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});for(const dy of (kind==='fast45'?[45]:kind==='slow60'?[20,40,60]:[40,80,150])){await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:y+dy}]});if(kind==='slow60')await T.sleep(140);else await page.evaluate(()=>new Promise(requestAnimationFrame));}await cdp.send('Input.dispatchTouchEvent',{type:kind==='cancel'?'touchCancel':'touchEnd',touchPoints:[]});},{capture:true,filmstrip:kind==='slow60',check:()=>page.evaluate(kind=>!document.body.hasAttribute('data-ag2-sheet-drag')&&ms.isOpen()===['slow60','cancel'].includes(kind),kind)});
      await close();
     }
     await seq('look-back-loop',async()=>{await open(null);await click('#ag2-settings [data-page="look"]');await click('.ag2-set-back');},{capture:true});await close();
    }
    if(!T.cfg.phone&&mode==='normal')for(const w of [1440,1100]){
     await page.setViewportSize({width:w,height:900});
-    await seq('reverse-sidebar-'+w,()=>page.evaluate(async()=>{for(let i=0;i<4;i++){document.querySelector(document.body.classList.contains('ag2-side-collapsed')?'#ag2-title .ag2-expand':'#ag2-sidebar [data-act="collapse"]').click();await new Promise(r=>setTimeout(r,65));}}),{capture:true});
+    await seq('reverse-sidebar-'+w,()=>page.evaluate(async()=>{for(let i=0;i<4;i++){document.querySelector(document.body.hasAttribute('data-ag2-side-collapsed')?'#ag2-title .ag2-expand':'#ag2-sidebar [data-act="collapse"]').click();await new Promise(r=>setTimeout(r,65));}}),{capture:true});
     await seq('reverse-inspector-'+w,()=>page.evaluate(async()=>{for(let i=0;i<4;i++){void mu.setInspector(i%2===0);await new Promise(r=>setTimeout(r,65));}}),{capture:true});
    }
    await page.setViewportSize(T.cfg.phone?{width:390,height:844}:{width:1440,height:900});
@@ -143,9 +143,9 @@ export default async function(T){
   await seq('settings-world-info',()=>open('wi'),{capture:true});
   if(T.cfg.phone)await seq('settings-back',()=>click('.ag2-set-back'),{capture:true,check:()=>page.evaluate(()=>document.querySelector('#ag2-settings').dataset.level==='list')});
   await seq('settings-close',close,{check:()=>isSet(false)});
-  await seq('inspector-open',()=>page.evaluate(()=>mu.setInspector(true)),{capture:true,check:()=>page.evaluate(()=>document.body.classList.contains('ag2-insp-open'))});
-  await seq('inspector-close',()=>click('#right-nav-panel [data-ag2-act="close"]'),{check:()=>page.evaluate(()=>!document.body.classList.contains('ag2-insp-open'))});
-  if(!T.cfg.phone){await seq('sidebar-collapse',()=>click('#ag2-sidebar [data-act="collapse"]'),{capture:true,check:()=>page.evaluate(()=>document.body.classList.contains('ag2-side-collapsed'))});await seq('sidebar-restore',()=>click('#ag2-title .ag2-expand'),{capture:true,check:()=>page.evaluate(()=>!document.body.classList.contains('ag2-side-collapsed'))});}
+  await seq('inspector-open',()=>page.evaluate(()=>mu.setInspector(true)),{capture:true,check:()=>page.evaluate(()=>document.body.hasAttribute('data-ag2-insp-open'))});
+  await seq('inspector-close',()=>click('#right-nav-panel [data-ag2-act="close"]'),{check:()=>page.evaluate(()=>!document.body.hasAttribute('data-ag2-insp-open'))});
+  if(!T.cfg.phone){await seq('sidebar-collapse',()=>click('#ag2-sidebar [data-act="collapse"]'),{capture:true,check:()=>page.evaluate(()=>document.body.hasAttribute('data-ag2-side-collapsed'))});await seq('sidebar-restore',()=>click('#ag2-title .ag2-expand'),{capture:true,check:()=>page.evaluate(()=>!document.body.hasAttribute('data-ag2-side-collapsed'))});}
   await seq('palette-open',()=>page.keyboard.press('Control+k'),{capture:true,filmstrip:mode==='normal'});
   await seq('palette-close',esc,{check:()=>page.evaluate(()=>!document.querySelector('#ag2-palette')?.open)});
   await seq('palette-setting-select',async()=>{await page.keyboard.press('Control+k');await page.locator('.ag2-pal-input').fill('温度');await page.locator('.ag2-pal-title').filter({hasText:'温度'}).first().waitFor({state:'visible'});await page.locator('.ag2-pal-title').filter({hasText:'温度'}).first().click();},{capture:true,check:()=>page.evaluate(()=>ms.isOpen()&&document.body.dataset.ag2Set==='ai')});
@@ -167,12 +167,12 @@ export default async function(T){
   await seq('escape-interrupt',async()=>{await close();await open('api');await esc();},{check:()=>T.cfg.phone?page.evaluate(()=>ms.isOpen()&&document.querySelector('#ag2-settings').dataset.level==='list'):isSet(false)});
   if(T.cfg.phone)await seq('escape-list-close',esc,{check:()=>isSet(false)});
   await seq('alternate-settings-inspector',async()=>{await open('look');await page.evaluate(()=>mu.setInspector(true));await open('api');},{capture:true,check:()=>isSet(true)});
-  await close();await page.evaluate(()=>{if(document.body.classList.contains('ag2-insp-open'))document.querySelector('#right-nav-panel [data-ag2-act="close"]').click();});
+  await close();await page.evaluate(()=>{if(document.body.hasAttribute('data-ag2-insp-open'))document.querySelector('#right-nav-panel [data-ag2-act="close"]').click();});
   if(T.cfg.phone){
    for(const end of ['touchCancel','touchEnd']){
     await open(null);await page.waitForFunction(()=>document.querySelector('#ag2-settings')?.getBoundingClientRect().y<200);
     const b=await page.locator('.ag2-set-grab').boundingBox(),x=b.x+b.width/2,y=b.y+b.height/2;
-    await seq('sheet-drag-'+end,async()=>{await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});for(const dy of [30,65,100,150]){await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:y+dy}]});await page.evaluate(()=>new Promise(requestAnimationFrame));}await shot('sheet-'+end+'-dragging');await cdp.send('Input.dispatchTouchEvent',{type:end,touchPoints:[]});},{capture:true,check:()=>page.evaluate(end=>!document.body.classList.contains('ag2-sheet-drag')&&!document.body.style.getPropertyValue('--ag2-sheet-dy')&&ms.isOpen()===(end==='touchCancel'),end)});
+    await seq('sheet-drag-'+end,async()=>{await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});for(const dy of [30,65,100,150]){await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:y+dy}]});await page.evaluate(()=>new Promise(requestAnimationFrame));}await shot('sheet-'+end+'-dragging');await cdp.send('Input.dispatchTouchEvent',{type:end,touchPoints:[]});},{capture:true,check:()=>page.evaluate(end=>!document.body.hasAttribute('data-ag2-sheet-drag')&&!document.body.style.getPropertyValue('--ag2-sheet-dy')&&ms.isOpen()===(end==='touchCancel'),end)});
    }
   }
   if(!T.cfg.phone){for(const w of [1000,1001,1440])await seq('breakpoint-'+w,()=>page.setViewportSize({width:w,height:w===1440?900:844}),{capture:true,check:()=>page.evaluate(w=>document.body.classList.contains('ag2-phone')===(w<=1000),w)});}

@@ -22,7 +22,7 @@ const isPhone = () => process.argv.includes('--phone');
 /** Desktop: the tool capsule toggles the inspector. Phone: the title button opens it (§5.9).
  *  Uses a JS click (the phone sheet's seg buttons can overlay the title's hit box). */
 const toggle = async (T, page) => {
-    const open = await page.evaluate(() => document.body.classList.contains('ag2-insp-open'));
+    const open = await page.evaluate(() => document.body.hasAttribute('data-ag2-insp-open'));
     if (open) return;
     if (isPhone()) { await page.evaluate(() => document.querySelector('#ag2-title .ag2-title-btn')?.click()); await T.sleep(900); }
     else { await page.click('#ag2-tools [data-act="insp"]'); await T.sleep(800); }
@@ -87,7 +87,7 @@ async function insp(T) {
     await page.evaluate(() => { const c = SillyTavern.getContext(); const ch = c.characters.find(x => x.avatar === 'ag2_Aldric.png'); ch.data.creator_notes = ''; ch.creatorcomment = ''; });
     await page.evaluate(async () => { const c = SillyTavern.getContext(); const id = c.characters.findIndex(x => x.avatar === 'ag2_Aldric.png'); await c.selectCharacterById(id); });
     await T.sleep(1500);
-    if (!(await page.evaluate(() => document.body.classList.contains('ag2-insp-open')))) await toggle(T, page);
+    if (!(await page.evaluate(() => document.body.hasAttribute('data-ag2-insp-open')))) await toggle(T, page);
     out.noNotesCollapsed = await notesSt(page);
     await shot(T, page, 'insp-nonotes-collapsed');
     await page.click('#ag2-insp-links [data-ag2-act="notes"]').catch(() => {});

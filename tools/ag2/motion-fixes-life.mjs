@@ -53,7 +53,7 @@ export default async function(T){
         await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:y+dy}]});
         await T.sleep(160);
         await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
-        await page.waitForFunction(()=>!document.body.classList.contains('ag2-sheet-drag'));
+        await page.waitForFunction(()=>!document.body.hasAttribute('data-ag2-sheet-drag'));
         assert.equal(await page.evaluate(()=>mf.isOpen()),!dismiss);
         await cdp.send('Page.stopScreencast');
         out.film.push(...film.map((f,i)=>{const path=`${ROOT}/${id}-trusted-drag-${p}-${i}.png`;writeFileSync(path,Buffer.from(f.data,'base64'));return {path,metadata:f.metadata};}));
@@ -71,9 +71,9 @@ export default async function(T){
             h.dispatchEvent(ev('pointerdown',200,7));
             const after=getComputedStyle(h.closest('section')).translate;
             window.dispatchEvent(ev('pointercancel',200,7));await wait(260);
-            const cancelled=mf.isOpen()&&!document.body.classList.contains('ag2-sheet-drag');
+            const cancelled=mf.isOpen()&&!document.body.hasAttribute('data-ag2-sheet-drag');
             h.dispatchEvent(ev('pointerdown',100));window.dispatchEvent(ev('pointermove',250));window.dispatchEvent(ev('pointerup',250));window.dispatchEvent(new Event('blur'));await wait(260);
-            return {before,after,cancelled,blur:mf.isOpen()&&!document.body.classList.contains('ag2-sheet-drag')};
+            return {before,after,cancelled,blur:mf.isOpen()&&!document.body.hasAttribute('data-ag2-sheet-drag')};
         });
         if(mode==='normal'){assert.equal(out.checks.interrupt.before,out.checks.interrupt.after);assert.equal(out.checks.interrupt.cancelled,true);assert.equal(out.checks.interrupt.blur,true);}
         else assert.equal(out.checks.interrupt.reducedImmediate,true);

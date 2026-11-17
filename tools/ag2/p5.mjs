@@ -43,10 +43,10 @@ export const st = page => page.evaluate(() => {
         big: document.querySelector('.ag2-ph-big')?.textContent || null,
         seg: document.getElementById('ag2-sidebar')?.dataset.segment || null,
         tab: document.querySelector('#ag2-tabbar .ag2-on')?.dataset.tab || null,
-        setOpen: b.classList.contains('ag2-set-open'), setPhone: !!set?.classList.contains('ag2-set-phone'), level: set?.dataset.level || null, setPage: b.dataset.ag2Set || null,
+        setOpen: b.hasAttribute('data-ag2-set-open'), setPhone: !!set?.classList.contains('ag2-set-phone'), level: set?.dataset.level || null, setPage: b.dataset.ag2Set || null,
         drawer: [...document.querySelectorAll('.drawer-content.openDrawer')].map(e => e.id).join(','),
         drawerRect: rect('#top-settings-holder .drawer-content.openDrawer'), sheetRect: rect('#ag2-settings'),
-        insp: b.classList.contains('ag2-insp-open'), inspRect: rect('#right-nav-panel'), inspView: document.getElementById('right-nav-panel')?.dataset.ag2Insp || null,
+        insp: b.hasAttribute('data-ag2-insp-open'), inspRect: rect('#right-nav-panel'), inspView: document.getElementById('right-nav-panel')?.dataset.ag2Insp || null,
         palette: !!document.querySelector('#ag2-palette[open]'), menu: !!document.querySelector('.ag2-menu'),
         chatId: c.getCurrentChatId?.() || null, name2: c.name2, mes: document.querySelectorAll('#chat .mes').length,
         scrollX: window.scrollX, scrollY: window.scrollY, doc: { sw: se.scrollWidth, cw: se.clientWidth, ok: se.scrollWidth <= se.clientWidth },
@@ -200,7 +200,7 @@ const layout = page => page.evaluate(() => {
         w: innerWidth, phone: document.body.classList.contains('ag2-phone'), ph: document.body.dataset.ag2Ph || null,
         phoneJs: !!document.querySelector('#ag2-tabbar'), tabbar: vis('#ag2-tabbar'), phX: vis('.ag2-ph-x'), tools: vis('#ag2-tools'), topbar: vis('#top-bar'),
         sideW: w('#ag2-sidebar'), sheldL: Math.round(document.getElementById('sheld').getBoundingClientRect().left), sheldW: w('#sheld'),
-        setOpen: document.body.classList.contains('ag2-set-open'), setPhone: !!set?.classList.contains('ag2-set-phone'), setW: set && !set.hidden ? w('#ag2-settings') : 0,
+        setOpen: document.body.hasAttribute('data-ag2-set-open'), setPhone: !!set?.classList.contains('ag2-set-phone'), setW: set && !set.hidden ? w('#ag2-settings') : 0,
         doc: document.scrollingElement.scrollWidth <= document.scrollingElement.clientWidth, scrollX: scrollX,
         phoneModule: performance.getEntriesByType('resource').some(e => /shell\/phone\.js/.test(e.name)),
     };
@@ -325,13 +325,13 @@ async function pages(T) {
     await T.sleep(800);
     // keyboard: emulate iOS shrinking only the visual viewport (Chromium cannot): the chat
     // page must follow --ag2-vvh and the composer sit on its bottom edge
-    await page.evaluate(() => { document.body.style.setProperty('--ag2-vvh', '500px'); document.body.classList.add('ag2-kb'); });
+    await page.evaluate(() => { document.body.style.setProperty('--ag2-vvh', '500px'); document.body.toggleAttribute('data-ag2-kb', true); });
     await T.sleep(300);
     r.kb = await page.evaluate(() => { const q = id => document.getElementById(id).getBoundingClientRect(); return { sheldH: Math.round(q('sheld').height), composerBottom: Math.round(q('form_sheld').bottom), islandBottom: Math.round(q('nonQRFormItems').bottom) }; });
     await T.shot(page, 'pg-kb-sim');
-    await page.evaluate(() => { document.body.classList.remove('ag2-kb'); window.visualViewport.dispatchEvent(new Event('resize')); });
+    await page.evaluate(() => { document.body.toggleAttribute('data-ag2-kb', false); window.visualViewport.dispatchEvent(new Event('resize')); });
     await T.sleep(300);
-    r.kbAfter = await page.evaluate(() => ({ vvh: document.body.style.getPropertyValue('--ag2-vvh'), kb: document.body.classList.contains('ag2-kb'), sheldH: Math.round(document.getElementById('sheld').getBoundingClientRect().height) }));
+    r.kbAfter = await page.evaluate(() => ({ vvh: document.body.style.getPropertyValue('--ag2-vvh'), kb: document.body.hasAttribute('data-ag2-kb'), sheldH: Math.round(document.getElementById('sheld').getBoundingClientRect().height) }));
     // ⋯ › 关闭对话 → back on the list
     await menuPick('关闭对话');
     await T.sleep(800);

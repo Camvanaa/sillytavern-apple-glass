@@ -57,7 +57,7 @@ export default async function(T){
                 if(kind==='fast-down'&&speedLowerBound<=.6)throw Error(`Inconclusive: synthetic fast gesture was too slow (${speedLowerBound} px/ms)`);
                 window.dispatchEvent(ev('pointerup',200+delta,32));
                 return {p,kind,initialOpen,residual,startDy,delta,endDy,elapsedUpper,speedLowerBound,
-                    immediate:{open:mf.isOpen(),dy:offset(),drag:document.body.classList.contains('ag2-sheet-drag')},
+                    immediate:{open:mf.isOpen(),dy:offset(),drag:document.body.hasAttribute('data-ag2-sheet-drag')},
                     targets:gestureAnimations().map(a=>a.effect.getKeyframes().at(-1).translate)};
             },{p,kind,mode});
             out.cases.push(rec);save();
@@ -77,7 +77,7 @@ export default async function(T){
                 assert.equal(rec.immediate.dy,0);
                 assert.equal(rec.immediate.drag,false);
             }
-            await page.waitForFunction(()=>!document.body.classList.contains('ag2-sheet-drag')&&!mf.isNavigating(),null,{timeout:5000});
+            await page.waitForFunction(()=>!document.body.hasAttribute('data-ag2-sheet-drag')&&!mf.isNavigating(),null,{timeout:5000});
             rec.final=await page.evaluate(()=>({open:mf.isOpen(),dy:document.body.style.getPropertyValue('--ag2-sheet-dy')}));
             assert.equal(rec.final.open,!dismiss);
             assert.equal(rec.final.dy,'');

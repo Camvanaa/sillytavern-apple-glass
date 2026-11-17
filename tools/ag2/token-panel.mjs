@@ -12,7 +12,7 @@ export default async function(T) {
         await page.tap('#ag2-title .ag2-title-btn');
     } else {
         await T.openChat(page, spec);
-        if (!await page.evaluate(() => document.body.classList.contains('ag2-insp-open'))) await page.click('#ag2-tools [data-act="insp"]');
+        if (!await page.evaluate(() => document.body.hasAttribute('data-ag2-insp-open'))) await page.click('#ag2-tools [data-act="insp"]');
     }
     await T.sleep(400);
     await page.click('#ag2-insp-head [data-seg="chat"]');

@@ -34,7 +34,7 @@ async function palette(T) {
     const up = await pal(page);
     await page.keyboard.press('Enter');
     await T.sleep(700);
-    const ran = await page.evaluate(() => ({ open: !!document.querySelector('#ag2-palette[open]'), set: document.body.classList.contains('ag2-set-open'), page: document.body.dataset.ag2Set || null }));
+    const ran = await page.evaluate(() => ({ open: !!document.querySelector('#ag2-palette[open]'), set: document.body.hasAttribute('data-ag2-set-open'), page: document.body.dataset.ag2Set || null }));
     await page.keyboard.press('Escape');
     await page.keyboard.press('Control+K');
     await T.sleep(250);
@@ -65,7 +65,7 @@ async function desktopMenu(T) {
     await T.shot(page, 'menu-wand-desk-post');
     await page.keyboard.press('Escape');
     await T.sleep(200);
-    return { state, closed: await page.evaluate(() => !document.querySelector('.ag2-menu') && !document.body.classList.contains('ag2-wand-open')), errors: T.errors(page) };
+    return { state, closed: await page.evaluate(() => !document.querySelector('.ag2-menu') && !document.body.hasAttribute('data-ag2-wand-open')), errors: T.errors(page) };
 }
 
 async function phone(T) {
@@ -88,15 +88,15 @@ async function phone(T) {
     await T.shot(page, 'menu-wand-phone-post');
     await page.keyboard.press('Escape');
     await T.sleep(200);
-    out.menu = { parent, sub, closed: await page.evaluate(() => !document.querySelector('.ag2-menu') && !document.body.classList.contains('ag2-wand-open')) };
+    out.menu = { parent, sub, closed: await page.evaluate(() => !document.querySelector('.ag2-menu') && !document.body.hasAttribute('data-ag2-wand-open')) };
 
     // Title capsule opens the inspector sheet on phone; Escape must close that sheet.
     await page.click('#ag2-title .ag2-title-btn');
     await T.sleep(500);
-    const before = await page.evaluate(() => document.body.classList.contains('ag2-insp-open'));
+    const before = await page.evaluate(() => document.body.hasAttribute('data-ag2-insp-open'));
     await page.keyboard.press('Escape');
     await T.sleep(350);
-    const after = await page.evaluate(() => document.body.classList.contains('ag2-insp-open'));
+    const after = await page.evaluate(() => document.body.hasAttribute('data-ag2-insp-open'));
     await T.shot(page, 'phone-inspector-esc-post');
     out.esc = { before, after, errors: T.errors(page) };
 
@@ -105,16 +105,16 @@ async function phone(T) {
     await T.sleep(300);
     await page.click('#ag2-tabbar [data-tab="settings"]');
     await T.sleep(350);
-    const setOpen = await page.evaluate(() => ({ open: document.body.classList.contains('ag2-set-open'), level: document.querySelector('#ag2-settings')?.dataset.level || null }));
+    const setOpen = await page.evaluate(() => ({ open: document.body.hasAttribute('data-ag2-set-open'), level: document.querySelector('#ag2-settings')?.dataset.level || null }));
     await page.click('#ag2-settings .ag2-set-item[data-page="api"]');
     await T.sleep(400);
-    const setPage = await page.evaluate(() => ({ open: document.body.classList.contains('ag2-set-open'), level: document.querySelector('#ag2-settings')?.dataset.level || null }));
+    const setPage = await page.evaluate(() => ({ open: document.body.hasAttribute('data-ag2-set-open'), level: document.querySelector('#ag2-settings')?.dataset.level || null }));
     await page.keyboard.press('Escape');
     await T.sleep(300);
-    const setList = await page.evaluate(() => ({ open: document.body.classList.contains('ag2-set-open'), level: document.querySelector('#ag2-settings')?.dataset.level || null }));
+    const setList = await page.evaluate(() => ({ open: document.body.hasAttribute('data-ag2-set-open'), level: document.querySelector('#ag2-settings')?.dataset.level || null }));
     await page.keyboard.press('Escape');
     await T.sleep(300);
-    const setClosed = await page.evaluate(() => ({ open: document.body.classList.contains('ag2-set-open'), level: document.querySelector('#ag2-settings')?.dataset.level || null }));
+    const setClosed = await page.evaluate(() => ({ open: document.body.hasAttribute('data-ag2-set-open'), level: document.querySelector('#ag2-settings')?.dataset.level || null }));
     out.settingsEsc = { setOpen, setPage, setList, setClosed };
     return out;
 }

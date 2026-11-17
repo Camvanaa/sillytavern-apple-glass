@@ -7,26 +7,27 @@
 // class and listener it added and reloads the current chat.
 // Any exception during enable → automatic teardown + one toastr.
 
-export const BUILD = '20261116TT11';
+export const BUILD = '20261117TT12';
 
-import { local, importStPinsOnce, applyAppearance, clearAppearance } from './store.js?v=20261116TT11';
-import { ctx, h, toggleDrawer, SET_PANELS, settingsModule, openSettings, isDesktop, INSP_ID, inspectorModule, loadInspector, setInspector, setShellApi, paletteModule, PHONE_MQ, loadPhone, phoneModule, isFloatingOpen, closeOtherFloating, paintOneRange, paintRanges } from './util.js?v=20261116TT11';
-import { closeMenu } from './menu.js?v=20261116TT11';
-import * as sidebar from './sidebar.js?v=20261116TT11';
-import * as chrome from './chrome.js?v=20261116TT11';
-import * as reading from './reading.js?v=20261116TT11';
-import * as composer from './composer.js?v=20261116TT11';
-import * as keys from './keys.js?v=20261116TT11';
-import * as prompt from './prompt.js?v=20261116TT11';
-import * as presets from './presets.js?v=20261116TT11';
-import * as logprobs from './logprobs.js?v=20261116TT11';
-import * as worldbook from './worldbook.js?v=20261116TT11';
-import * as general from './general.js?v=20261116TT11';
-import * as messageActions from './message-actions.js?v=20261116TT11';
-import * as panels from './panels.js?v=20261116TT11';
-import * as coreFixes from './core-fixes.js?v=20261116TT11';
+import { local, importStPinsOnce, applyAppearance, clearAppearance } from './store.js?v=20261117TT12';
+import { ctx, h, toggleDrawer, SET_PANELS, settingsModule, openSettings, isDesktop, INSP_ID, inspectorModule, loadInspector, setInspector, setShellApi, paletteModule, PHONE_MQ, loadPhone, phoneModule, isFloatingOpen, closeOtherFloating, paintOneRange, paintRanges, flag } from './util.js?v=20261117TT12';
+import { closeMenu } from './menu.js?v=20261117TT12';
+import * as sidebar from './sidebar.js?v=20261117TT12';
+import * as chrome from './chrome.js?v=20261117TT12';
+import * as reading from './reading.js?v=20261117TT12';
+import * as composer from './composer.js?v=20261117TT12';
+import * as keys from './keys.js?v=20261117TT12';
+import * as prompt from './prompt.js?v=20261117TT12';
+import * as presets from './presets.js?v=20261117TT12';
+import * as logprobs from './logprobs.js?v=20261117TT12';
+import * as worldbook from './worldbook.js?v=20261117TT12';
+import * as general from './general.js?v=20261117TT12';
+import * as messageActions from './message-actions.js?v=20261117TT12';
+import * as panels from './panels.js?v=20261117TT12';
+import * as coreFixes from './core-fixes.js?v=20261117TT12';
 
-const BODY_CLASSES = ['ag2', 'ag2-welcome', 'ag2-side-collapsed', 'ag2-ready', 'ag2-wand-open', 'ag2-set-open', 'ag2-insp-open', 'ag2-phone', 'ag2-kb'];
+const BODY_CLASSES = ['ag2', 'ag2-phone'];
+const BODY_FLAGS = ['ag2-welcome', 'ag2-side-collapsed', 'ag2-ready', 'ag2-wand-open', 'ag2-set-open', 'ag2-insp-open', 'ag2-kb', 'ag2-sheet-drag'];
 let on = false;
 let lateEnable = false;
 let shell = null;
@@ -77,7 +78,7 @@ function fail(e) {
 const api = {
     /** focus: move focus to the counterpart button (clicks); the ⌘\ shortcut keeps it. */
     setCollapsed(v, { focus = true } = {}) {
-        document.body.classList.toggle('ag2-side-collapsed', !!v);
+        flag.set('ag2-side-collapsed', !!v);
         local.set('sidebar', v ? 'collapsed' : 'open');
         if (focus) (v ? document.querySelector('#ag2-title .ag2-expand') : document.querySelector('#ag2-sidebar [data-act="collapse"]'))?.focus?.({ preventScroll: true });
     },
@@ -98,7 +99,7 @@ export function enable({ appReady = false } = {}) {
         document.body.classList.add('ag2');
         coreFixes.mount(); // before any settings drawer opens
         applyAppearance(); // accent / reading size / width / meta (§5.5): attributes only
-        if (local.get('sidebar') === 'collapsed') document.body.classList.add('ag2-side-collapsed');
+        if (local.get('sidebar') === 'collapsed') flag.set('ag2-side-collapsed');
         shell = h('div');
         shell.id = 'ag2-shell';
         shell.dataset.build = BUILD;
@@ -190,9 +191,9 @@ let readyRun = 0;
 async function onReady() {
     readyHint = true;
     // APP_READY may arrive twice (live event + late-enable check): fill once per enable.
-    if (document.body.classList.contains('ag2-ready') && Date.now() - readyRun < 2000) return;
+    if (flag.has('ag2-ready') && Date.now() - readyRun < 2000) return;
     readyRun = Date.now();
-    document.body.classList.add('ag2-ready');
+    flag.set('ag2-ready');
     await importStPinsOnce();
     applyAppearance();
     sidebar.updateFooter();
@@ -354,8 +355,8 @@ function updateWelcome() {
     if (!on) return;
     const c = ctx();
     const welcome = c.characterId === undefined && !c.groupId && !!document.querySelector('#chat .welcomePanel');
-    const was = document.body.classList.contains('ag2-welcome');
-    document.body.classList.toggle('ag2-welcome', welcome);
+    const was = flag.has('ag2-welcome');
+    flag.set('ag2-welcome', welcome);
     if (welcome && !was) chrome.renderWelcome();
 }
 
@@ -403,6 +404,7 @@ export function disable({ reload = true } = {}) {
     shell = null;
     document.querySelectorAll('[id^="ag2-"]').forEach(n => n.remove());
     document.body.classList.remove(...BODY_CLASSES);
+    for (const name of BODY_FLAGS) flag.set(name, false);
     // Messages carry the patched template (copy / branch in the action row): reload so they
     // re-render from ST's original template.
     if (reload) {

@@ -27,7 +27,7 @@ const st = page => page.evaluate(() => {
     const c = SillyTavern.getContext();
     const cur = c.characterId !== undefined ? c.characters[c.characterId] : null;
     return {
-        open: document.body.classList.contains('ag2-insp-open'), drawer: p.classList.contains('openDrawer'),
+        open: document.body.hasAttribute('data-ag2-insp-open'), drawer: p.classList.contains('openDrawer'),
         pinned: p.classList.contains('pinnedOpen'), menuType: p.dataset.menuType || null, view: p.dataset.ag2Insp || null,
         chatChar: cur?.name || null, group: c.groupId || null,
         pole: document.getElementById('avatar_url_pole')?.value || null,
@@ -275,14 +275,14 @@ async function state(T) {
     out.navLockBefore = await page.evaluate(() => SillyTavern.getContext().accountStorage?.getItem?.('NavLockOn') ?? null);
     await toggle(T, page);
     out.opened = await st(page);
-    await page.reload(); await page.waitForFunction(() => document.body.classList.contains('ag2-ready'), null, { timeout: 60000 }); await T.sleep(3500);
+    await page.reload(); await page.waitForFunction(() => document.body.hasAttribute('data-ag2-ready'), null, { timeout: 60000 }); await T.sleep(3500);
     out.afterReloadOpen = await st(page); // may be the welcome page (no chat) → empty state
     if (!(await page.evaluate(() => SillyTavern.getContext().characterId !== undefined))) await T.openChat(page, await T.longChat(page), 2);
     await T.sleep(1200);
     out.afterReloadChat = await st(page);
     await page.click('#ag2-insp-head [data-ag2-act="close"]'); await T.sleep(700);
     out.closed = await st(page);
-    await page.reload(); await page.waitForFunction(() => document.body.classList.contains('ag2-ready'), null, { timeout: 60000 }); await T.sleep(3500);
+    await page.reload(); await page.waitForFunction(() => document.body.hasAttribute('data-ag2-ready'), null, { timeout: 60000 }); await T.sleep(3500);
     out.afterReloadClosed = await st(page);
     out.navLockAfter = await page.evaluate(() => SillyTavern.getContext().accountStorage?.getItem?.('NavLockOn') ?? null);
     out.loadedModule = await page.evaluate(() => performance.getEntriesByType('resource').some(e => /shell\/inspector\.js/.test(e.name)));

@@ -14,9 +14,9 @@
 // Every action is a click on ST's own control (`#option_*`, `#attachFile`, the model
 // <select>), as ST's core does it.
 
-import { icon } from './icons.js?v=20261116TT11';
-import { openMenu, closeMenu, positionPopover } from './menu.js?v=20261116TT11';
-import { ctx, h, guard, clickSt, toggleDrawer, openSettings, busy, onlineStatus } from './util.js?v=20261116TT11';
+import { icon } from './icons.js?v=20261117TT12';
+import { openMenu, closeMenu, positionPopover } from './menu.js?v=20261117TT12';
+import { ctx, h, guard, clickSt, toggleDrawer, openSettings, busy, onlineStatus, flag } from './util.js?v=20261117TT12';
 import { showBookmarksButtons } from '../../../../bookmarks.js';
 
 const NO_CONN_TEXT = '未连接 API — 点此连接';
@@ -177,7 +177,7 @@ function toggleWand(btn) {
     wandOpen = true;
     btn?.classList.add('ag2-sub-open');
     const b = document.body;
-    b.classList.add('ag2-wand-open');
+    flag.set('ag2-wand-open');
     // Use the shared popover placer: desktop anchors beside the submenu item; phone stacks
     // above the complete parent menu so no sibling action is covered.
     const phone = b.classList.contains('ag2-phone');
@@ -203,7 +203,7 @@ function closeWand() {
     wandOpen = false;
     wandCleanup?.();
     wandCleanup = null;
-    document.body.classList.remove('ag2-wand-open');
+    flag.set('ag2-wand-open', false);
     document.body.style.removeProperty('--ag2-wand-left');
     document.body.style.removeProperty('--ag2-wand-top');
     const menu = document.getElementById('extensionsMenu');

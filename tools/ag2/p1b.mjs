@@ -340,22 +340,22 @@ async function plus(T) {
     out.wand = await page.evaluate(rs => {
         const f = eval(rs), em = document.getElementById('extensionsMenu'), pm = document.getElementById('ag2-plus-menu');
         const a = em.getBoundingClientRect(), b = pm.getBoundingClientRect();
-        return { body: document.body.classList.contains('ag2-wand-open'), display: getComputedStyle(em).display, rect: f(a), rightOfMenu: a.left >= b.right, onScreen: a.top >= 0 && a.bottom <= innerHeight, items: [...em.querySelectorAll('.list-group-item')].filter(i => i.offsetParent).length, parent: em.parentElement === document.body };
+        return { body: document.body.hasAttribute('data-ag2-wand-open'), display: getComputedStyle(em).display, rect: f(a), rightOfMenu: a.left >= b.right, onScreen: a.top >= 0 && a.bottom <= innerHeight, items: [...em.querySelectorAll('.list-group-item')].filter(i => i.offsetParent).length, parent: em.parentElement === document.body };
     }, R);
     // pointer-down inside the wand keeps both open (it is not “outside”)
     await page.hover('#extensionsMenu #token_counter, #extensionsMenu .list-group-item >> nth=0');
-    out.wandHover = await page.evaluate(() => !!document.getElementById('ag2-plus-menu') && document.body.classList.contains('ag2-wand-open'));
+    out.wandHover = await page.evaluate(() => !!document.getElementById('ag2-plus-menu') && document.body.hasAttribute('data-ag2-wand-open'));
     // Esc closes both
     await page.keyboard.press('Escape');
     await T.sleep(250);
-    out.escClosed = await page.evaluate(() => !document.getElementById('ag2-plus-menu') && !document.body.classList.contains('ag2-wand-open') && getComputedStyle(document.getElementById('extensionsMenu')).display === 'none');
+    out.escClosed = await page.evaluate(() => !document.getElementById('ag2-plus-menu') && !document.body.hasAttribute('data-ag2-wand-open') && getComputedStyle(document.getElementById('extensionsMenu')).display === 'none');
     // outside click closes both
     await page.click('#ag2-plus');
     await page.click('#ag2-plus-menu [data-item="wand"]');
     await T.sleep(200);
     await page.mouse.click(900, 300);
     await T.sleep(250);
-    out.outsideClosed = await page.evaluate(() => !document.getElementById('ag2-plus-menu') && !document.body.classList.contains('ag2-wand-open'));
+    out.outsideClosed = await page.evaluate(() => !document.getElementById('ag2-plus-menu') && !document.body.hasAttribute('data-ag2-wand-open'));
     // a wand item runs ST's handler and closes the menus (Token counter: local popup)
     await page.click('#ag2-plus');
     await page.click('#ag2-plus-menu [data-item="wand"]');
@@ -364,7 +364,7 @@ async function plus(T) {
     if (await tc.count()) {
         await tc.first().click();
         await T.sleep(800);
-        out.wandItem = await page.evaluate(() => ({ menusClosed: !document.getElementById('ag2-plus-menu') && !document.body.classList.contains('ag2-wand-open'), popup: [...document.querySelectorAll('dialog[open]')].length }));
+        out.wandItem = await page.evaluate(() => ({ menusClosed: !document.getElementById('ag2-plus-menu') && !document.body.hasAttribute('data-ag2-wand-open'), popup: [...document.querySelectorAll('dialog[open]')].length }));
         await T.shot(page, `wand-item-${T.cfg.w}`);
         await page.keyboard.press('Escape');
         await T.sleep(400);

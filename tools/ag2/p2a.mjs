@@ -25,7 +25,7 @@ const state = page => page.evaluate(ids => {
     const win = document.getElementById('ag2-settings');
     const open = ids.filter(s => document.querySelector(s)?.classList.contains('openDrawer'));
     return {
-        open: document.body.classList.contains('ag2-set-open'),
+        open: document.body.hasAttribute('data-ag2-set-open'),
         winVisible: !!win && !win.hidden && getComputedStyle(win).display !== 'none',
         page: document.body.dataset.ag2Set || null,
         nav: document.querySelector('#ag2-settings .ag2-set-item.ag2-on')?.dataset.page || null,
@@ -380,7 +380,7 @@ async function themes(T) {
         const sample=()=>{
             if(!window.__qaThemeRecording)return;
             const b=document.body,root=document.querySelector('#ag2-settings');
-            const state={ag2:b.classList.contains('ag2'),ready:b.classList.contains('ag2-ready'),open:b.classList.contains('ag2-set-open'),page:b.dataset.ag2Set||null,hidden:root?.hidden??null,drawer:document.querySelector('#user-settings-block')?.classList.contains('openDrawer')};
+            const state={ag2:b.classList.contains('ag2'),ready:b.hasAttribute('data-ag2-ready'),open:b.hasAttribute('data-ag2-set-open'),page:b.dataset.ag2Set||null,hidden:root?.hidden??null,drawer:document.querySelector('#user-settings-block')?.classList.contains('openDrawer')};
             window.__qaThemeFrames.push({t:Math.round(performance.now()-start),...state});requestAnimationFrame(sample);
         };requestAnimationFrame(sample);
     });
@@ -388,7 +388,7 @@ async function themes(T) {
     await T.sleep(3500);
     out.ag2At3500 = await state(page);
     try {
-        await page.waitForFunction(()=>document.body.classList.contains('ag2-set-open')&&document.body.dataset.ag2Set==='user'&&document.querySelector('#user-settings-block.openDrawer'),null,{timeout:15000});
+        await page.waitForFunction(()=>document.body.hasAttribute('data-ag2-set-open')&&document.body.dataset.ag2Set==='user'&&document.querySelector('#user-settings-block.openDrawer'),null,{timeout:15000});
     } catch(e) {
         out.ok=false;out.error=String(e.message);
         out.adoptionTimeline=await page.evaluate(()=>{window.__qaThemeRecording=false;return window.__qaThemeFrames;});

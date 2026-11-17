@@ -10,16 +10,17 @@
 // Matching: substring first (prefix / word start rank higher), then in-order subsequence;
 // matched characters are bold + underlined. Every action goes through ST's own entry points.
 
-import { icon } from './icons.js?v=20261116TT11';
+import { icon } from './icons.js?v=20261117TT12';
 import { world_names, selected_world_info, METADATA_KEY } from '../../../../world-info.js';
 import {
     ctx, h, guard, toast, thumb, fmtTime, summary, stem, clickSt, openEntry, openCharacter, openGroup,
     openSettings, loadSettings, setInspector, isInspectorOpen, isDesktop, modKeyLabel, modCombo, getShellApi,
-} from './util.js?v=20261116TT11';
+    flag,
+} from './util.js?v=20261117TT12';
 // linked to the running shell? (util.current)
-export { SHELL } from './util.js?v=20261116TT11';
-import { getRecent, openRightMenu } from './sidebar.js?v=20261116TT11';
-import { closeMenu } from './menu.js?v=20261116TT11';
+export { SHELL } from './util.js?v=20261117TT12';
+import { getRecent, openRightMenu } from './sidebar.js?v=20261117TT12';
+import { closeMenu } from './menu.js?v=20261117TT12';
 import { fixToastrForDialogs } from '../../../../../scripts/popup.js';
 
 const GROUPS = {
@@ -202,8 +203,8 @@ const PAGES = [
 
 function actionItems() {
     const chat = inChat();
-    const collapsed = document.body.classList.contains('ag2-side-collapsed');
-    const insp = isInspectorOpen() && document.body.classList.contains('ag2-insp-open');
+    const collapsed = flag.has('ag2-side-collapsed');
+    const insp = isInspectorOpen() && flag.has('ag2-insp-open');
     const a = [];
     const add = (title, ic, color, run, opt = {}) => a.push({ group: 'act', title, lead: tile(ic, color), run, ...opt });
     if (chat) {

@@ -11,8 +11,8 @@
 // Never fires while an IME is composing, on auto-repeat of the palette key, or on top of an
 // ST popup. One window-capture listener, added on enable and removed on teardown.
 
-import { isMac, openPalette, paletteModule, settingsModule, setInspector, isDesktop, getShellApi, ctx, INSP_ID, stLayerUp, nativeSelectOpen } from './util.js?v=20261116TT11';
-import { isMenuOpen } from './menu.js?v=20261116TT11';
+import { isMac, openPalette, paletteModule, settingsModule, setInspector, isDesktop, getShellApi, ctx, INSP_ID, stLayerUp, nativeSelectOpen, flag } from './util.js?v=20261117TT12';
+import { isMenuOpen } from './menu.js?v=20261117TT12';
 
 let mounted = false;
 
@@ -65,7 +65,7 @@ function onKey(e) {
         e.preventDefault();
         e.stopPropagation();
         if (e.repeat) return;
-        const collapse = !document.body.classList.contains('ag2-side-collapsed');
+        const collapse = !flag.has('ag2-side-collapsed');
         // keep the user's focus (typing in the input box); only focus that would vanish moves
         const inSide = !!document.activeElement?.closest?.('#ag2-sidebar');
         getShellApi()?.setCollapsed(collapse, { focus: collapse && inSide });
@@ -80,7 +80,7 @@ function onKey(e) {
 
 async function toggleInspector(want) {
     const panel = document.getElementById(INSP_ID);
-    const open = document.body.classList.contains('ag2-insp-open');
+    const open = flag.has('ag2-insp-open');
     if (want === undefined) want = !open;
     const hadFocus = !!panel?.contains(document.activeElement);
     await setInspector(want);
@@ -113,7 +113,7 @@ function onEsc(e) {
     if (stLayerUp()) return;                  // ST popups / editor own Esc
     // Inspector: the last shell layer. ST's floating panels, a running generation (Esc =
     // stop) and autocomplete keep their Esc first, as in ST's own order.
-    if (!document.body.classList.contains('ag2-insp-open')) return;
+    if (!flag.has('ag2-insp-open')) return;
     if (vis('#mes_stop') || vis('.autoComplete') || vis('#floatingPrompt') || vis('#cfgConfig')
         || vis('#logprobsViewer') || vis('#WorldInfo') || vis('#movingDivs > div')) return;
     const a = document.activeElement;
