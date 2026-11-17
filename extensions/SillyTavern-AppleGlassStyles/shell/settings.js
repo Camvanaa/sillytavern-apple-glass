@@ -19,14 +19,14 @@
 // the sheet below the head (same CSS variables as the window). Drag the grabber / head down
 // to dismiss.
 
-import { ctx, h, guard, closeSelect2s, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar, nativeSelectOpen, paintRanges, paintOneRange, current, flag } from './util.js?v=20261117TT14';
+import { ctx, h, guard, closeSelect2s, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar, nativeSelectOpen, paintRanges, paintOneRange, current, flag } from './util.js?v=20261117TT15';
 // linked to the running shell? (util.current)
-export { SHELL } from './util.js?v=20261117TT14';
-import { icon } from './icons.js?v=20261117TT14';
-import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261117TT14';
-import { isMenuOpen } from './menu.js?v=20261117TT14';
-import { renderUpdates } from './updates.js?v=20261117TT14';
-import { isTauri, renderTauriSettings } from './tauri-settings.js?v=20261117TT14';
+export { SHELL } from './util.js?v=20261117TT15';
+import { icon } from './icons.js?v=20261117TT15';
+import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261117TT15';
+import { isMenuOpen } from './menu.js?v=20261117TT15';
+import { renderUpdates } from './updates.js?v=20261117TT15';
+import { isTauri, renderTauriSettings } from './tauri-settings.js?v=20261117TT15';
 
 const PAGES = [
     { id: 'api', name: '连接', icon: 'plug', tile: 'green', group: 0, lead: '选择 API 来源，填写地址、密钥和模型。' },
@@ -342,7 +342,7 @@ let results = [];
 
 const loadSearch = async () => {
     if (!searchMod) {
-        const mod = current(await import('./search.js?v=20261117TT14'));
+        const mod = current(await import('./search.js?v=20261117TT15'));
         if (!mod) return null;
         mod.init(PAGES.map(({ id, name, lead }) => ({ id, name, lead })));
         searchMod = mod;

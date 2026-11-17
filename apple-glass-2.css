@@ -9538,10 +9538,19 @@ html body.ag2:not(#_):not(#__) #movingDivs > .drawer-content:not(#floatingPrompt
     }
 
     /* list page (or nothing open): the chat stays laid out but leaves the a11y tree and
-       the blur count once the list has slid over it */
-    html body.ag2.ag2-phone:is(:not([data-ag2-ph="chat"]), [data-ag2-welcome]):not(#_):not(#__) #sheld {
-        visibility: hidden !important;
-        transition: visibility 0s linear var(--ag2-dur-panel);
+       the blur count once the list has slid over it (phone.js sets data-ag2-ph-covered when
+       the list's own transition has ended). content-visibility skips the subtree without
+       restyling it; an inherited `visibility` restyled all ~3,700 chat nodes and started a
+       transition on every avatar (ST: transition: all) at each list ⇄ chat switch. */
+    html body.ag2.ag2-phone[data-ag2-ph-covered]:is(:not([data-ag2-ph="chat"]), [data-ag2-welcome]):not(#_):not(#__) #sheld {
+        content-visibility: hidden;
+    }
+
+    @supports not (content-visibility: hidden) {
+        html body.ag2.ag2-phone:is(:not([data-ag2-ph="chat"]), [data-ag2-welcome]):not(#_):not(#__) #sheld {
+            visibility: hidden !important;
+            transition: visibility 0s linear var(--ag2-dur-panel);
+        }
     }
 
     html body.ag2.ag2-phone:not(#_):not(#__) #chat {

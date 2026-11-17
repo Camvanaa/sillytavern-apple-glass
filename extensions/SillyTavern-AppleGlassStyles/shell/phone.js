@@ -14,14 +14,14 @@
 // keyboard's top edge.
 // State: localStorage ag2.phPage = list | chat (per device, §9.1).
 
-import { icon } from './icons.js?v=20261117TT14';
-import { openMenu, closeMenu, isMenuOpen } from './menu.js?v=20261117TT14';
-import { local } from './store.js?v=20261117TT14';
-import { ctx, h, guard, getCurrentChatId, openSettings, setInspector, inspectorModule, openPalette, clickSt, flag } from './util.js?v=20261117TT14';
+import { icon } from './icons.js?v=20261117TT15';
+import { openMenu, closeMenu, isMenuOpen } from './menu.js?v=20261117TT15';
+import { local } from './store.js?v=20261117TT15';
+import { ctx, h, guard, getCurrentChatId, openSettings, setInspector, inspectorModule, openPalette, clickSt, flag } from './util.js?v=20261117TT15';
 // linked to the running shell? (util.current)
-export { SHELL } from './util.js?v=20261117TT14';
-import { chatMenuItems } from './chrome.js?v=20261117TT14';
-import { segment, setSegment } from './sidebar.js?v=20261117TT14';
+export { SHELL } from './util.js?v=20261117TT15';
+import { chatMenuItems } from './chrome.js?v=20261117TT15';
+import { segment, setSegment } from './sidebar.js?v=20261117TT15';
 
 const TABS = [['chats', '对话', 'messages-square'], ['chars', '角色', 'users'], ['wi', '世界书', 'book-open'], ['settings', '设置', 'settings']];
 const SEG_TITLE = { chats: '对话', chars: '角色', groups: '群组' };
@@ -84,6 +84,14 @@ export function mount(shell) {
     mo.observe(side, { attributes: true, attributeFilter: ['data-segment'] });
     off.push(() => mo.disconnect());
 
+    const onSlid = e => { if (e.target === side) syncCover(); };
+    side.addEventListener('transitionend', onSlid);
+    side.addEventListener('transitioncancel', onSlid);
+    off.push(() => {
+        side.removeEventListener('transitionend', onSlid);
+        side.removeEventListener('transitioncancel', onSlid);
+    });
+
     // Tapping the chat that is already open only has to push the chat page (no CHAT_CHANGED).
     const list = side.querySelector('.ag2-side-list');
     list.addEventListener('click', onListTap, true);
@@ -118,6 +126,7 @@ export function mount(shell) {
     lastChat = chatKey();
     apply();
     syncTabs();
+    requestAnimationFrame(() => { if (mounted) syncCover(); });
 }
 
 export function unmount() {
@@ -131,6 +140,7 @@ export function unmount() {
     const tb = document.querySelector('#ag2-title .ag2-title-btn');
     if (tb) { tb.setAttribute('aria-haspopup', 'menu'); tb.setAttribute('aria-label', '对话菜单'); }
     delete document.body.dataset.ag2Ph;
+    flag.set('ag2-ph-covered', false);
     flag.set('ag2-kb', false);
     document.body.style.removeProperty('--ag2-vvh');
     document.body.style.removeProperty('--ag2-vvt');
@@ -156,6 +166,7 @@ function apply() {
     if (document.body.dataset.ag2Ph === p) return;
     closeMenu();
     document.body.dataset.ag2Ph = p;
+    if (p === 'chat') flag.set('ag2-ph-covered', false);
     // the inspector sheet belongs to the chat page
     if (p === 'list' && flag.has('ag2-insp-open')) setInspector(false);
     for (const b of nodes[1]?.querySelectorAll('[data-tab]') || []) b.tabIndex = p === 'list' ? 0 : -1;
@@ -175,6 +186,18 @@ function onChat() {
     if (changed && k && active) setPage('chat');
     else if (!k && active) want = 'list';
     apply();
+}
+
+/**
+ * The chat stays laid out under the list; once the list has slid over it, it stops rendering
+ * (CSS: content-visibility on body[data-ag2-ph-covered]). Waiting for the list's own
+ * transition keeps the chat visible through the fade, however late the slide starts. The CSS
+ * also requires the list state, so a stale flag can never hide the chat page.
+ */
+function syncCover() {
+    const side = document.getElementById('ag2-sidebar');
+    const listUp = page() !== 'chat' || flag.has('ag2-welcome');
+    flag.set('ag2-ph-covered', listUp && !!side && side.getAnimations().length === 0);
 }
 
 function onListTap(e) {
@@ -275,9 +298,19 @@ function onViewport() {
     // VisualViewport reads flush pending styles. Snapshot before writing inherited body
     // variables: alternating these caused three full style passes at the phone breakpoint.
     const height = vv.height, top = vv.offsetTop, layoutHeight = window.innerHeight;
-    const set = (name, value) => { if (s.getPropertyValue(name) !== value) s.setProperty(name, value); };
-    set('--ag2-vvh', Math.round(height) + 'px');
-    set('--ag2-vvt', Math.max(0, Math.round(top)) + 'px');
+    // Each write restyles the whole document (inherited from <body>). A visual viewport
+    // that matches the layout one (no keyboard: desktop narrow windows, Android resizing
+    // the layout itself) is exactly what the 100dvh / 0px fallbacks describe already, so
+    // focusing or leaving the composer there no longer costs a full style pass.
+    const vh = Math.round(height), vt = Math.max(0, Math.round(top));
+    if (vt === 0 && Math.abs(layoutHeight - vh) <= 1) {
+        if (s.getPropertyValue('--ag2-vvh')) s.removeProperty('--ag2-vvh');
+        if (s.getPropertyValue('--ag2-vvt')) s.removeProperty('--ag2-vvt');
+    } else {
+        const set = (name, value) => { if (s.getPropertyValue(name) !== value) s.setProperty(name, value); };
+        set('--ag2-vvh', vh + 'px');
+        set('--ag2-vvt', vt + 'px');
+    }
     // iOS keeps the layout viewport and shrinks only the visual one; Android Chrome
     // (interactive-widget=resizes-content) resizes both, where this stays false and the
     // layout follows by itself.

@@ -7,27 +7,27 @@
 // class and listener it added and reloads the current chat.
 // Any exception during enable → automatic teardown + one toastr.
 
-export const BUILD = '20261117TT14';
+export const BUILD = '20261117TT15';
 
-import { local, importStPinsOnce, applyAppearance, clearAppearance } from './store.js?v=20261117TT14';
-import { ctx, h, toggleDrawer, SET_PANELS, settingsModule, openSettings, isDesktop, INSP_ID, inspectorModule, loadInspector, setInspector, setShellApi, paletteModule, PHONE_MQ, loadPhone, phoneModule, isFloatingOpen, closeOtherFloating, paintOneRange, paintRanges, flag } from './util.js?v=20261117TT14';
-import { closeMenu } from './menu.js?v=20261117TT14';
-import * as sidebar from './sidebar.js?v=20261117TT14';
-import * as chrome from './chrome.js?v=20261117TT14';
-import * as reading from './reading.js?v=20261117TT14';
-import * as composer from './composer.js?v=20261117TT14';
-import * as keys from './keys.js?v=20261117TT14';
-import * as prompt from './prompt.js?v=20261117TT14';
-import * as presets from './presets.js?v=20261117TT14';
-import * as logprobs from './logprobs.js?v=20261117TT14';
-import * as worldbook from './worldbook.js?v=20261117TT14';
-import * as general from './general.js?v=20261117TT14';
-import * as messageActions from './message-actions.js?v=20261117TT14';
-import * as panels from './panels.js?v=20261117TT14';
-import * as coreFixes from './core-fixes.js?v=20261117TT14';
+import { local, importStPinsOnce, applyAppearance, clearAppearance } from './store.js?v=20261117TT15';
+import { ctx, h, toggleDrawer, SET_PANELS, settingsModule, openSettings, isDesktop, INSP_ID, inspectorModule, loadInspector, setInspector, setShellApi, paletteModule, PHONE_MQ, loadPhone, phoneModule, isFloatingOpen, closeOtherFloating, paintOneRange, paintRanges, flag } from './util.js?v=20261117TT15';
+import { closeMenu } from './menu.js?v=20261117TT15';
+import * as sidebar from './sidebar.js?v=20261117TT15';
+import * as chrome from './chrome.js?v=20261117TT15';
+import * as reading from './reading.js?v=20261117TT15';
+import * as composer from './composer.js?v=20261117TT15';
+import * as keys from './keys.js?v=20261117TT15';
+import * as prompt from './prompt.js?v=20261117TT15';
+import * as presets from './presets.js?v=20261117TT15';
+import * as logprobs from './logprobs.js?v=20261117TT15';
+import * as worldbook from './worldbook.js?v=20261117TT15';
+import * as general from './general.js?v=20261117TT15';
+import * as messageActions from './message-actions.js?v=20261117TT15';
+import * as panels from './panels.js?v=20261117TT15';
+import * as coreFixes from './core-fixes.js?v=20261117TT15';
 
 const BODY_CLASSES = ['ag2', 'ag2-phone'];
-const BODY_FLAGS = ['ag2-welcome', 'ag2-side-collapsed', 'ag2-ready', 'ag2-wand-open', 'ag2-set-open', 'ag2-insp-open', 'ag2-kb', 'ag2-sheet-drag'];
+const BODY_FLAGS = ['ag2-welcome', 'ag2-side-collapsed', 'ag2-ready', 'ag2-wand-open', 'ag2-set-open', 'ag2-insp-open', 'ag2-kb', 'ag2-sheet-drag', 'ag2-ph-covered'];
 let on = false;
 let lateEnable = false;
 let shell = null;
