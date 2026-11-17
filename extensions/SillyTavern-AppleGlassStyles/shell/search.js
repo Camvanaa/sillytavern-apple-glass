@@ -8,9 +8,9 @@
 // utils.toggleDrawer), scrolls it into view inside the drawer and flashes an accent ring.
 
 import { toggleDrawer as stToggleInline } from '../../../../utils.js';
-import { SET_PANELS } from './util.js?v=20261117TT13';
+import { SET_PANELS } from './util.js?v=20261117TT14';
 // linked to the running shell? (util.current)
-export { SHELL } from './util.js?v=20261117TT13';
+export { SHELL } from './util.js?v=20261117TT14';
 
 /** Shell-built pages: static entries (their DOM is rendered on demand). */
 const SHELL_ITEMS = [

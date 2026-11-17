@@ -1,5 +1,5 @@
 // Same native extension/theme APIs on ST and TauriTavern. No settings snapshot sync.
-import { ensureUpdateStyles } from './update-style.js?v=20261117TT13';
+import { ensureUpdateStyles } from './update-style.js?v=20261117TT14';
 export const INSTALL_URL = 'https://github.com/Camvanaa/SillyTavern-AppleGlassStyles';
 // GitHub is the only update source: the release.json of the branch that the native
 // update pulls, so a check never announces a build that “更新” cannot fetch.
