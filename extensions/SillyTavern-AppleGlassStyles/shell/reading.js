@@ -10,10 +10,12 @@
 //      (CSS draws the label with ::before)
 //    - `ag2-cont` on a message whose previous message has the same speaker on the
 //      same day (CSS hides the repeated avatar + name)
+//    - `ag2-before-cont` on the message right before an `ag2-cont` one (tighter gap),
+//      plus `ag2-before-receipt` when that next one is a small system message
 //    - data-ag2-model on AI messages (model name for the meta line, CSS ::after)
 //    - data-ag2-time="HH:MM" on `.timestamp` (header shows the short time)
 
-import { ctx, toDate } from './util.js?v=20261116TT10';
+import { ctx, toDate } from './util.js?v=20261116TT11';
 
 const WEEK = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
 const pad = n => String(n).padStart(2, '0');
@@ -100,6 +102,13 @@ export function decorate() {
         }
         prevKey = key;
         prevSpeaker = who;
+    }
+    for (const el of chatEl.children) {
+        if (!el.classList.contains('mes')) continue;
+        const next = el.nextElementSibling;
+        const cont = !!next && next.classList.contains('mes') && next.classList.contains('ag2-cont');
+        el.classList.toggle('ag2-before-cont', cont);
+        el.classList.toggle('ag2-before-receipt', cont && next.classList.contains('smallSysMes'));
     }
 }
 
@@ -190,7 +199,7 @@ export function unbindReceipts() {
 export function undecorate() {
     unbindReceipts();
     document.querySelectorAll('#chat > .mes').forEach(el => {
-        el.classList.remove('ag2-day', 'ag2-cont', 'ag2-ssb-open', 'ag2-ssb-bar');
+        el.classList.remove('ag2-day', 'ag2-cont', 'ag2-before-cont', 'ag2-before-receipt', 'ag2-ssb-open', 'ag2-ssb-bar');
         el.removeAttribute('data-ag2-day');
         el.removeAttribute('data-ag2-model');
         el.removeAttribute('data-ag2-clamp');

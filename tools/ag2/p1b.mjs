@@ -412,7 +412,7 @@ async function multiline(T) {
         const chat = document.getElementById('chat').getBoundingClientRect();
         return { island: f(a), radius: getComputedStyle(isl).borderRadius, ta: Math.round(ta.getBoundingClientRect().height), taScroll: ta.scrollHeight > ta.clientHeight + 2, hscroll: ta.scrollWidth > ta.clientWidth,
             leftBottomGap: Math.round(a.bottom - l.bottom), rightBottomGap: Math.round(a.bottom - r.bottom), sendBottomGap: Math.round(a.bottom - document.getElementById('send_but').getBoundingClientRect().bottom),
-            textInside: ta.getBoundingClientRect().top >= a.top, chatVisibleAboveDock: Math.round(a.top - chat.top), dockVar: getComputedStyle(document.body).getPropertyValue('--ag2-dock-h') };
+            textInside: ta.getBoundingClientRect().top >= a.top, chatVisibleAboveDock: Math.round(a.top - chat.top), dockVar: getComputedStyle(document.getElementById('chat')).getPropertyValue('--ag2-dock-h') };
     }, R);
     const line = i => `第 ${i} 行：她把披风搭在椅背上，回头看了你一眼，屋外的溪水声很轻。`;
     for (const [name, v] of [['short', '你好'], ['l5', Array.from({ length: 5 }, (_, i) => line(i + 1)).join('\n')], ['l30', Array.from({ length: 30 }, (_, i) => line(i + 1)).join('\n')], ['longword', 'x'.repeat(1200)]]) {

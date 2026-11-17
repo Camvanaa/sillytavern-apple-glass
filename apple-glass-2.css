@@ -267,25 +267,37 @@ html body.ag2.ag2-side-collapsed {
     }
 
     /* #sheld stays the chat body; only its box moves (§9.2 #8). ST writes
-       --sheldWidth inline on :root, hence the !important overrides. */
+       --sheldWidth inline on :root, hence the !important overrides.
+       The width is spelled out in viewport units instead of left + right with
+       width: auto: a box whose width and height do not depend on its container is
+       laid out on its own. With auto, every streamed token and every keystroke
+       re-laid out the whole document (settings drawers included), ~3× the cost. */
     html body.ag2:not(#_):not(#__) #sheld {
         position: fixed !important;
         top: 0 !important;
         bottom: 0 !important;
         left: var(--ag2-sheld-left) !important;
-        right: var(--ag2-sheld-right) !important;
-        width: auto !important;
+        right: auto !important;
+        width: calc(100vw - var(--ag2-sheld-left) - var(--ag2-sheld-right)) !important;
         max-width: none !important;
         height: 100dvh !important;
         max-height: 100dvh !important;
         margin: 0 !important;
-        transition: left var(--ag2-dur-panel) var(--ag2-ease-sheet);
+        transition: left var(--ag2-dur-panel) var(--ag2-ease-sheet), width var(--ag2-dur-panel) var(--ag2-ease-sheet);
     }
 
     /* Reading column width is a shell variable (appearance page, P2a). The scroll
        container stays full width so the scrollbar sits at the edge of the chat area;
        the padding centres the column. Top padding clears the capsules. */
     html body.ag2:not(#_):not(#__) #chat {
+        /* ST's column flexbox, as a one-column grid: same boxes (no margin collapsing,
+           `order` still lifts “Show more messages” to the top), but a streamed token
+           costs ~1ms of layout instead of ~7ms. */
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) !important;
+        grid-auto-rows: max-content !important;
+        align-content: start !important;
+        justify-items: stretch !important;
         padding-top: 72px !important;
         padding-inline: max(var(--ag2-pad), calc((100% - var(--ag2-read-width)) / 2)) !important;
         background: none !important;
@@ -1433,7 +1445,11 @@ html body.ag2.immersive-mode:not(#_):not(#__) #ap-jump-latest {
         display: none !important;
     }
 
-    html body.ag2:not(#_):not(#__) #chat .mes:has(+ .mes.ag2-cont) {
+    /* `ag2-before-cont` = the next message is `.ag2-cont` (reading.js). It was
+       `.mes:has(+ .mes.ag2-cont)`: a sibling :has() makes Blink restyle every message
+       (and its ::before / ::after) for each node streamed into the last one. The class
+       is doubled to keep that selector's weight. */
+    html body.ag2:not(#_):not(#__) #chat .mes.ag2-before-cont.ag2-before-cont {
         margin-bottom: 4px !important;
     }
 
@@ -1856,7 +1872,9 @@ html body.ag2.immersive-mode:not(#_):not(#__) #ap-jump-latest {
         z-index: -1;
     }
 
-    html body.ag2:not(#_):not(#__) #chat .mes.last_mes:not([is_user="true"]):has(> .swipeRightBlock > .swipes-counter:not([hidden]):not(:empty)) > .swipeRightBlock::before {
+    /* :has() sits on the swipe block, not on the message: on .mes it restyled the whole
+       last message for every streamed node (class doubled to keep the weight) */
+    html body.ag2:not(#_):not(#__) #chat .mes.last_mes:not([is_user="true"]) > .swipeRightBlock.swipeRightBlock:has(> .swipes-counter:not([hidden]):not(:empty))::before {
         display: block;
     }
 
@@ -1996,7 +2014,7 @@ html body.ag2.immersive-mode:not(#_):not(#__) #ap-jump-latest {
     }
 
     /* consecutive cards stay separate cards (only the name line goes) */
-    html body.ag2:is(.bubblechat, .ap-chat-echo, .ap-chat-whisper, .ap-chat-ripple, .ap-chat-hush):not(#_):not(#__) #chat .mes:has(+ .mes.ag2-cont) {
+    html body.ag2:is(.bubblechat, .ap-chat-echo, .ap-chat-whisper, .ap-chat-ripple, .ap-chat-hush):not(#_):not(#__) #chat .mes.ag2-before-cont.ag2-before-cont {
         margin-bottom: 10px !important;
     }
 
@@ -2181,7 +2199,7 @@ html body.ag2.immersive-mode:not(#_):not(#__) #ap-jump-latest {
     }
 
     /* two receipts in a row (same sender → ag2-cont): a small gap, both keep their caption */
-    html body.ag2:not(#_):not(#__):not(#___) #chat .mes:has(+ .mes.smallSysMes.ag2-cont) {
+    html body.ag2:not(#_):not(#__):not(#___) #chat .mes.ag2-before-receipt.ag2-before-receipt.ag2-before-receipt {
         margin-bottom: 8px !important;
     }
 
@@ -6082,7 +6100,7 @@ html body.ag2.ag2-insp-open {
 
 @media screen { /* desktop + phone since P5 (§5.9 overrides the geometry) */
     html body.ag2:not(#_):not(#__) #sheld {
-        transition: left var(--ag2-dur-panel) var(--ag2-ease-sheet), right var(--ag2-dur-panel) var(--ag2-ease-sheet);
+        transition: left var(--ag2-dur-panel) var(--ag2-ease-sheet), width var(--ag2-dur-panel) var(--ag2-ease-sheet);
     }
 
     /* the tool capsule sits left of the inspector in both forms; the title capsule
@@ -13443,6 +13461,15 @@ html:has(> body.ag2:not(#_):not(#__)) {
     syntax: "<length>";
     inherits: false;
     initial-value: 0px;
+}
+
+/* The composer island's live height, written on #chat (composer.js), its only reader.
+   Not inherited: as an inherited variable on <body> every change of the island's
+   height (a second line of text, a QR bar) restyled the whole document. */
+@property --ag2-dock-h {
+    syntax: "<length>";
+    inherits: false;
+    initial-value: 112px;
 }
 
 /* Only native form controls opt into dark UA chrome. A page-wide scheme changes

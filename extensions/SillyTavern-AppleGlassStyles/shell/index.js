@@ -7,23 +7,24 @@
 // class and listener it added and reloads the current chat.
 // Any exception during enable → automatic teardown + one toastr.
 
-export const BUILD = '20261116TT10';
+export const BUILD = '20261116TT11';
 
-import { local, importStPinsOnce, applyAppearance, clearAppearance } from './store.js?v=20261116TT10';
-import { ctx, h, toggleDrawer, SET_PANELS, settingsModule, openSettings, isDesktop, INSP_ID, inspectorModule, loadInspector, setInspector, setShellApi, paletteModule, PHONE_MQ, loadPhone, phoneModule, isFloatingOpen, closeOtherFloating, paintOneRange, paintRanges } from './util.js?v=20261116TT10';
-import { closeMenu } from './menu.js?v=20261116TT10';
-import * as sidebar from './sidebar.js?v=20261116TT10';
-import * as chrome from './chrome.js?v=20261116TT10';
-import * as reading from './reading.js?v=20261116TT10';
-import * as composer from './composer.js?v=20261116TT10';
-import * as keys from './keys.js?v=20261116TT10';
-import * as prompt from './prompt.js?v=20261116TT10';
-import * as presets from './presets.js?v=20261116TT10';
-import * as logprobs from './logprobs.js?v=20261116TT10';
-import * as worldbook from './worldbook.js?v=20261116TT10';
-import * as general from './general.js?v=20261116TT10';
-import * as messageActions from './message-actions.js?v=20261116TT10';
-import * as panels from './panels.js?v=20261116TT10';
+import { local, importStPinsOnce, applyAppearance, clearAppearance } from './store.js?v=20261116TT11';
+import { ctx, h, toggleDrawer, SET_PANELS, settingsModule, openSettings, isDesktop, INSP_ID, inspectorModule, loadInspector, setInspector, setShellApi, paletteModule, PHONE_MQ, loadPhone, phoneModule, isFloatingOpen, closeOtherFloating, paintOneRange, paintRanges } from './util.js?v=20261116TT11';
+import { closeMenu } from './menu.js?v=20261116TT11';
+import * as sidebar from './sidebar.js?v=20261116TT11';
+import * as chrome from './chrome.js?v=20261116TT11';
+import * as reading from './reading.js?v=20261116TT11';
+import * as composer from './composer.js?v=20261116TT11';
+import * as keys from './keys.js?v=20261116TT11';
+import * as prompt from './prompt.js?v=20261116TT11';
+import * as presets from './presets.js?v=20261116TT11';
+import * as logprobs from './logprobs.js?v=20261116TT11';
+import * as worldbook from './worldbook.js?v=20261116TT11';
+import * as general from './general.js?v=20261116TT11';
+import * as messageActions from './message-actions.js?v=20261116TT11';
+import * as panels from './panels.js?v=20261116TT11';
+import * as coreFixes from './core-fixes.js?v=20261116TT11';
 
 const BODY_CLASSES = ['ag2', 'ag2-welcome', 'ag2-side-collapsed', 'ag2-ready', 'ag2-wand-open', 'ag2-set-open', 'ag2-insp-open', 'ag2-phone', 'ag2-kb'];
 let on = false;
@@ -95,6 +96,7 @@ export function enable({ appReady = false } = {}) {
     try {
         lateEnable = appIsReady(); // theme switched mid-session (not a cold start)
         document.body.classList.add('ag2');
+        coreFixes.mount(); // before any settings drawer opens
         applyAppearance(); // accent / reading size / width / meta (§5.5): attributes only
         if (local.get('sidebar') === 'collapsed') document.body.classList.add('ag2-side-collapsed');
         shell = h('div');
@@ -381,6 +383,7 @@ export function disable({ reload = true } = {}) {
     try { prompt.unmount(); } catch { /* */ }
     try { messageActions.unmount(); } catch { /* */ }
     try { panels.unmount(); } catch { /* */ }
+    try { coreFixes.unmount(); } catch { /* */ }
     try { presets.unmount(); } catch { /* */ }
     try { logprobs.unmount(); } catch { /* */ }
     try { worldbook.unmount(); } catch { /* */ }

@@ -8,7 +8,7 @@ import {
     is_send_press, isChatSaving, getThumbnailUrl, user_avatar, online_status,
 } from '../../../../../script.js';
 import { openGroupById, openGroupChat, deleteGroupChatByName, is_group_generating } from '../../../../group-chats.js';
-import { local } from './store.js?v=20261116TT10';
+import { local } from './store.js?v=20261116TT11';
 
 export { doNavbarIconClick, getCurrentChatId, newAssistantChat };
 
@@ -161,7 +161,7 @@ let phoneLoading = null;
 export const phoneModule = () => phoneMod;
 export async function loadPhone() {
     if (!phoneMod) {
-        phoneLoading ||= import('./phone.js?v=20261116TT10').then(current);
+        phoneLoading ||= import('./phone.js?v=20261116TT11').then(current);
         try { phoneMod = await phoneLoading; } finally { phoneLoading = null; }
     }
     return phoneMod;
@@ -174,7 +174,7 @@ export const settingsModule = () => setMod;
 /** Imports settings.js (once) without opening the window — the palette searches its index. */
 export async function loadSettings() {
     if (!setMod) {
-        setLoading ||= import('./settings.js?v=20261116TT10').then(current);
+        setLoading ||= import('./settings.js?v=20261116TT11').then(current);
         try { setMod = await setLoading; } finally { setLoading = null; }
     }
     return setMod;
@@ -209,7 +209,7 @@ let inspLoading = null;
 export const inspectorModule = () => inspMod;
 export async function loadInspector() {
     if (!inspMod) {
-        inspLoading ||= import('./inspector.js?v=20261116TT10').then(current);
+        inspLoading ||= import('./inspector.js?v=20261116TT11').then(current);
         try { inspMod = await inspLoading; } finally { inspLoading = null; }
     }
     if (inspMod && document.body.classList.contains('ag2')) inspMod.mount();
@@ -253,7 +253,7 @@ export const paletteModule = () => palMod;
 /** Opens the ⌘K palette; palette.js is imported on first use only (not at cold start). */
 export async function openPalette(opt = {}) {
     if (!palMod) {
-        palLoading ||= import('./palette.js?v=20261116TT10').then(current);
+        palLoading ||= import('./palette.js?v=20261116TT11').then(current);
         try { palMod = await palLoading; } finally { palLoading = null; }
     }
     if (!palMod || !document.body.classList.contains('ag2')) return false; // stale, or shell torn down meanwhile
