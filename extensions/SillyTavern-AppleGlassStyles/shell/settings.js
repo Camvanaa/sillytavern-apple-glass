@@ -19,14 +19,14 @@
 // the sheet below the head (same CSS variables as the window). Drag the grabber / head down
 // to dismiss.
 
-import { ctx, h, guard, closeSelect2s, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar, nativeSelectOpen, paintRanges, paintOneRange, current, flag } from './util.js?v=20261117TT12';
+import { ctx, h, guard, closeSelect2s, toggleDrawer, SET_PANELS, pageOfPanel, isPhone, thumb, personaAvatar, nativeSelectOpen, paintRanges, paintOneRange, current, flag } from './util.js?v=20261117TT13';
 // linked to the running shell? (util.current)
-export { SHELL } from './util.js?v=20261117TT12';
-import { icon } from './icons.js?v=20261117TT12';
-import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261117TT12';
-import { isMenuOpen } from './menu.js?v=20261117TT12';
-import { renderUpdates } from './updates.js?v=20261117TT12';
-import { isTauri, renderTauriSettings } from './tauri-settings.js?v=20261117TT12';
+export { SHELL } from './util.js?v=20261117TT13';
+import { icon } from './icons.js?v=20261117TT13';
+import { local, appearance, setAppearance, ACCENTS, READ_SIZE, READ_WIDTH } from './store.js?v=20261117TT13';
+import { isMenuOpen } from './menu.js?v=20261117TT13';
+import { renderUpdates } from './updates.js?v=20261117TT13';
+import { isTauri, renderTauriSettings } from './tauri-settings.js?v=20261117TT13';
 
 const PAGES = [
     { id: 'api', name: '连接', icon: 'plug', tile: 'green', group: 0, lead: '选择 API 来源，填写地址、密钥和模型。' },
@@ -167,15 +167,22 @@ const stEvents = [];
 let selectObserver = null;
 const selectButtons = new Set();
 
-function clearSelects() {
+function stopSelects() {
     selectObserver?.disconnect();
     selectObserver = null;
+}
+
+function clearSelects() {
+    stopSelects();
     for (const button of selectButtons) button.remove();
     selectButtons.clear();
 }
 
 function watchSelects(container) {
-    clearSelects();
+    // Keep native selectedcontent buttons while this window is alive. Recreating
+    // them on each page switch invalidates the drawer just as its slide starts.
+    // Only the active page is observed; close/unmount removes all owned buttons.
+    stopSelects();
     if (!container || !CSS.supports('appearance', 'base-select') || !('HTMLSelectedContentElement' in window)) return;
     const enhance = () => {
         for (const button of selectButtons) {
@@ -317,7 +324,7 @@ let results = [];
 
 const loadSearch = async () => {
     if (!searchMod) {
-        const mod = current(await import('./search.js?v=20261117TT12'));
+        const mod = current(await import('./search.js?v=20261117TT13'));
         if (!mod) return null;
         mod.init(PAGES.map(({ id, name, lead }) => ({ id, name, lead })));
         searchMod = mod;
@@ -660,7 +667,7 @@ export function list(opt = {}) {
 
 async function listNow({ focus = false } = {}, valid) {
     if (!isOpenNow) return;
-    clearSelects();
+    stopSelects();
     closeSelect2s();
     const was = cur;
     clearTimeout(closeTimer);
@@ -801,6 +808,7 @@ export function go(page, opt = {}) {
 
 async function goNow(page, { focus = false } = {}, valid) {
     if (!isOpenNow || !PAGE[page]) return;
+    stopSelects();
     const p = PAGE[page];
     const previous = cur;
     clearTimeout(closeTimer);
@@ -877,7 +885,7 @@ export function sync(id, opened) {
 
 export async function close({ motion = true } = {}) {
     cancelPageMotion();
-    clearSelects();
+    stopSelects();
     closeSelect2s();
     activeDragCleanup?.();
     if (!isOpenNow) return;
@@ -913,7 +921,10 @@ export async function close({ motion = true } = {}) {
     delete document.body.dataset.ag2SetMotion;
     clearSearch();
     await drained;
-    if (ticket === intent && !isOpenNow) clipDrawers(false);
+    if (ticket === intent && !isOpenNow) {
+        clearSelects(); // hidden now: cleanup cannot interrupt the exit animation
+        clipDrawers(false);
+    }
     if (ticket === intent && !isOpenNow && previousOpener?.isConnected) previousOpener.focus({ preventScroll: true });
 }
 

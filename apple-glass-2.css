@@ -13571,6 +13571,16 @@ html body.ag2:not(#_):not(#__) :is(#ag2-pal-list, .ag2-side-list, .ag2-set-body,
     }
 }
 
+/* The theme source in this editor can span thousands of lines. Its native rows/min-height
+   already reserve the correct box; render the text only when the editor approaches the
+   viewport. An estimated intrinsic height would change the drawer's scroll geometry. */
+html body.ag2 #user-settings-block #customCSS {
+    content-visibility: auto;
+}
+html body.ag2 #user-settings-block #customCSS:focus {
+    content-visibility: visible; /* native selection/caret rendering while editing */
+}
+
 /* Keep native select semantics/events; only ordinary single-selects opt in. */
 @supports (appearance: base-select) {
     /* Explicit standard selectedcontent is supplied only in the active settings page.
